@@ -172,7 +172,7 @@ Next steps:
 
 1. Create an account and project on https://app.stack-auth.com
 2. ${type === "next" ? `Copy the environment variables from the new API key into your .env.local file`
-   : type === "js" ? `Follow the instructions on how to use Stack Auth on our documentation`
+   : type === "js" ? `Follow the instructions on how to use Stack Auth's vanilla SDK in our documentation`
    : throwErr("Unknown type")}
 
 ${type === "next" ? `Then, you will be able to access your sign-in page on http://your-website.example.com/handler/sign-in. That's it!`
@@ -417,6 +417,9 @@ import { Stack${clientOrServerCap}App } from ${JSON.stringify(packageName)};
 export const stack${clientOrServerCap}App = new Stack${clientOrServerCap}App({
 ${indentation}tokenStore: ${type === "next" ? '"nextjs-cookie"' : (clientOrServer === "client" ? '"cookie"' : '"memory"')},
 });
+${type === "js" && `${indentation}// retrieve your Stack Auth API keys from https://app.stack-auth.com and store them in a safe place (eg. environment variables)`}
+${type === "js" && `${indentation}publishableClientKey: INSERT_YOUR_PUBLISHABLE_CLIENT_KEY_HERE,`}
+${type === "js" && clientOrServer === "server" && `${indentation}secretServerKey: INSERT_YOUR_SECRET_SERVER_KEY_HERE,`}
       `.trim() + "\n");
   },
 
