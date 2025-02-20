@@ -525,7 +525,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
   async guessDefaultFileExtension() {
     const projectPath = await getProjectPath();
     const hasTsConfig = fs.existsSync(
-      path.join(savedProjectPath, "tsconfig.json")
+      path.join(projectPath, "tsconfig.json")
     );
     return hasTsConfig ? "ts" : "js";
   },
