@@ -165,8 +165,13 @@ export function OAuthButton({
           localStorage.setItem('_STACK_AUTH.lastUsed', provider);
           await stackApp.signInWithOAuth(provider);
         }}
-        className={`stack-oauth-button-${styleId} stack-scope`}
+        className={`stack-oauth-button-${styleId} stack-scope relative`}
       >
+        {localStorage.getItem('_STACK_AUTH.lastUsed') === provider && (
+          <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-md">
+            last
+          </span>
+        )}
         <div className='flex items-center w-full gap-4'>
           {style.icon}
           <span className='flex-1'>
