@@ -61,6 +61,9 @@ const commandsExecuted = [];
 
 const packagesToInstall = [];
 const writeFileHandlers = [];
+const nextSteps = [
+  `Create an account and Stack Auth API key for your project on https://app.stack-auth.com`,
+];
 
 async function main() {
   // Welcome message
@@ -106,17 +109,24 @@ async function main() {
     await Steps.writeStackAppFile(projectInfo, "server");
     await Steps.writeNextHandlerFile(projectInfo);
     await Steps.writeNextLoadingFile(projectInfo);
+    nextSteps.push(`Copy the environment variables from the new API key into your .env.local file`)
   } else if (type === "js") {
     const defaultExtension = await Steps.guessDefaultFileExtension();
     const where = await Steps.getServerOrClientOrBoth();
+    const appFiles = [];
     for (const w of where) {
-      await Steps.writeStackAppFile({
+      const { fileName } = await Steps.writeStackAppFile({
         type,
         defaultExtension,
         indentation: "  ",
         srcPath: projectPath,
       }, w);
+      appFiles.push(fileName);
     }
+    nextSteps.push(
+      `Copy the environment variables from the new API key into your own environment and reference them in ${appFiles.join(" and ")}`,
+      `Follow the instructions on how to use Stack Auth's vanilla SDK at http://docs.stack-auth.com/others/js-client`,
+    );
   } else {
     throw new Error("Unknown type: " + type);
   }
@@ -170,10 +180,7 @@ ${colorize.green`Successfully installed Stack! 🚀🚀🚀`}
 
 Next steps:
 
-1. Create an account and project on https://app.stack-auth.com
-2. ${type === "next" ? `Copy the environment variables from the new API key into your .env.local file`
-   : type === "js" ? `Follow the instructions on how to use Stack Auth's vanilla SDK in our documentation`
-   : throwErr("Unknown type")}
+${[...nextSteps.entries()].map(([index, step]) => `${index + 1}. ${step}`).join("\n")}
 
 ${type === "next" ? `Then, you will be able to access your sign-in page on http://your-website.example.com/handler/sign-in. That's it!`
   : "That's it!"}
@@ -415,12 +422,14 @@ ${type === "next" ? `import "server-only";` : ""}
 import { Stack${clientOrServerCap}App } from ${JSON.stringify(packageName)};
 
 export const stack${clientOrServerCap}App = new Stack${clientOrServerCap}App({
-${indentation}tokenStore: ${type === "next" ? '"nextjs-cookie"' : (clientOrServer === "client" ? '"cookie"' : '"memory"')},
+${indentation}tokenStore: ${type === "next" ? '"nextjs-cookie"' : (clientOrServer === "client" ? '"cookie"' : '"memory"')},${
+type === "js" ? `\n\n${indentation}// get your Stack Auth API keys from https://app.stack-auth.com${clientOrServer === "client" ? `and store them in a safe place (eg. environment variables)` : ""}` : ""}${
+type === "js" ? `\n${indentation}publishableClientKey: ${clientOrServer === "server" ? 'process.env.STACK_PUBLISHABLE_CLIENT_KEY' : 'INSERT_YOUR_PUBLISHABLE_CLIENT_KEY_HERE'}` : ""},${
+type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey: process.env.STACK_SECRET_SERVER_KEY,` : ""}
 });
-${type === "js" && `${indentation}// retrieve your Stack Auth API keys from https://app.stack-auth.com and store them in a safe place (eg. environment variables)`}
-${type === "js" && `${indentation}publishableClientKey: INSERT_YOUR_PUBLISHABLE_CLIENT_KEY_HERE,`}
-${type === "js" && clientOrServer === "server" && `${indentation}secretServerKey: INSERT_YOUR_SECRET_SERVER_KEY_HERE,`}
-      `.trim() + "\n");
+      `.trim() + "\n"
+    );
+    return { fileName: stackAppPath };
   },
 
   async writeNextHandlerFile(projectInfo) {
@@ -796,13 +805,17 @@ export function templateIdentity(strings, ...values) {
 
 async function clearStdin() {
   await new Promise((resolve) => {
-      process.stdin.setRawMode(true);
+      if (process.stdin.isTTY) {
+        process.stdin.setRawMode(true);
+      }
       process.stdin.resume();
       process.stdin.removeAllListeners('data');
 
       const flush = () => {
           while (process.stdin.read() !== null) {}
-          process.stdin.setRawMode(false);
+          if (process.stdin.isTTY) {
+            process.stdin.setRawMode(false);
+          }
           resolve();
       };
 
