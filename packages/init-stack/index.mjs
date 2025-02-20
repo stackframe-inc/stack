@@ -107,11 +107,12 @@ async function main() {
     await Steps.writeNextHandlerFile(projectInfo);
     await Steps.writeNextLoadingFile(projectInfo);
   } else if (type === "js") {
+    const defaultExtension = await Steps.guessDefaultFileExtension();
     const where = await Steps.getServerOrClientOrBoth();
     for (const w of where) {
       await Steps.writeStackAppFile({
         type,
-        defaultExtension: "js",
+        defaultExtension,
         indentation: "  ",
         srcPath: projectPath,
       }, w);
@@ -504,7 +505,18 @@ ${indentation}tokenStore: ${type === "next" ? '"nextjs-cookie"' : (clientOrServe
         { name: "Both", value: ["server", "client"] }
       ]
     }])).type;
-  }
+  },
+
+  /**
+   * note: this is a heuristic, specific frameworks may have better heuristics (eg. the Next.js code uses the extension of the global layout file)
+   */
+  async guessDefaultFileExtension() {
+    const projectPath = await getProjectPath();
+    const hasTsConfig = fs.existsSync(
+      path.join(savedProjectPath, "tsconfig.json")
+    );
+    return hasTsConfig ? "ts" : "js";
+  },
 };
 
 
