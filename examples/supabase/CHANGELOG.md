@@ -1,5 +1,11 @@
 # @stackframe/example-supabase
 
+## 2.7.17
+
+### Patch Changes
+
+- @stackframe/stack@2.7.17
+
 ## 2.7.16
 
 ### Patch Changes

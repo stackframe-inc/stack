@@ -1,5 +1,12 @@
 # @stackframe/js-example
 
+## 2.7.17
+
+### Patch Changes
+
+- Various changes
+  - @stackframe/js@2.7.17
+
 ## 2.7.16
 
 ### Patch Changes

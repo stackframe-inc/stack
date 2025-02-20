@@ -1,5 +1,14 @@
 # @stackframe/example-demo-app
 
+## 2.7.17
+
+### Patch Changes
+
+- Updated dependencies
+  - @stackframe/stack-shared@2.7.17
+  - @stackframe/stack@2.7.17
+  - @stackframe/stack-ui@2.7.17
+
 ## 2.7.16
 
 ### Patch Changes
