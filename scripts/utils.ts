@@ -1,6 +1,7 @@
 import fs from "fs";
-
+import path from "path";
 export const COMMENT_LINE = "THIS FILE IS AUTO-GENERATED FROM TEMPLATE. DO NOT EDIT IT DIRECTLY";
+export const ALL_ENVS = ["next", "react-like", "js", "template"];
 
 
 export function processMacros(content: string, envs: string[]): string {
@@ -236,4 +237,134 @@ export function writeFileSyncIfChanged(path: string, content: string): void {
     }
   }
   fs.writeFileSync(path, content);
+}
+
+/**
+ * Recursively remove empty folders in the given directory.
+ */
+function removeEmptyFolders(dir: string) {
+  if (!fs.existsSync(dir)) return;
+
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  let isEmpty = true;
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      // Recursively remove empty subdirectories
+      removeEmptyFolders(fullPath);
+
+      // Check if the folder is now empty
+      if (fs.existsSync(fullPath) && fs.readdirSync(fullPath).length === 0) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else {
+        isEmpty = false;
+      }
+    } else {
+      // Directory contains at least one file
+      isEmpty = false;
+    }
+  }
+
+  // Remove the directory if it is empty
+  if (isEmpty) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Remove any files/directories in destDir that do not exist in srcDir.
+ *
+ * This function also accounts for the package-template.json -> package.json rename.
+ */
+function removeExtraneousDestItems(srcDir: string, destDir: string, ignorePaths: string[], baseDir: string) {
+  if (!fs.existsSync(destDir)) return;
+
+  const destEntries = fs.readdirSync(destDir, { withFileTypes: true });
+
+  for (const entry of destEntries) {
+    const destPath = path.join(destDir, entry.name);
+
+    if (ignorePaths.includes(entry.name)) continue;
+
+    let correspondingSrc = path.join(srcDir, entry.name);
+
+    if (!fs.existsSync(correspondingSrc)) {
+      fs.rmSync(destPath, { recursive: true, force: true });
+    } else if (entry.isDirectory()) {
+      removeExtraneousDestItems(correspondingSrc, destPath, ignorePaths, baseDir);
+    }
+  }
+}
+
+/**
+ * Copy all files/directories from srcDir to destDir (recursively).
+ * Applies the provided `editFn` to each file’s content.
+ *
+ * The edit function can return:
+ * - null to skip copying the file,
+ * - a string (modified content), or
+ * - an object { content: string, destName?: string } to optionally override the destination file name.
+ */
+export function copyFromSrcToDest(
+  srcDir: string,
+  destDir: string,
+  editFn?: (
+    relativePath: string,
+    content: string
+  ) => { content: string | null; destName?: string } | string | null,
+  baseDir = '/',
+  topLevel = true,
+  destNotRemovePaths: string[] = []
+) {
+  const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = path.join(srcDir, entry.name);
+    const relativePath = path.relative(baseDir, srcPath);
+
+    if (entry.isDirectory()) {
+      // Recursively copy the directory
+      const newDestDir = path.join(destDir, entry.name);
+      if (!fs.existsSync(newDestDir)) {
+        fs.mkdirSync(newDestDir, { recursive: true });
+      }
+      copyFromSrcToDest(srcPath, newDestDir, editFn, baseDir, false);
+    } else {
+      const content = fs.readFileSync(srcPath, "utf-8");
+      const result = editFn ? editFn(relativePath, content) : content;
+
+      // If editFn returns null, skip this file.
+      if (result === null) continue;
+
+      let newContent: string | null;
+      let destName: string | undefined;
+      if (typeof result === "string") {
+        newContent = result;
+      } else {
+        newContent = result.content;
+        destName = result.destName;
+        if (newContent === null) continue;
+      }
+
+      // Determine the destination file name: if overridden, use that.
+      const finalDestName = destName || entry.name;
+      const destPath = path.join(destDir, finalDestName);
+
+      // Ensure the destination parent directory exists.
+      const destParent = path.dirname(destPath);
+      if (!fs.existsSync(destParent)) {
+        fs.mkdirSync(destParent, { recursive: true });
+      }
+
+      writeFileSyncIfChanged(destPath, newContent);
+    }
+  }
+
+  removeExtraneousDestItems(srcDir, destDir, destNotRemovePaths, baseDir);
+
+  if (topLevel) {
+    removeEmptyFolders(destDir);
+  }
 }
