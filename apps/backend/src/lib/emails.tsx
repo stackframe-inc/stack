@@ -64,6 +64,7 @@ export type EmailConfig = {
 }
 
 type SendEmailOptions = {
+  tenancyId: string,
   emailConfig: EmailConfig,
   to: string | string[],
   subject: string,
@@ -265,6 +266,7 @@ export async function sendEmailFromTemplate(options: {
   const { subject, html, text } = renderEmailTemplate(template.subject, template.content, variables);
 
   await sendEmail({
+    tenancyId: options.tenancy.id,
     emailConfig: await getEmailConfig(options.tenancy),
     to: options.email,
     subject,

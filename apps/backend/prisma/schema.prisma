@@ -926,26 +926,3 @@ model EventIpInfo {
 }
 
 //#endregion
-
-model SentEmail {
-  tenancyId String @db.Uuid
-
-  id String @default(uuid()) @db.Uuid
-
-  userId String? @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  senderConfig Json
-  to           String[]
-  subject      String
-  html         String?
-  text         String?
-
-  error   Json?
-  tenancy Tenancy      @relation(fields: [tenancyId], references: [id])
-  user    ProjectUser? @relation(fields: [tenancyId, userId], references: [tenancyId, projectUserId])
-
-  @@id([tenancyId, id])
-}
