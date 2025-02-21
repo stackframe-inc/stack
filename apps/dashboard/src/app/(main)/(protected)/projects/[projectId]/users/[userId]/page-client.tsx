@@ -220,7 +220,7 @@ function MetadataEditor({ title, initialValue, onUpdate, hint }: MetadataEditorP
           setValue(formatJson(initialValue));
           setHasChanged(false);
         }}>
-          Revert
+        Revert
       </Button>
       <Button
         variant={isJson ? "default" : "secondary"}
