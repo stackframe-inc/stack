@@ -72,7 +72,7 @@ type SendEmailOptions = {
   text?: string,
 }
 
-export async function sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
+async function _sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
   rawError: any,
   errorType: string,
   canRetry: boolean,
@@ -220,6 +220,27 @@ export async function sendEmailWithoutRetries(options: SendEmailOptions): Promis
   } finally {
     finished = true;
   }
+}
+
+export async function sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
+  rawError: any,
+  errorType: string,
+  canRetry: boolean,
+  message?: string,
+}>> {
+  const res = await _sendEmailWithoutRetries(options);
+  await prismaClient.sentEmail.create({
+    data: {
+      tenancyId: options.tenancyId,
+      to: typeof options.to === 'string' ? [options.to] : options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+      senderConfig: options.emailConfig,
+      error: res.status === 'error' ? res.error : undefined,
+    },
+  });
+  return res;
 }
 
 export async function sendEmail(options: SendEmailOptions) {
