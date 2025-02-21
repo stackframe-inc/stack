@@ -72,7 +72,7 @@ type SendEmailOptions = {
   text?: string,
 }
 
-export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): Promise<Result<undefined, {
+export async function sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
   rawError: any,
   errorType: string,
   canRetry: boolean,
@@ -224,7 +224,7 @@ export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): P
 
 export async function sendEmail(options: SendEmailOptions) {
   return Result.orThrow(await Result.retry(async (attempt) => {
-    const result = await sendEmailWithKnownErrorTypes(options);
+    const result = await sendEmailWithoutRetries(options);
 
     if (result.status === 'error') {
       const extraData = {
