@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
 import yaml from "yaml";
-import { writeFileSyncIfChanged } from "./utils";
+import { copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
 
 interface DocObject {
   platform?: string;
   [key: string]: any;
 }
 
-function processDocObject(obj: any, env: string): any {
+function processDocObject(obj: any, platform: string): any {
   // If not an object, return as is
   if (typeof obj !== 'object' || obj === null) {
     return obj;
@@ -17,27 +17,27 @@ function processDocObject(obj: any, env: string): any {
   // Handle arrays
   if (Array.isArray(obj)) {
     return obj
-      .map(item => processDocObject(item, env))
+      .map(item => processDocObject(item, platform))
       .filter(item => item !== null);
   }
 
   // Handle objects
   const docObj = obj as DocObject;
   
-  // If object has platform and it doesn't match current env, exclude it
+  // If object has platform and it doesn't match current platform, exclude it
   if (docObj.platform) {
-    if (docObj.platform !== env) {
+    if (docObj.platform !== platform) {
       return null;
     }
     // Remove the platform field from the output
-    const { platform, ...rest } = docObj;
+    const { platform: _, ...rest } = docObj;
     obj = rest;
   }
 
   // Recursively process all properties
   const result: { [key: string]: any } = {};
   for (const [key, value] of Object.entries(obj)) {
-    const processed = processDocObject(value, env);
+    const processed = processDocObject(value, platform);
     if (processed !== null) {
       result[key] = processed;
     }
@@ -47,24 +47,33 @@ function processDocObject(obj: any, env: string): any {
 }
 
 const docsDir = path.resolve(__dirname, "..", "docs", "fern");
-const templatePath = path.join(docsDir, "docs-template.yml");
+const templateDir = path.join(docsDir, "docs-template");
+const ymlTemplatePath = path.join(docsDir, "docs-template.yml");
 
-// Read and parse the template
-const templateContent = fs.readFileSync(templatePath, "utf-8");
-const template = yaml.parse(templateContent);
+// Generate for each platform
+const platforms = ["js", "next"];
 
-// Generate for each environment
-const environments = ["js", "next"];
+for (const platform of platforms) {
+  const destDir = path.join(docsDir, `docs-${platform}`);
 
-for (const env of environments) {
-  // Process the template for this environment
-  const processed = processDocObject(template, env);
-  
-  // Convert back to YAML
+  // Copy the entire template directory, processing macros for each file
+  copyFromSrcToDest(
+    templateDir,
+    destDir,
+    (relativePath, content) => {
+      // Apply macros processing to all files
+      const macroProcessed = processMacros(content, [platform]);
+      return macroProcessed;
+    }
+  );
+
+  // Also generate the legacy single yml file for backwards compatibility
+  const mainYmlContent = fs.readFileSync(ymlTemplatePath, "utf-8");
+  const macroProcessed = processMacros(mainYmlContent, [platform]);
+  const template = yaml.parse(macroProcessed);
+  const processed = processDocObject(template, platform);
   const output = yaml.stringify(processed);
   
-  // Write to environment-specific file
-  const outputPath = path.join(docsDir, `${env}.yml`);
-  writeFileSyncIfChanged(outputPath, output);
+  writeFileSyncIfChanged(path.join(docsDir, `${platform}.yml`), output);
 }
 

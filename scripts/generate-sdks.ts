@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { ALL_ENVS, COMMENT_LINE, copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
+import { COMMENT_LINE, PLATFORMS, copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
 
 /**
  * Main function to generate from a template:
@@ -126,7 +126,7 @@ const packageTemplateContent = fs.readFileSync(
   path.join(srcDir, "package-template.json"),
   "utf-8"
 );
-const processedPackageJson = processMacros(packageTemplateContent, ALL_ENVS);
+const processedPackageJson = processMacros(packageTemplateContent, PLATFORMS["template"]);
 const packageJson = JSON.parse(processedPackageJson);
 const packageJsonWithComment = {
   "//": COMMENT_LINE,
@@ -166,8 +166,7 @@ generateFromTemplate({
       return null;
     }
 
-    // Apply macros for the "js" environment.
-    return processMacros(content, ["js"]);
+    return processMacros(content, PLATFORMS["js"]);
   },
 });
 
@@ -178,8 +177,7 @@ generateFromTemplate({
   editFn: (relativePath, content) => {
     // Skip files in the generated folder.
     if (relativePath.startsWith("src/generated")) return null;
-
-    // Apply macros for the "next" and "react-like" environments.
-    return processMacros(content, ["next", "react-like"]);
+    
+    return processMacros(content, PLATFORMS["next"]);
   },
 });

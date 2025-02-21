@@ -1,10 +1,16 @@
 import fs from "fs";
 import path from "path";
+
+
 export const COMMENT_LINE = "THIS FILE IS AUTO-GENERATED FROM TEMPLATE. DO NOT EDIT IT DIRECTLY";
-export const ALL_ENVS = ["next", "react-like", "js", "template"];
+export const PLATFORMS = {
+  "next": ['next', 'react-like'],
+  "js": ['js'],
+  "template": ['template', 'react-like', 'next', 'js']
+}
 
 
-export function processMacros(content: string, envs: string[]): string {
+export function processMacros(content: string, platforms: string[]): string {
   const lines = content.split('\n');
   const result: string[] = [];
 
@@ -82,11 +88,11 @@ export function processMacros(content: string, envs: string[]): string {
   }
 
   /**
-   * Parse environment tokens from a directive substring (the part after IF_PLATFORM, ELSE_IF_PLATFORM, etc.).
+   * Parse platform tokens from a directive substring (the part after IF_PLATFORM, ELSE_IF_PLATFORM, etc.).
    * We do a basic split on whitespace, then remove punctuation except for letters/numbers/hyphens.
    */
-  function parseEnvList(envString: string): string[] {
-    return envString
+  function parsePlatformList(platform: string): string[] {
+    return platform
       .split(/\s+/)
       .map((e) => e.trim().toLowerCase().replace(/[^a-z0-9-]/g, ''))
       .filter(Boolean);
@@ -103,7 +109,7 @@ export function processMacros(content: string, envs: string[]): string {
    * And then capture everything after that keyword up to the end of the line.
    *
    * Examples:
-   *   "blah blah IF_PLATFORM env1 env2 ???"  => captures "env1 env2 ???"
+   *   "blah blah IF_PLATFORM platform1 platform2 ???"  => captures "platform platform2 ???"
    *   "adsfasdf ELSE_PLATFORM blabla"         => captures "blabla"
    */
   const reBeginOnly = /\bIF_PLATFORM\s+(.+)/i;
@@ -130,8 +136,8 @@ export function processMacros(content: string, envs: string[]): string {
           isActive: false
         });
       } else {
-        const envList = parseEnvList(beginMatch[1]); // e.g. "env1 env2 ???"
-        const matched = envList.some((e) => envs.includes(e));
+        const platformList = parsePlatformList(beginMatch[1]); // e.g. "platform1 platform2 ???"
+        const matched = platformList.some((e) => platforms.includes(e));
         skipStack.push({
           type: 'IF_BLOCK',
           parentActive: true,
@@ -152,12 +158,12 @@ export function processMacros(content: string, envs: string[]): string {
           // Parent block is inactive => do nothing
         } else {
           // If block.hasMatched is true, we've already used an if/else if
-          // If not, we check if the environment matches
+          // If not, we check if the platform matches
           if (block.hasMatched) {
             block.isActive = false;
           } else {
-            const envList = parseEnvList(elseIfMatch[1]);
-            const matched = envList.some((e) => envs.includes(e));
+            const platformList = parsePlatformList(elseIfMatch[1]);
+            const matched = platformList.some((e) => platforms.includes(e));
             if (matched) {
               block.hasMatched = true;
               block.isActive = true;
@@ -208,8 +214,8 @@ export function processMacros(content: string, envs: string[]): string {
     // 5) Try detecting NEXT_LINE_PLATFORM ...
     const nextLineMatch = line.match(reNextLine);
     if (nextLineMatch) {
-      const envList = parseEnvList(nextLineMatch[1]);
-      const matched = envList.some((e) => envs.includes(e));
+      const platformList = parsePlatformList(nextLineMatch[1]);
+      const matched = platformList.some((e) => platforms.includes(e));
       if (!matched) {
         skipStack.push('NEXT_LINE');
       }
