@@ -16,8 +16,8 @@ export class MicrosoftProvider extends OAuthBaseProvider {
   }) {
     const tenantId = encodeURIComponent(options.microsoftTenantId || "consumers");
     return new MicrosoftProvider(...await OAuthBaseProvider.createConstructorArgs({
-      // Note that it is intentional to have tenantid instead of tenantId, also intentional to not be a template literal.
-      // This will be replaced by the openid-client library. The package patch is applied to enable aadIssValidation for this
+      // Note that it is intentional to have tenantid instead of tenantId, also intentional to not be a template literal. This will be replaced by the openid-client library.
+      // The library only supports azure tenancy with the discovery endpoint but not the manual setup, so we patch it to enable the tenantid replacement.
       issuer: "https://login.microsoftonline.com/{tenantid}/v2.0",
       authorizationEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
       tokenEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
