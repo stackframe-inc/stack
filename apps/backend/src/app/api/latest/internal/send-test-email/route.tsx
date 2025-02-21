@@ -1,4 +1,4 @@
-import { isSecureEmailPort, sendEmailWithKnownErrorTypes } from "@/lib/emails";
+import { isSecureEmailPort, sendEmailWithoutRetries } from "@/lib/emails";
 import { createSmartRouteHandler } from "@/route-handlers/smart-route-handler";
 import * as schemaFields from "@stackframe/stack-shared/dist/schema-fields";
 import { adaptSchema, adminAuthTypeSchema, emailSchema, yupBoolean, yupNumber, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
@@ -34,8 +34,9 @@ export const POST = createSmartRouteHandler({
       error_message: yupString().optional(),
     }).defined(),
   }),
-  handler: async ({ body }) => {
-    const result = await sendEmailWithKnownErrorTypes({
+  handler: async ({ body, auth }) => {
+    const result = await sendEmailWithoutRetries({
+      tenancyId: auth.tenancy.id,
       emailConfig: {
         type: 'standard',
         host: body.email_config.host,
