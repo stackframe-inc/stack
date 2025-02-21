@@ -1,8 +1,10 @@
 import { prismaClient } from '@/prisma-client';
+import { Prisma } from '@prisma/client';
 import { KnownErrors } from '@stackframe/stack-shared';
 import { yupNumber, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
 import { generateSecureRandomString } from '@stackframe/stack-shared/dist/utils/crypto';
 import { getEnvVariable } from '@stackframe/stack-shared/dist/utils/env';
+import { throwErr } from '@stackframe/stack-shared/dist/utils/errors';
 import { legacySignGlobalJWT, legacyVerifyGlobalJWT, signJWT, verifyJWT } from '@stackframe/stack-shared/dist/utils/jwt';
 import { Result } from '@stackframe/stack-shared/dist/utils/results';
 import * as jose from 'jose';
@@ -107,14 +109,24 @@ export async function createAuthTokens(options: {
     userId: options.projectUserId,
   });
 
-  await prismaClient.projectUserRefreshToken.create({
-    data: {
-      tenancyId: options.tenancy.id,
-      projectUserId: options.projectUserId,
-      refreshToken: refreshToken,
-      expiresAt: options.expiresAt,
-    },
-  });
+  try {
+    await prismaClient.projectUserRefreshToken.create({
+      data: {
+        tenancyId: options.tenancy.id,
+        projectUserId: options.projectUserId,
+        refreshToken: refreshToken,
+        expiresAt: options.expiresAt,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      throwErr(new Error(
+        `prisma.projectUserRefreshToken.create() failed for tenancyId ${options.tenancy.id} and projectUserId ${options.projectUserId}: ${error.message}`,
+        { cause: error }
+      ));
+    }
+    throw error;
+  }
 
   return { refreshToken, accessToken };
 }

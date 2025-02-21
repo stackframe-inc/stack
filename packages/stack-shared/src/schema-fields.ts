@@ -245,7 +245,7 @@ export const passwordSchema = yupString().max(70);
  * `emailSchema` instead until we do the DB migration.
  */
 // eslint-disable-next-line no-restricted-syntax
-export const strictEmailSchema = (message: string | undefined) => yupString().email(message).matches(/^.*@.*\.[^.][^.]+$/, message);
+export const strictEmailSchema = (message: string | undefined) => yupString().email(message).matches(/^[^.].*@.*\.[^.][^.]+$/, message);
 // eslint-disable-next-line no-restricted-syntax
 export const emailSchema = yupString().email();
 
