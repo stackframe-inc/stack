@@ -69,6 +69,7 @@ function Inner (props: Props) {
   const project = props.mockProject || projectFromHook;
   const { t } = useTranslation();
 
+
   useEffect(() => {
     if (props.automaticRedirect) {
       if (user && !props.mockProject) {

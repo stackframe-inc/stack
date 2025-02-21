@@ -2,7 +2,7 @@
 
 import { BrandIcons, Button } from '@stackframe/stack-ui';
 import Color from 'color';
-import { useId } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useStackApp } from '..';
 import { useTranslation } from '../lib/translations';
 
@@ -25,6 +25,11 @@ export function OAuthButton({
   const { t } = useTranslation();
   const stackApp = useStackApp();
   const styleId = useId().replaceAll(':', '-');
+
+  const [lastUsed, setLastUsed] = useState<string | null>(null);
+  useEffect(() => {
+    setLastUsed(localStorage.getItem('_STACK_AUTH.lastUsed'));
+  }, []);
 
   let style : {
     backgroundColor?: string,
@@ -161,9 +166,17 @@ export function OAuthButton({
     <>
       <style>{styleSheet}</style>
       <Button
-        onClick={() => stackApp.signInWithOAuth(provider)}
-        className={`stack-oauth-button-${styleId} stack-scope`}
+        onClick={async () => {
+          localStorage.setItem('_STACK_AUTH.lastUsed', provider);
+          await stackApp.signInWithOAuth(provider);
+        }}
+        className={`stack-oauth-button-${styleId} stack-scope relative`}
       >
+        {lastUsed === provider && (
+          <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-md">
+            last
+          </span>
+        )}
         <div className='flex items-center w-full gap-4'>
           {style.icon}
           <span className='flex-1'>
