@@ -46,26 +46,25 @@ function processDocObject(obj: any, env: string): any {
   return result;
 }
 
-export function generateDocs() {
-  const docsDir = path.resolve(__dirname, "..", "docs", "fern");
-  const templatePath = path.join(docsDir, "docs-template.yml");
-  
-  // Read and parse the template
-  const templateContent = fs.readFileSync(templatePath, "utf-8");
-  const template = yaml.parse(templateContent);
+const docsDir = path.resolve(__dirname, "..", "docs", "fern");
+const templatePath = path.join(docsDir, "docs-template.yml");
 
-  // Generate for each environment
-  const environments = ["js", "next"];
+// Read and parse the template
+const templateContent = fs.readFileSync(templatePath, "utf-8");
+const template = yaml.parse(templateContent);
+
+// Generate for each environment
+const environments = ["js", "next"];
+
+for (const env of environments) {
+  // Process the template for this environment
+  const processed = processDocObject(template, env);
   
-  for (const env of environments) {
-    // Process the template for this environment
-    const processed = processDocObject(template, env);
-    
-    // Convert back to YAML
-    const output = yaml.stringify(processed);
-    
-    // Write to environment-specific file
-    const outputPath = path.join(docsDir, `${env}.yml`);
-    writeFileSyncIfChanged(outputPath, output);
-  }
+  // Convert back to YAML
+  const output = yaml.stringify(processed);
+  
+  // Write to environment-specific file
+  const outputPath = path.join(docsDir, `${env}.yml`);
+  writeFileSyncIfChanged(outputPath, output);
 }
+
