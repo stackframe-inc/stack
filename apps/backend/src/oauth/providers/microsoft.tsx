@@ -14,12 +14,15 @@ export class MicrosoftProvider extends OAuthBaseProvider {
     clientSecret: string,
     microsoftTenantId?: string,
   }) {
+    const tenantId = encodeURIComponent(options.microsoftTenantId || "consumers");
     return new MicrosoftProvider(...await OAuthBaseProvider.createConstructorArgs({
-      issuer: `https://login.microsoftonline.com${"/" + options.microsoftTenantId || ""}`,
-      authorizationEndpoint: `https://login.microsoftonline.com/${options.microsoftTenantId || 'consumers'}/oauth2/v2.0/authorize`,
-      tokenEndpoint: `https://login.microsoftonline.com/${options.microsoftTenantId || 'consumers'}/oauth2/v2.0/token`,
+      issuer: "https://login.microsoftonline.com/{tenantid}/v2.0",
+      authorizationEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+      tokenEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
       redirectUri: getEnvVariable("NEXT_PUBLIC_STACK_API_URL") + "/api/v1/auth/oauth/callback/microsoft",
-      baseScope: "User.Read",
+      baseScope: "User.Read openid",
+      openid: true,
+      jwksUri: `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`,
       ...options,
     }));
   }
