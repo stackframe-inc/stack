@@ -222,29 +222,61 @@ export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): P
 }
 
 export async function sendEmail(options: SendEmailOptions) {
-  return Result.orThrow(await Result.retry(async (attempt) => {
-    const result = await sendEmailWithKnownErrorTypes(options);
+  try {
+    const res = Result.orThrow(await Result.retry(async (attempt) => {
+      const result = await sendEmailWithKnownErrorTypes(options);
 
-    if (result.status === 'error') {
-      const extraData = {
-        host: options.emailConfig.host,
-        from: options.emailConfig.senderEmail,
-        to: options.to,
-        subject: options.subject,
-        cause: result.error.rawError,
-      };
+      if (result.status === 'error') {
+        const extraData = {
+          host: options.emailConfig.host,
+          from: options.emailConfig.senderEmail,
+          to: options.to,
+          subject: options.subject,
+          cause: result.error.rawError,
+        };
 
-      if (result.error.canRetry) {
-            console.warn("Failed to send email, but error is possibly transient so retrying.", extraData, result.error.rawError);
-            return Result.error(result.error);
+        if (result.error.canRetry) {
+              console.warn("Failed to send email, but error is possibly transient so retrying.", extraData, result.error.rawError);
+              return Result.error(result.error);
+        }
+
+        // TODO if using custom email config, we should notify the developer instead of throwing an error
+        throw new StackAssertionError('Failed to send email', extraData);
       }
 
-      // TODO if using custom email config, we should notify the developer instead of throwing an error
-      throw new StackAssertionError('Failed to send email', extraData);
-    }
+      return result;
+    }, 3, { exponentialDelayBase: 2000 }));
+    await prismaClient.event.create({
+      data: {
+        isWide: false,
+        eventStartedAt: new Date(),
+        eventEndedAt: new Date(),
+        data: {
+          event: 'email-send-success',
+          to: options.to,
+          subject: options.subject,
+        },
+      }
+    });
+    return res;
+  } catch (error: any) {
+    await prismaClient.event.create({
+      data: {
+        isWide: false,
+        eventStartedAt: new Date(),
+        eventEndedAt: new Date(),
+        data: {
+          event: 'email-send-failure',
+          to: options.to,
+          subject: options.subject,
+          error: error.message,
+        },
+      }
+    });
+    captureError("email-send-failed", error);
+    throw error;
+  }
 
-    return result;
-  }, 3, { exponentialDelayBase: 2000 }));
 }
 
 export async function sendEmailFromTemplate(options: {
