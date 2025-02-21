@@ -126,7 +126,7 @@ export function GlobeSection({ countryData, totalUsers, children }: {countryData
         setErrorRefreshCount(e => e + 1);
         if (process.env.NODE_ENV === "development") {
           setTimeout(() => {
-            alert("Globe rendering error — it has now been refreshed. TODO let's fix this")
+            alert("Globe rendering error — it has now been refreshed. TODO let's fix this");
           }, 1000);
         }
       }
@@ -303,7 +303,7 @@ export function GlobeSection({ countryData, totalUsers, children }: {countryData
                   100% {box-shadow: 0 0 0 8px #0000}
               }
             `}</style>
-            LIVE
+          LIVE
         </div>
       </div>
     </div>
