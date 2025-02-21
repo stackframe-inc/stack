@@ -6,7 +6,7 @@ import { EMAIL_TEMPLATES_METADATA, renderEmailTemplate } from '@stackframe/stack
 import { UsersCrud } from '@stackframe/stack-shared/dist/interface/crud/users';
 import { getEnvVariable } from '@stackframe/stack-shared/dist/utils/env';
 import { StackAssertionError, captureError } from '@stackframe/stack-shared/dist/utils/errors';
-import { filterUndefined, pick } from '@stackframe/stack-shared/dist/utils/objects';
+import { filterUndefined, omit, pick } from '@stackframe/stack-shared/dist/utils/objects';
 import { runAsynchronously, wait } from '@stackframe/stack-shared/dist/utils/promises';
 import { Result } from '@stackframe/stack-shared/dist/utils/results';
 import { typedToUppercase } from '@stackframe/stack-shared/dist/utils/strings';
@@ -236,7 +236,7 @@ export async function sendEmailWithoutRetries(options: SendEmailOptions): Promis
       subject: options.subject,
       html: options.html,
       text: options.text,
-      senderConfig: options.emailConfig,
+      senderConfig: omit(options.emailConfig, ['password']),
       error: res.status === 'error' ? res.error : undefined,
     },
   });
