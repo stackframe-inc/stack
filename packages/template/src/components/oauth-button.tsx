@@ -29,7 +29,7 @@ export function OAuthButton({
   const [lastUsed, setLastUsed] = useState<string | null>(null);
   useEffect(() => {
     setLastUsed(localStorage.getItem('_STACK_AUTH.lastUsed'));
-  });
+  }, []);
 
   let style : {
     backgroundColor?: string,
