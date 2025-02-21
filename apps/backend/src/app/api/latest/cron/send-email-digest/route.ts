@@ -1,3 +1,4 @@
+import { sendEmailFromTemplate } from "@/lib/emails";
 import { prismaClient } from "@/prisma-client";
 import { Project } from "@prisma/client";
 import { getEnvVariable } from "@stackframe/stack-shared/dist/utils/env";
@@ -66,7 +67,21 @@ export async function GET(request: Request) {
       }
     });
   }));
-  const users = usersBase.flat();
+
+  await Promise.all(usersBase.flat().map(async (user) => {
+    if (user.contactChannels.length === 0) {
+      return;
+    }
+    const contactChannel = user.contactChannels[0];
+    // TODO: Fill in the rest
+    await sendEmailFromTemplate({
+      tenancy: {} as any,
+      templateType: 'email-digest' as any,
+      user: user as any,
+      email: contactChannel.value,
+      extraVariables: {},
+    });
+  }));
 
   return Response.json({ success: true });
 }
