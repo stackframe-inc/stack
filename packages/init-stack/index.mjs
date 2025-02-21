@@ -425,7 +425,7 @@ import { Stack${clientOrServerCap}App } from ${JSON.stringify(packageName)};
 export const stack${clientOrServerCap}App = new Stack${clientOrServerCap}App({
 ${indentation}tokenStore: ${type === "next" ? '"nextjs-cookie"' : (clientOrServer === "client" ? '"cookie"' : '"memory"')},${
 type === "js" ? `\n\n${indentation}// get your Stack Auth API keys from https://app.stack-auth.com${clientOrServer === "client" ? ` and store them in a safe place (eg. environment variables)` : ""}` : ""}${
-type === "js" ? `\n${indentation}publishableClientKey: ${clientOrServer === "server" ? 'process.env.STACK_PUBLISHABLE_CLIENT_KEY' : 'INSERT_YOUR_PUBLISHABLE_CLIENT_KEY_HERE'}` : ""},${
+type === "js" ? `\n${indentation}publishableClientKey: ${clientOrServer === "server" ? 'process.env.STACK_PUBLISHABLE_CLIENT_KEY' : 'INSERT_YOUR_PUBLISHABLE_CLIENT_KEY_HERE'},` : ""}${
 type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey: process.env.STACK_SECRET_SERVER_KEY,` : ""}
 });
       `.trim() + "\n"
@@ -449,7 +449,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     }
     laterWriteFileIfNotExists(
       handlerPath,
-      `\nimport { stackServerApp } from "../../../stack";\n\nexport default function Handler(props${
+      `import { StackHandler } from "@stackframe/stack";\nimport { stackServerApp } from "../../../stack";\n\nexport default function Handler(props${
         handlerFileExtension.includes("ts") ? ": unknown" : ""
       }) {\n${projectInfo.indentation}return <StackHandler fullPage app={stackServerApp} routeProps={props} />;\n}\n`
     );
