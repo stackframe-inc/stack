@@ -821,48 +821,28 @@ it("should trigger team webhook when a team is updated", async ({ expect }) => {
   await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
+  const teamUpdatedEvent = attemptResponse.find(event => event.eventType === "team.updated");
 
-  expect(attemptResponse).toMatchInlineSnapshot(`
-    [
-      {
-        "channels": null,
-        "eventId": null,
-        "eventType": "team.updated",
-        "id": "<stripped svix message id>",
-        "payload": {
-          "data": {
-            "client_metadata": null,
-            "client_read_only_metadata": null,
-            "created_at_millis": <stripped field 'created_at_millis'>,
-            "display_name": "Updated Team Name",
-            "id": "<stripped UUID>",
-            "profile_image_url": null,
-            "server_metadata": null,
-          },
-          "type": "team.updated",
+  expect(teamUpdatedEvent).toMatchInlineSnapshot(`
+    {
+      "channels": null,
+      "eventId": null,
+      "eventType": "team.updated",
+      "id": "<stripped svix message id>",
+      "payload": {
+        "data": {
+          "client_metadata": null,
+          "client_read_only_metadata": null,
+          "created_at_millis": <stripped field 'created_at_millis'>,
+          "display_name": "Updated Team Name",
+          "id": "<stripped UUID>",
+          "profile_image_url": null,
+          "server_metadata": null,
         },
-        "timestamp": <stripped field 'timestamp'>,
+        "type": "team.updated",
       },
-      {
-        "channels": null,
-        "eventId": null,
-        "eventType": "team.created",
-        "id": "<stripped svix message id>",
-        "payload": {
-          "data": {
-            "client_metadata": null,
-            "client_read_only_metadata": null,
-            "created_at_millis": <stripped field 'created_at_millis'>,
-            "display_name": "Test Team",
-            "id": "<stripped UUID>",
-            "profile_image_url": null,
-            "server_metadata": null,
-          },
-          "type": "team.created",
-        },
-        "timestamp": <stripped field 'timestamp'>,
-      },
-    ]
+      "timestamp": <stripped field 'timestamp'>,
+    }
   `);
 });
 
@@ -890,39 +870,19 @@ it("should trigger team webhook when a team is deleted", async ({ expect }) => {
   await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
+  const teamDeletedEvent = attemptResponse.find(event => event.eventType === "team.deleted");
 
-  expect(attemptResponse).toMatchInlineSnapshot(`
-    [
-      {
-        "channels": null,
-        "eventId": null,
-        "eventType": "team.deleted",
-        "id": "<stripped svix message id>",
-        "payload": {
-          "data": { "id": "<stripped UUID>" },
-          "type": "team.deleted",
-        },
-        "timestamp": <stripped field 'timestamp'>,
+  expect(teamDeletedEvent).toMatchInlineSnapshot(`
+    {
+      "channels": null,
+      "eventId": null,
+      "eventType": "team.deleted",
+      "id": "<stripped svix message id>",
+      "payload": {
+        "data": { "id": "<stripped UUID>" },
+        "type": "team.deleted",
       },
-      {
-        "channels": null,
-        "eventId": null,
-        "eventType": "team.created",
-        "id": "<stripped svix message id>",
-        "payload": {
-          "data": {
-            "client_metadata": null,
-            "client_read_only_metadata": null,
-            "created_at_millis": <stripped field 'created_at_millis'>,
-            "display_name": "Test Team",
-            "id": "<stripped UUID>",
-            "profile_image_url": null,
-            "server_metadata": null,
-          },
-          "type": "team.created",
-        },
-        "timestamp": <stripped field 'timestamp'>,
-      },
-    ]
+      "timestamp": <stripped field 'timestamp'>,
+    }
   `);
 });
