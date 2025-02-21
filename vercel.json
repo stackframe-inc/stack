@@ -3,5 +3,8 @@
     "**/*": {
       "maxDuration": 300
     }
+  },
+  "crons": {
+    "0 0 * * *": "/api/v1/cron/send-email-digest"
   }
 }
