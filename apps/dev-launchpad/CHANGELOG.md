@@ -1,5 +1,13 @@
 # @stackframe/dev-launchpad
 
+## 2.7.18
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.17
+
 ## 2.7.16
 
 ## 2.7.15

@@ -1,8 +1,6 @@
+import { wait } from "@stackframe/stack-shared/dist/utils/promises";
 import { it } from "../../../../helpers";
-import { Auth, Team, Webhook, bumpEmailAddress, niceBackendFetch } from "../../../backend-helpers";
-
-
-import { ApiKey, InternalProjectKeys, Project, backendContext } from "../../../backend-helpers";
+import { ApiKey, Auth, InternalProjectKeys, Project, Team, Webhook, backendContext, bumpEmailAddress, niceBackendFetch } from "../../../backend-helpers";
 
 
 it("is not allowed to add user to team on client", async ({ expect }) => {
@@ -544,7 +542,7 @@ it("should trigger team membership webhook when a user is added to a team", asyn
 
   expect(addUserResponse.status).toBe(201);
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -673,7 +671,7 @@ it("should trigger team membership webhook when a user is removed from a team", 
 
   expect(removeUserResponse.status).toBe(200);
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -817,7 +815,7 @@ it("should trigger team membership webhook when a user is removed from a team", 
 
   expect(removeUserResponse.status).toBe(200);
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 

@@ -1,4 +1,5 @@
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
+import { wait } from "@stackframe/stack-shared/dist/utils/promises";
 import { describe } from "vitest";
 import { STACK_BACKEND_BASE_URL, it } from "../../../../helpers";
 import { Auth, InternalProjectKeys, Project, Team, Webhook, backendContext, bumpEmailAddress, createMailbox, niceBackendFetch } from "../../../backend-helpers";
@@ -1975,7 +1976,7 @@ describe("with server access", () => {
 
     expect(createUserResponse.status).toBe(201);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await wait(3000);
 
     const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -2040,7 +2041,7 @@ describe("with server access", () => {
 
     expect(updateUserResponse.status).toBe(200);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await wait(3000);
 
     const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -2133,7 +2134,7 @@ describe("with server access", () => {
 
     expect(deleteUserResponse.status).toBe(200);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await wait(3000);
 
     const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
