@@ -765,7 +765,7 @@ it("should trigger team webhook when a team is created", async ({ expect }) => {
     }
   `);
 
-  await wait(1000);
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -818,7 +818,7 @@ it("should trigger team webhook when a team is updated", async ({ expect }) => {
 
   expect(updateTeamResponse.status).toBe(200);
 
-  await wait(1000);
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
@@ -887,7 +887,7 @@ it("should trigger team webhook when a team is deleted", async ({ expect }) => {
 
   expect(deleteTeamResponse.status).toBe(200);
 
-  await wait(1000);
+  await wait(3000);
 
   const attemptResponse = await Webhook.listWebhookAttempts(projectId, endpointId, svixToken);
 
