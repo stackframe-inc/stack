@@ -1124,6 +1124,8 @@ export namespace Webhook {
       return messageResponse.body;
     }));
 
-    return messages;
+    return messages.sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
   }
 }

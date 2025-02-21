@@ -74,6 +74,7 @@ model Tenancy {
   authMethods       AuthMethod[]       @relation("TenancyAuthMethods")
   contactChannels   ContactChannel[]   @relation("TenancyContactChannels")
   connectedAccounts ConnectedAccount[] @relation("TenancyConnectedAccounts")
+  SentEmail         SentEmail[]
 
   @@unique([projectId, branchId, organizationId])
   @@unique([projectId, branchId, hasNoOrganization])
@@ -267,6 +268,7 @@ model ProjectUser {
   passkeyAuthMethod  PasskeyAuthMethod[]
   otpAuthMethod      OtpAuthMethod[]
   oauthAuthMethod    OAuthAuthMethod[]
+  SentEmail          SentEmail[]
 
   @@id([tenancyId, projectUserId])
   @@unique([mirroredProjectId, mirroredBranchId, projectUserId])
@@ -924,3 +926,26 @@ model EventIpInfo {
 }
 
 //#endregion
+
+model SentEmail {
+  tenancyId String @db.Uuid
+
+  id String @default(uuid()) @db.Uuid
+
+  userId String? @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  senderConfig Json
+  to           String[]
+  subject      String
+  html         String?
+  text         String?
+
+  error   Json?
+  tenancy Tenancy      @relation(fields: [tenancyId], references: [id])
+  user    ProjectUser? @relation(fields: [tenancyId, userId], references: [tenancyId, projectUserId])
+
+  @@id([tenancyId, id])
+}

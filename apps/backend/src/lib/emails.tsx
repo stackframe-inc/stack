@@ -6,7 +6,7 @@ import { EMAIL_TEMPLATES_METADATA, renderEmailTemplate } from '@stackframe/stack
 import { UsersCrud } from '@stackframe/stack-shared/dist/interface/crud/users';
 import { getEnvVariable } from '@stackframe/stack-shared/dist/utils/env';
 import { StackAssertionError, captureError } from '@stackframe/stack-shared/dist/utils/errors';
-import { filterUndefined, pick } from '@stackframe/stack-shared/dist/utils/objects';
+import { filterUndefined, omit, pick } from '@stackframe/stack-shared/dist/utils/objects';
 import { runAsynchronously, wait } from '@stackframe/stack-shared/dist/utils/promises';
 import { Result } from '@stackframe/stack-shared/dist/utils/results';
 import { typedToUppercase } from '@stackframe/stack-shared/dist/utils/strings';
@@ -72,7 +72,7 @@ type SendEmailOptions = {
   text?: string,
 }
 
-export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): Promise<Result<undefined, {
+async function _sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
   rawError: any,
   errorType: string,
   canRetry: boolean,
@@ -222,9 +222,30 @@ export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): P
   }
 }
 
+export async function sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
+  rawError: any,
+  errorType: string,
+  canRetry: boolean,
+  message?: string,
+}>> {
+  const res = await _sendEmailWithoutRetries(options);
+  await prismaClient.sentEmail.create({
+    data: {
+      tenancyId: options.tenancyId,
+      to: typeof options.to === 'string' ? [options.to] : options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+      senderConfig: omit(options.emailConfig, ['password']),
+      error: res.status === 'error' ? res.error : undefined,
+    },
+  });
+  return res;
+}
+
 export async function sendEmail(options: SendEmailOptions) {
   return Result.orThrow(await Result.retry(async (attempt) => {
-    const result = await sendEmailWithKnownErrorTypes(options);
+    const result = await sendEmailWithoutRetries(options);
 
     if (result.status === 'error') {
       const extraData = {
