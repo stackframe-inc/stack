@@ -279,40 +279,15 @@ function removeEmptyFolders(dir: string) {
   }
 }
 
-/**
- * Remove any files/directories in destDir that do not exist in srcDir.
- *
- * This function also accounts for the package-template.json -> package.json rename.
- */
-function removeExtraneousDestItems(srcDir: string, destDir: string, ignorePaths: string[], baseDir: string) {
-  if (!fs.existsSync(destDir)) return;
-
-  const destEntries = fs.readdirSync(destDir, { withFileTypes: true });
-
-  for (const entry of destEntries) {
-    const destPath = path.join(destDir, entry.name);
-
-    if (ignorePaths.includes(entry.name)) continue;
-
-    let correspondingSrc = path.join(srcDir, entry.name);
-
-    if (!fs.existsSync(correspondingSrc)) {
-      fs.rmSync(destPath, { recursive: true, force: true });
-    } else if (entry.isDirectory()) {
-      removeExtraneousDestItems(correspondingSrc, destPath, ignorePaths, baseDir);
-    }
-  }
-}
-
 export function copyFromSrcToDest(options: {
   srcDir: string;
   destDir: string;
   editFn?: (relativePath: string, content: string) => string;
   filterFn?: (relativePath: string) => boolean;
   destFn?: (relativePath: string) => string;
-  baseDir: string;
+  destRemoveSkipFn?: (relativePath: string) => boolean;
+  baseDir?: string;
   topLevel?: boolean;
-  destNotRemovePaths?: string[];
 }) {
   // Use srcDir as the default base directory so that relative paths are computed from the source root.
   const { 
@@ -321,9 +296,9 @@ export function copyFromSrcToDest(options: {
     editFn, 
     filterFn, 
     destFn, 
-    baseDir,
+    destRemoveSkipFn,
+    baseDir = srcDir,
     topLevel = true, 
-    destNotRemovePaths = [] 
   } = options;
 
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
@@ -332,7 +307,7 @@ export function copyFromSrcToDest(options: {
     const srcPath = path.join(srcDir, entry.name);
     const relativePath = path.relative(baseDir, srcPath);
 
-    // Skip entry if filterFn returns false
+    // Skip entry if filterFn returns false.
     if (filterFn && !filterFn(relativePath)) {
       continue;
     }
@@ -355,7 +330,7 @@ export function copyFromSrcToDest(options: {
         destFn,
         baseDir,
         topLevel: false,
-        destNotRemovePaths
+        destRemoveSkipFn,
       });
     } else {
       // Read file as a buffer so we can check if it’s binary.
@@ -376,10 +351,67 @@ export function copyFromSrcToDest(options: {
       }
     }
   }
-
-  // removeExtraneousDestItems(srcDir, destDir, destNotRemovePaths, baseDir);
-
-  // if (topLevel) {
-  //   removeEmptyFolders(destDir);
-  // }
+  
+  if (topLevel) {
+    // Build the set of expected destination paths from the source.
+    const expectedPaths = buildExpectedPaths(srcDir, baseDir, filterFn, destFn);
+    // Remove extraneous files/folders from the destination.
+    removeExtraneousFromDest(destDir, expectedPaths, destRemoveSkipFn);
+    // Clean up any empty folders left in the destination.
+    removeEmptyFolders(destDir);
+  }
 }
+
+// Helper function to build a set of expected destination relative paths from the source.
+function buildExpectedPaths(
+  srcDir: string,
+  baseDir: string,
+  filterFn?: (relativePath: string) => boolean,
+  destFn?: (relativePath: string) => string
+): Set<string> {
+  const expectedPaths = new Set<string>();
+
+  function walk(currentSrcDir: string) {
+    const entries = fs.readdirSync(currentSrcDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const srcPath = path.join(currentSrcDir, entry.name);
+      const relativePath = path.relative(baseDir, srcPath);
+      if (filterFn && !filterFn(relativePath)) continue;
+      const destRelativePath = destFn ? destFn(relativePath) : relativePath;
+      expectedPaths.add(destRelativePath);
+      if (entry.isDirectory()) {
+        walk(srcPath);
+      }
+    }
+  }
+
+  walk(srcDir);
+  return expectedPaths;
+}
+
+// Helper function to remove files and directories from the destination
+// that are not present in the expectedPaths set.
+function removeExtraneousFromDest(
+  destDir: string,
+  expectedPaths: Set<string>,
+  destRemoveSkipFn?: (relativePath: string) => boolean
+) {
+  function walk(currentDestDir: string) {
+    const entries = fs.readdirSync(currentDestDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(currentDestDir, entry.name);
+      // Compute the relative path with respect to destDir.
+      const relativePath = path.relative(destDir, fullPath);
+      // Skip paths that should not be removed.
+      if (destRemoveSkipFn && destRemoveSkipFn(relativePath)) continue;
+      if (!expectedPaths.has(relativePath)) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else if (entry.isDirectory()) {
+        walk(fullPath);
+      }
+    }
+  }
+
+  walk(destDir);
+}
+
