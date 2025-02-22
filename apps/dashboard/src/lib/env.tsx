@@ -1,9 +1,5 @@
 /* eslint-disable no-restricted-syntax */
 
-// hack to make sure process is defined in non-node environments
-// NEXT_LINE_PLATFORM js
-const process = (globalThis as any).process ?? { env: {} };
-
 const _inlineEnvVars = {
   NEXT_PUBLIC_STACK_API_URL: process.env.NEXT_PUBLIC_STACK_API_URL,
   NEXT_PUBLIC_BROWSER_STACK_API_URL: process.env.NEXT_PUBLIC_BROWSER_STACK_API_URL,
@@ -22,6 +18,7 @@ const _inlineEnvVars = {
   NEXT_PUBLIC_STACK_URL: process.env.NEXT_PUBLIC_STACK_URL,
   NEXT_PUBLIC_STACK_INBUCKET_WEB_URL: process.env.NEXT_PUBLIC_STACK_INBUCKET_WEB_URL,
 } as const;
+console.log(_inlineEnvVars);
 
 // This will be replaced with the actual env vars after a docker build
 const _postBuildEnvVars = {
