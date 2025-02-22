@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import yaml from "yaml";
-import { PLATFORMS, processMacros, writeFileSyncIfChanged } from "./utils";
+import { PLATFORMS, copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
 
 interface DocObject {
   platform?: string;
@@ -40,7 +40,7 @@ function processDocObject(obj: any, platform: string): any {
     const processed = processDocObject(value, platform);
     if (processed !== null) {
       if (typeof processed === 'string') {
-        result[key] = processed.replace(/{base}/g, `docs/pages`);
+        result[key] = processed.replace(/{base}/g, `docs/pages-${platform}`);
       } else {
         result[key] = processed;
       }
@@ -55,18 +55,16 @@ const templateDir = path.join(docsDir, "docs", "pages-template");
 const ymlTemplatePath = path.join(docsDir, "docs-template.yml");
 
 for (const platform of ["next", "js"]) {
-  const destDir = path.join(docsDir, 'docs', 'pages', `${platform}`);
+  const destDir = path.join(docsDir, 'docs', `pages-${platform}`);
 
   // Copy the entire template directory, processing macros for each file
-  // copyFromSrcToDest(
-  //   templateDir,
-  //   destDir,
-  //   (relativePath, content) => {
-  //     // Apply macros processing to all files
-  //     const macroProcessed = processMacros(content, PLATFORMS[platform]);
-  //     return macroProcessed;
-  //   }
-  // );
+  copyFromSrcToDest({
+    srcDir: templateDir,
+    destDir,
+    editFn: (relativePath, content) => {
+      return processMacros(content, PLATFORMS[platform]);
+    },
+  });
 
   // Also generate the legacy single yml file for backwards compatibility
   const mainYmlContent = fs.readFileSync(ymlTemplatePath, "utf-8");

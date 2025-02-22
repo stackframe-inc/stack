@@ -304,73 +304,82 @@ function removeExtraneousDestItems(srcDir: string, destDir: string, ignorePaths:
   }
 }
 
-/**
- * Copy all files/directories from srcDir to destDir (recursively).
- * Applies the provided `editFn` to each file’s content.
- *
- * The edit function can return:
- * - null to skip copying the file,
- * - a string (modified content), or
- * - an object { content: string, destName?: string } to optionally override the destination file name.
- */
-export function copyFromSrcToDest(
-  srcDir: string,
-  destDir: string,
-  editFn?: (
-    relativePath: string,
-    content: string
-  ) => { content: string | null; destName?: string } | string | null,
-  baseDir = '/',
-  topLevel = true,
-  destNotRemovePaths: string[] = []
-) {
+export function copyFromSrcToDest(options: {
+  srcDir: string;
+  destDir: string;
+  editFn?: (relativePath: string, content: string) => string;
+  filterFn?: (relativePath: string) => boolean;
+  destFn?: (relativePath: string) => string;
+  baseDir: string;
+  topLevel?: boolean;
+  destNotRemovePaths?: string[];
+}) {
+  // Use srcDir as the default base directory so that relative paths are computed from the source root.
+  const { 
+    srcDir, 
+    destDir, 
+    editFn, 
+    filterFn, 
+    destFn, 
+    baseDir,
+    topLevel = true, 
+    destNotRemovePaths = [] 
+  } = options;
+
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
   for (const entry of entries) {
     const srcPath = path.join(srcDir, entry.name);
     const relativePath = path.relative(baseDir, srcPath);
 
+    // Skip entry if filterFn returns false
+    if (filterFn && !filterFn(relativePath)) {
+      continue;
+    }
+
+    const destRelativePath = destFn ? destFn(relativePath) : relativePath;
+    const destPath = path.join(destDir, destRelativePath);
+    const destParent = path.dirname(destPath);
+
     if (entry.isDirectory()) {
-      // Recursively copy the directory
-      const newDestDir = path.join(destDir, entry.name);
-      if (!fs.existsSync(newDestDir)) {
-        fs.mkdirSync(newDestDir, { recursive: true });
+      // Optionally apply destFn to directories as well if provided.
+      if (!fs.existsSync(destPath)) {
+        fs.mkdirSync(destPath, { recursive: true });
       }
-      copyFromSrcToDest(srcPath, newDestDir, editFn, baseDir, false);
+
+      copyFromSrcToDest({
+        srcDir: srcPath,
+        destDir: destDir,
+        editFn,
+        filterFn,
+        destFn,
+        baseDir,
+        topLevel: false,
+        destNotRemovePaths
+      });
     } else {
-      const content = fs.readFileSync(srcPath, "utf-8");
-      const result = editFn ? editFn(relativePath, content) : content;
+      // Read file as a buffer so we can check if it’s binary.
+      const buffer = fs.readFileSync(srcPath);
+      const isBinary = buffer.includes(0);
 
-      // If editFn returns null, skip this file.
-      if (result === null) continue;
-
-      let newContent: string | null;
-      let destName: string | undefined;
-      if (typeof result === "string") {
-        newContent = result;
-      } else {
-        newContent = result.content;
-        destName = result.destName;
-        if (newContent === null) continue;
-      }
-
-      // Determine the destination file name: if overridden, use that.
-      const finalDestName = destName || entry.name;
-      const destPath = path.join(destDir, finalDestName);
-
-      // Ensure the destination parent directory exists.
-      const destParent = path.dirname(destPath);
       if (!fs.existsSync(destParent)) {
         fs.mkdirSync(destParent, { recursive: true });
       }
 
-      writeFileSyncIfChanged(destPath, newContent);
+      if (isBinary) {
+        fs.writeFileSync(destPath, buffer);
+      } else {
+        // For text files, allow modification via editFn.
+        const content = buffer.toString('utf-8');
+        const result = editFn ? editFn(relativePath, content) : content;
+        writeFileSyncIfChanged(destPath, result);
+      }
     }
   }
 
-  removeExtraneousDestItems(srcDir, destDir, destNotRemovePaths, baseDir);
+  // removeExtraneousDestItems(srcDir, destDir, destNotRemovePaths, baseDir);
 
-  if (topLevel) {
-    removeEmptyFolders(destDir);
-  }
+  // if (topLevel) {
+  //   removeEmptyFolders(destDir);
+  // }
 }

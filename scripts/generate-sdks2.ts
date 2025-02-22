@@ -24,50 +24,25 @@ function generateFromTemplate(options: {
   editFn?: (
     relativePath: string,
     content: string
-  ) => { content: string | null; destName?: string } | string | null;
+  ) => string,
+  filterFn?: (relativePath: string) => boolean,
+  destFn?: (relativePath: string) => string,
 }) {
-  const { src, dest, editFn: customEditFn } = options;
+  const { src, dest, editFn: customEditFn, filterFn, destFn } = options;
 
   // Composite edit function that applies the hard rules first,
   // then defers to any custom edit function.
   function compositeEditFn(
     relativePath: string,
     content: string
-  ): { content: string | null; destName?: string } | null {
-    // Global ignore rules.
-    const globalIgnores = ["node_modules", "dist", ".turbo", ".gitignore"];
-    for (const ignore of globalIgnores) {
-      if (relativePath.startsWith(ignore)) return null;
-    }
-
-    // Skip copying if the source file is package.json.
-    if (path.basename(relativePath) === "package.json") return null;
-
+  ): string {
     // If the file is package-template.json, mark it to be renamed.
     let destNameOverride: string | undefined;
     if (path.basename(relativePath) === "package-template.json") {
       destNameOverride = "package.json";
     }
 
-    // Apply the custom edit function if provided.
-    let result: string | { content: string | null; destName?: string } | null = content;
-    if (customEditFn) {
-      result = customEditFn(relativePath, content);
-      if (result === null) return null;
-    }
-
-    let newContent: string | null;
-    let customDestName: string | undefined;
-    if (typeof result === "string") {
-      newContent = result;
-    } else {
-      newContent = result.content;
-      customDestName = result.destName;
-      if (newContent === null) return null;
-    }
-
-    // Final destination name: override if needed.
-    const finalDestName = destNameOverride || customDestName;
+    let newContent: string = content;
 
     // For .tsx, .ts, or .js files, add header comments.
     if (/\.(tsx|ts|js)$/.test(relativePath)) {
@@ -92,27 +67,56 @@ function generateFromTemplate(options: {
         contentWithoutShebang;
     }
 
-    // If the resulting file is package.json (either originally or via renaming),
-    // add a comment field to the JSON.
-    if (finalDestName === "package.json" || path.basename(relativePath) === "package.json") {
+    // If the resulting file is package.json, add a comment field to the JSON.
+    if (path.basename(relativePath) === "package.json") {
       try {
         const jsonObj = JSON.parse(newContent);
         newContent = JSON.stringify({ "//": COMMENT_LINE, ...jsonObj }, null, 2);
       } catch (e) {
         // Ignore JSON parsing errors.
+        console.error(`Error parsing package.json: ${e}`);
       }
     }
 
-    return { content: newContent, destName: finalDestName };
+    return newContent;
+  }
+
+  function compositeDestFn(relativePath: string) {
+    if (relativePath === "package-template.json") {
+      return "package.json";
+    }
+
+    if (destFn) {
+      return destFn(relativePath);
+    }
+    return relativePath;
+  }
+
+  function compositeFilterFn(relativePath: string) {
+    const ignores = ["node_modules", "dist", ".turbo", ".gitignore", "package.json"];
+    for (const ignore of ignores) {
+      if (relativePath.startsWith(ignore)) return false;
+    }
+
+    if (filterFn) {
+      return filterFn(relativePath);
+    }
+    return true;
   }
 
   // Ensure the destination directory exists.
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
-
-  // Copy files from src to dest using the composite edit function.
-  copyFromSrcToDest(src, dest, compositeEditFn, process.cwd());
+  
+  copyFromSrcToDest({
+    srcDir: src,
+    destDir: dest,
+    editFn: compositeEditFn,
+    filterFn: compositeFilterFn,
+    destFn: compositeDestFn,
+    baseDir: src,
+  });
 }
 
 
@@ -141,6 +145,9 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "js"),
   editFn: (relativePath, content) => {
+    return processMacros(content, PLATFORMS["js"]);
+  },
+  filterFn: (relativePath) => {
     const ignores = [
       "postcss.config.js",
       "tailwind.config.js",
@@ -158,14 +165,11 @@ generateFromTemplate({
       "src/global.d.ts",
     ];
 
-    if (
-      ignores.some((ignorePath) => relativePath.startsWith(ignorePath)) ||
-      relativePath.endsWith(".tsx")
-    ) {
-      return null;
+    if (ignores.some((ignorePath) => relativePath.startsWith(ignorePath)) || relativePath.endsWith(".tsx")) {
+      return false;
+    } else {
+      return true;
     }
-
-    return processMacros(content, PLATFORMS["js"]);
   },
 });
 
@@ -174,9 +178,13 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "stack"),
   editFn: (relativePath, content) => {
-    // Skip files in the generated folder.
-    if (relativePath.startsWith("src/generated")) return null;
-
     return processMacros(content, PLATFORMS["next"]);
+  },
+  filterFn: (relativePath) => {
+    if (relativePath.startsWith("src/generated")) {
+      return false;
+    } else {
+      return true;
+    }
   },
 });
