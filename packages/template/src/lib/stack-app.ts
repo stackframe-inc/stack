@@ -40,6 +40,7 @@ import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmpt
 let isReactServer = false;
 // IF_PLATFORM react-like
 import * as sc from "@stackframe/stack-sc";
+import { InternalEmailsCrud } from "@stackframe/stack-shared/dist/interface/crud/emails";
 isReactServer = sc.isReactServer;
 // END_PLATFORM
 
@@ -2718,6 +2719,10 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
       return Result.error({ errorMessage: response.error_message ?? throwErr("Email test error not specified") });
     }
   }
+
+  async listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]> {
+    return this._interface.listSentEmails();
+  }
 }
 
 type _______________CONTACT_CHANNEL_______________ = never;  // this is a marker for VSCode's outline view
@@ -3647,6 +3652,7 @@ export type StackAdminApp<HasTokenStore extends boolean = boolean, ProjectId ext
       recipientEmail: string,
       emailConfig: EmailConfig,
     }): Promise<Result<undefined, { errorMessage: string }>>,
+    listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]>,
   }
   & StackServerApp<HasTokenStore, ProjectId>
 );
