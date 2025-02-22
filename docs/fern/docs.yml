@@ -14,8 +14,8 @@ versions:
     path: next.yml
     slug: next
   - display-name: JavaScript SDK
-    path: next.yml
-    slug: next2
+    path: js.yml
+    slug: js
 
 navbar-links:
   - type: secondary

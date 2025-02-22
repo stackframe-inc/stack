@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import yaml from "yaml";
-import { copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
+import { PLATFORMS, processMacros, writeFileSyncIfChanged } from "./utils";
 
 interface DocObject {
   platform?: string;
@@ -39,7 +39,11 @@ function processDocObject(obj: any, platform: string): any {
   for (const [key, value] of Object.entries(obj)) {
     const processed = processDocObject(value, platform);
     if (processed !== null) {
-      result[key] = processed;
+      if (typeof processed === 'string') {
+        result[key] = processed.replace(/{base}/g, `docs/pages`);
+      } else {
+        result[key] = processed;
+      }
     }
   }
 
@@ -47,29 +51,26 @@ function processDocObject(obj: any, platform: string): any {
 }
 
 const docsDir = path.resolve(__dirname, "..", "docs", "fern");
-const templateDir = path.join(docsDir, "docs-template");
+const templateDir = path.join(docsDir, "docs", "pages-template");
 const ymlTemplatePath = path.join(docsDir, "docs-template.yml");
 
-// Generate for each platform
-const platforms = ["js", "next"];
-
-for (const platform of platforms) {
-  const destDir = path.join(docsDir, `docs-${platform}`);
+for (const platform of ["next", "js"]) {
+  const destDir = path.join(docsDir, 'docs', 'pages', `${platform}`);
 
   // Copy the entire template directory, processing macros for each file
-  copyFromSrcToDest(
-    templateDir,
-    destDir,
-    (relativePath, content) => {
-      // Apply macros processing to all files
-      const macroProcessed = processMacros(content, [platform]);
-      return macroProcessed;
-    }
-  );
+  // copyFromSrcToDest(
+  //   templateDir,
+  //   destDir,
+  //   (relativePath, content) => {
+  //     // Apply macros processing to all files
+  //     const macroProcessed = processMacros(content, PLATFORMS[platform]);
+  //     return macroProcessed;
+  //   }
+  // );
 
   // Also generate the legacy single yml file for backwards compatibility
   const mainYmlContent = fs.readFileSync(ymlTemplatePath, "utf-8");
-  const macroProcessed = processMacros(mainYmlContent, [platform]);
+  const macroProcessed = processMacros(mainYmlContent, PLATFORMS[platform]);
   const template = yaml.parse(macroProcessed);
   const processed = processDocObject(template, platform);
   const output = yaml.stringify(processed);

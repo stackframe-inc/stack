@@ -4,7 +4,7 @@
   "private": true,
   "repository": "",
   "scripts": {
-    "pre": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=ts-node ts-node ./scripts/generate-docs.ts')\"",
+    "pre": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=ts-node ts-node ./scripts/generate-sdks.ts')\"",
     "preinstall": "pnpm pre",
     "typecheck": "pnpm pre && turbo typecheck",
     "build:dev": "pnpm pre && NODE_ENV=development pnpm run build",
@@ -42,9 +42,9 @@
     "test:e2e": "pnpm pre && vitest e2e/tests",
     "test:unit": "pnpm pre && vitest src",
     "verify-data-integrity": "pnpm pre && pnpm -C apps/backend run verify-data-integrity",
-    "generate-docs": "pnpm pre && turbo run generate-docs",
+    "generate-openapi": "pnpm pre && turbo run generate-openapi",
     "generate-keys": "pnpm pre && turbo run generate-keys",
-    "generate-from-template": "npx --package=ts-node ts-node ./scripts/generate-docs.ts",
+    "generate-from-template": "npx --package=ts-node ts-node ./scripts/generate-sdks.ts",
     "generate-from-template:watch": "chokidar --silent -c 'pnpm run generate-from-template' './packages/template' --ignore './packages/template/package.json' --ignore '**/node_modules/**' --ignore '**/dist/**' --ignore '**/.turbo/**' --throttle 2000"
   },
   "devDependencies": {

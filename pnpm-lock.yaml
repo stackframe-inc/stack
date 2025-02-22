@@ -452,8 +452,8 @@ importers:
   docs:
     dependencies:
       fern-api:
-        specifier: ^0.44.11
-        version: 0.44.11
+        specifier: ^0.53.17
+        version: 0.53.17
     devDependencies:
       '@stackframe/stack-backend':
         specifier: workspace:*
@@ -7761,8 +7761,8 @@ packages:
       picomatch:
         optional: true
 
-  fern-api@0.44.11:
-    resolution: {integrity: sha512-A67OMAQ8pxYi2W7jPDyG4jGiYyrgLW1VlVojgq3jVm3gfvV7+DFCXIcxHC5rhvJZoDz95rjeu/Wr5ZrDu22EQQ==}
+  fern-api@0.53.17:
+    resolution: {integrity: sha512-np9M5Rfz7/aBkRpojWvg/ls7KxC4A5SYsvG0h6mFCLLCAyt5iT4kywndPG1QhTvdxVXEaU1rCz3LeTLuG+ALTg==}
     hasBin: true
 
   fflate@0.4.8:
@@ -18687,7 +18687,7 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.2
 
-  fern-api@0.44.11: {}
+  fern-api@0.53.17: {}
 
   fflate@0.4.8: {}
 
