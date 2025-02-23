@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { COMMENT_LINE, PLATFORMS, copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
+import { COMMENT_BLOCK, COMMENT_LINE, PLATFORMS, copyFromSrcToDest, processMacros, writeFileSyncIfChanged } from "./utils";
 
 /**
  * Main function to generate from a template:
@@ -48,14 +48,7 @@ function generateFromTemplate(options: {
         shebangLine = lines[0] + "\n\n";
         contentWithoutShebang = lines.slice(1).join("\n");
       }
-      newContent =
-        shebangLine +
-        "//===========================================\n" +
-        "// " +
-        COMMENT_LINE +
-        "\n" +
-        "//===========================================\n\n" +
-        contentWithoutShebang;
+      newContent = shebangLine + COMMENT_BLOCK + contentWithoutShebang;
     }
 
     // If the resulting file is package.json, add a comment field to the JSON.

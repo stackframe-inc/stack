@@ -3,6 +3,11 @@ import path from "path";
 
 
 export const COMMENT_LINE = "THIS FILE IS AUTO-GENERATED FROM TEMPLATE. DO NOT EDIT IT DIRECTLY";
+export const COMMENT_BLOCK = `\n
+//===========================================
+// ${COMMENT_LINE}
+//===========================================\n\n`
+
 export const PLATFORMS = {
   "next": ['next', 'react-like'],
   "js": ['js'],
