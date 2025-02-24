@@ -8,6 +8,11 @@ overrides:
   '@types/react': ^18.2.0
   '@types/react-dom': ^18.2.0
 
+patchedDependencies:
+  openid-client@5.6.4:
+    hash: 2gg7ly76yaettle5dlvkpcfpny
+    path: patches/openid-client@5.6.4.patch
+
 importers:
 
   .:
@@ -169,8 +174,8 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1
       openid-client:
-        specifier: ^5.6.4
-        version: 5.6.5
+        specifier: 5.6.4
+        version: 5.6.4(patch_hash=2gg7ly76yaettle5dlvkpcfpny)
       oslo:
         specifier: ^1.2.1
         version: 1.2.1
@@ -9523,8 +9528,8 @@ packages:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
     hasBin: true
 
-  openid-client@5.6.5:
-    resolution: {integrity: sha512-5P4qO9nGJzB5PI0LFlhj4Dzg3m4odt0qsJTfyEtZyOlkgpILwEioOhVVJOrS1iVH494S4Ee5OCjjg6Bf5WOj3w==}
+  openid-client@5.6.4:
+    resolution: {integrity: sha512-T1h3B10BRPKfcObdBklX639tVz+xh34O7GjofqrqiAQdm7eHsQ00ih18x6wuJ/E6FxdtS2u3FmUGPDeEcMwzNA==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -18583,7 +18588,7 @@ snapshots:
 
   execa@5.1.1:
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.5
       get-stream: 6.0.1
       human-signals: 2.1.0
       is-stream: 2.0.1
@@ -21016,7 +21021,7 @@ snapshots:
 
   opener@1.5.2: {}
 
-  openid-client@5.6.5:
+  openid-client@5.6.4(patch_hash=2gg7ly76yaettle5dlvkpcfpny):
     dependencies:
       jose: 4.15.5
       lru-cache: 6.0.0
