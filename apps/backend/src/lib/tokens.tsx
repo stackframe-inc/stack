@@ -1,8 +1,10 @@
 import { prismaClient } from '@/prisma-client';
+import { Prisma } from '@prisma/client';
 import { KnownErrors } from '@stackframe/stack-shared';
 import { yupNumber, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
 import { generateSecureRandomString } from '@stackframe/stack-shared/dist/utils/crypto';
 import { getEnvVariable } from '@stackframe/stack-shared/dist/utils/env';
+import { throwErr } from '@stackframe/stack-shared/dist/utils/errors';
 import { legacySignGlobalJWT, legacyVerifyGlobalJWT, signJWT, verifyJWT } from '@stackframe/stack-shared/dist/utils/jwt';
 import { Result } from '@stackframe/stack-shared/dist/utils/results';
 import * as jose from 'jose';
@@ -76,7 +78,6 @@ export async function decodeAccessToken(accessToken: string) {
 export async function generateAccessToken(options: {
   tenancy: Tenancy,
   userId: string,
-  useLegacyGlobalJWT: boolean,
 }) {
   await logEvent(
     [SystemEventTypes.UserActivity],
@@ -87,26 +88,17 @@ export async function generateAccessToken(options: {
     }
   );
 
-  if (options.useLegacyGlobalJWT) {
-    return await legacySignGlobalJWT(
-      jwtIssuer,
-      { projectId: options.tenancy.project.id, sub: options.userId, branchId: options.tenancy.branchId },
-      getEnvVariable("STACK_ACCESS_TOKEN_EXPIRATION_TIME", "10min")
-    );
-  } else {
-    return await signJWT({
-      issuer: jwtIssuer,
-      audience: options.tenancy.project.id,
-      payload: { sub: options.userId, branchId: options.tenancy.branchId },
-      expirationTime: getEnvVariable("STACK_ACCESS_TOKEN_EXPIRATION_TIME", "10min"),
-    });
-  }
+  return await signJWT({
+    issuer: jwtIssuer,
+    audience: options.tenancy.project.id,
+    payload: { sub: options.userId, branchId: options.tenancy.branchId },
+    expirationTime: getEnvVariable("STACK_ACCESS_TOKEN_EXPIRATION_TIME", "10min"),
+  });
 }
 
 export async function createAuthTokens(options: {
   tenancy: Tenancy,
   projectUserId: string,
-  useLegacyGlobalJWT: boolean,
   expiresAt?: Date,
 }) {
   options.expiresAt ??= new Date(Date.now() + 1000 * 60 * 60 * 24 * 365);
@@ -115,17 +107,26 @@ export async function createAuthTokens(options: {
   const accessToken = await generateAccessToken({
     tenancy: options.tenancy,
     userId: options.projectUserId,
-    useLegacyGlobalJWT: options.useLegacyGlobalJWT,
   });
 
-  await prismaClient.projectUserRefreshToken.create({
-    data: {
-      tenancyId: options.tenancy.id,
-      projectUserId: options.projectUserId,
-      refreshToken: refreshToken,
-      expiresAt: options.expiresAt,
-    },
-  });
+  try {
+    await prismaClient.projectUserRefreshToken.create({
+      data: {
+        tenancyId: options.tenancy.id,
+        projectUserId: options.projectUserId,
+        refreshToken: refreshToken,
+        expiresAt: options.expiresAt,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      throwErr(new Error(
+        `prisma.projectUserRefreshToken.create() failed for tenancyId ${options.tenancy.id} and projectUserId ${options.projectUserId}: ${error.message}`,
+        { cause: error }
+      ));
+    }
+    throw error;
+  }
 
   return { refreshToken, accessToken };
 }
