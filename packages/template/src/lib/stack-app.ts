@@ -61,7 +61,10 @@ type RequestLike = {
   },
 };
 
-type RedirectMethod = "window" | "nextjs" | "none"
+type RedirectMethod = "window" | "nextjs" | "none" | {
+  useNavigate: () => (to: string) => void,
+  navigate?: (to: string) => void,
+}
 
 export type TokenStoreInit<HasTokenStore extends boolean = boolean> =
   HasTokenStore extends true ? (
@@ -1239,18 +1242,19 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   protected async _redirectTo(options: { url: URL | string, replace?: boolean }) {
     if (this._redirectMethod === "none") {
       return;
-    }
-
-    if (isReactServer && this._redirectMethod === "nextjs") {
+    } else if (isReactServer && this._redirectMethod === "nextjs") {
       NextNavigation.redirect(options.url.toString(), options.replace ? NextNavigation.RedirectType.replace : NextNavigation.RedirectType.push);
+    } else if (typeof this._redirectMethod === "object" && this._redirectMethod.navigate) {
+      this._redirectMethod.navigate(options.url.toString());
     } else {
       if (options.replace) {
         window.location.replace(options.url);
       } else {
         window.location.assign(options.url);
       }
-      await wait(2000);
     }
+
+    await wait(2000);
   }
 
   protected async _redirectIfTrusted(url: string, options?: RedirectToOptions) {
@@ -1763,6 +1767,10 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
           throw new StackAssertionError("Cannot serialize to JSON from an application without a publishable client key");
         }
 
+        if (typeof this._redirectMethod !== "string") {
+          throw new StackAssertionError("Cannot serialize to JSON from an application with a non-string redirect method");
+        }
+
         return {
           baseUrl: this._options.baseUrl,
           projectId: this.projectId,
@@ -1771,6 +1779,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
           urls: this._urlOptions,
           oauthScopesOnSignIn: this._oauthScopesOnSignIn,
           uniqueIdentifier: this._getUniqueIdentifier(),
+          redirectMethod: this._redirectMethod,
         };
       },
       setCurrentUser: (userJsonPromise: Promise<CurrentUserCrud['Client']['Read'] | null>) => {
@@ -1950,6 +1959,7 @@ class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extends strin
       tokenStore: options.tokenStore,
       urls: options.urls ?? {},
       oauthScopesOnSignIn: options.oauthScopesOnSignIn ?? {},
+      redirectMethod: options.redirectMethod,
     });
   }
 
@@ -2446,6 +2456,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
       tokenStore: options.tokenStore,
       urls: options.urls,
       oauthScopesOnSignIn: options.oauthScopesOnSignIn,
+      redirectMethod: options.redirectMethod,
     });
   }
 
