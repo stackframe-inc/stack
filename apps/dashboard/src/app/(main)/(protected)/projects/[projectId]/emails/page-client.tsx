@@ -139,9 +139,9 @@ export default function PageClient() {
 
 type SentEmail = {
   id: string,
-  recipient: string,
+  to?: string[],
   subject: string,
-  sentAt: Date,
+  sent_at_millis: number,
   error?: unknown,
 }
 
@@ -152,8 +152,10 @@ const emailTableColumns: ColumnDef<SentEmail>[] = [
 ];
 
 function EmailSendDataTable() {
+  const stackAdminApp = useAdminApp();
+  const data = stackAdminApp.useSentEmails();
   return <DataTable
-    data={[]}
+    data={data}
     defaultColumnFilters={[]}
     columns={emailTableColumns}
     defaultSorting={[]}
