@@ -6,6 +6,7 @@ import { ApiKeysCrud } from "@stackframe/stack-shared/dist/interface/crud/api-ke
 import { ContactChannelsCrud } from "@stackframe/stack-shared/dist/interface/crud/contact-channels";
 import { CurrentUserCrud } from "@stackframe/stack-shared/dist/interface/crud/current-user";
 import { EmailTemplateCrud, EmailTemplateType } from "@stackframe/stack-shared/dist/interface/crud/email-templates";
+import { InternalEmailsCrud } from "@stackframe/stack-shared/dist/interface/crud/emails";
 import { InternalProjectsCrud, ProjectsCrud } from "@stackframe/stack-shared/dist/interface/crud/projects";
 import { TeamInvitationCrud } from "@stackframe/stack-shared/dist/interface/crud/team-invitation";
 import { TeamMemberProfilesCrud } from "@stackframe/stack-shared/dist/interface/crud/team-member-profiles";
@@ -31,7 +32,6 @@ import { getRelativePart, isRelative } from "@stackframe/stack-shared/dist/utils
 import { generateUuid } from "@stackframe/stack-shared/dist/utils/uuids";
 import * as cookie from "cookie";
 import * as NextNavigationUnscrambled from "next/navigation"; // import the entire module to get around some static compiler warnings emitted by Next.js in some cases
-// NEXT_LINE_PLATFORM react-like
 import React, { useCallback, useMemo } from "react";
 import { constructRedirectUrl } from "../utils/url";
 import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "./auth";
@@ -40,7 +40,6 @@ import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmpt
 let isReactServer = false;
 // IF_PLATFORM react-like
 import * as sc from "@stackframe/stack-sc";
-import { InternalEmailsCrud } from "@stackframe/stack-shared/dist/interface/crud/emails";
 isReactServer = sc.isReactServer;
 // END_PLATFORM
 
