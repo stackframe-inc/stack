@@ -242,11 +242,19 @@ export function processMacros(content: string, platforms: string[]): string {
   return result.join('\n');
 }
  
-export function writeFileSyncIfChanged(path: string, content: string): void {
+export function writeFileSyncIfChanged(path: string, content: string | Buffer): void {
   if (fs.existsSync(path)) {
-    const existingContent = fs.readFileSync(path, "utf-8");
-    if (existingContent === content) {
-      return;
+    const existingContent = fs.readFileSync(path);
+    if (Buffer.isBuffer(content)) {
+      // For binary files, compare buffers
+      if (Buffer.compare(existingContent, content) === 0) {
+        return;
+      }
+    } else {
+      // For text files, compare strings
+      if (existingContent.toString('utf-8') === content) {
+        return;
+      }
     }
   }
   fs.writeFileSync(path, content);
@@ -349,7 +357,7 @@ export function copyFromSrcToDest(options: {
       }
 
       if (isBinary) {
-        fs.writeFileSync(destPath, buffer);
+        writeFileSyncIfChanged(destPath, buffer);
       } else {
         // For text files, allow modification via editFn.
         const content = buffer.toString('utf-8');
