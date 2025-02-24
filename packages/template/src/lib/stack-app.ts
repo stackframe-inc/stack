@@ -52,7 +52,7 @@ if (clientVersion.startsWith("STACK_COMPILE_TIME")) {
 }
 
 // hack to make sure process is defined in non-node environments
-// NEXT_LINE_PLATFORM js
+// NEXT_LINE_PLATFORM js react
 const process = (globalThis as any).process ?? { env: {} };
 
 type RequestLike = {
