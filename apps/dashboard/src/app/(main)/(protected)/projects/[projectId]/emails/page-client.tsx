@@ -155,7 +155,7 @@ function EmailSendDataTable() {
   const stackAdminApp = useAdminApp();
   const data = stackAdminApp.useSentEmails();
   return <DataTable
-    data={data}
+    data={data.items}
     defaultColumnFilters={[]}
     columns={emailTableColumns}
     defaultSorting={[]}
