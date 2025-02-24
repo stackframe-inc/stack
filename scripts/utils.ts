@@ -117,11 +117,11 @@ export function processMacros(content: string, platforms: string[]): string {
    *   "blah blah IF_PLATFORM platform1 platform2 ???"  => captures "platform platform2 ???"
    *   "adsfasdf ELSE_PLATFORM blabla"         => captures "blabla"
    */
-  const reBeginOnly = /\bIF_PLATFORM\s+(.+)/i;
-  const reElseIf    = /\bELSE_IF_PLATFORM\s+(.+)/i;
+  const reBeginOnly = /\bIF_PLATFORM:?\s+(.+)/i;
+  const reElseIf    = /\bELSE_IF_PLATFORM:?\s+(.+)/i;
   const reElse      = /\bELSE_PLATFORM\b/i;
   const reEndOnly   = /\bEND_PLATFORM\b/i;
-  const reNextLine  = /\bNEXT_LINE_PLATFORM\s+(.+)/i;
+  const reNextLine  = /\bNEXT_LINE_PLATFORM:?\s+(.+)/i;
 
   for (const line of lines) {
     // 1) Try detecting IF_PLATFORM ...
@@ -207,10 +207,12 @@ export function processMacros(content: string, platforms: string[]): string {
     // 4) Try detecting END_PLATFORM ...
     const endMatch = line.match(reEndOnly);
     if (endMatch) {
-      // Pop the top IF_BLOCK
-      const top = skipStack[skipStack.length - 1];
-      if (typeof top !== 'string' && top.type === 'IF_BLOCK') {
-        skipStack.pop();
+      // Pop the top IF_BLOCK if it exists
+      if (skipStack.length > 0) {
+        const top = skipStack[skipStack.length - 1];
+        if (top && typeof top !== 'string' && top.type === 'IF_BLOCK') {
+          skipStack.pop();
+        }
       }
       // Skip line
       continue;
