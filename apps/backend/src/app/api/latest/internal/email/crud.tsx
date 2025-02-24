@@ -33,6 +33,7 @@ export const internalEmailsCrudHandlers = createLazyProxy(() => createCrudHandle
         createdAt: 'desc',
       },
     });
+
     return {
       items: emails.map(x => prismaModelToCrud(x)),
       is_paginated: false,
