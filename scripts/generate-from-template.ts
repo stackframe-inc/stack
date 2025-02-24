@@ -511,27 +511,6 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "react"),
   editFn: (path, content) => {
-    const ignores = [
-      "postcss.config.js",
-      "tailwind.config.js",
-      "quetzal.config.json",
-      "components.json",
-      ".env",
-      ".env.local",
-      "scripts/",
-      "quetzal-translations/",
-      "src/components/",
-      "src/components-page/",
-      "src/generated/",
-      "src/providers/",
-      "src/global.css",
-      "src/global.d.ts",
-    ];
-
-    if (ignores.some(ignorePath => path.startsWith(ignorePath)) || path.endsWith('.tsx')) {
-      return null;
-    }
-    
     // ignore the generated folder as the files are big and not needed
     if (path.startsWith('src/generated')) {
       return null;
