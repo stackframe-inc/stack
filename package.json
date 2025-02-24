@@ -14,7 +14,7 @@
     "build:demo": "pnpm pre && turbo run build --filter=demo-app...",
     "build:packages": "pnpm pre && turbo run build --filter=./packages/*",
     "clean": "pnpm pre && turbo run clean && rimraf --glob **/.next && rimraf --glob **/.turbo && rimraf .turbo && rimraf --glob **/node_modules",
-    "codegen": "pnpm pre && turbo run codegen && pnpm run generate-sdks",
+    "codegen": "pnpm pre && pnpm run generate-docs && turbo run codegen && pnpm run generate-sdks",
     "deps-compose": "docker compose -p stack-dependencies -f docker/dependencies/docker.compose.yaml",
     "stop-deps": "POSTGRES_DELAY_MS=0 pnpm run deps-compose kill && POSTGRES_DELAY_MS=0 pnpm run deps-compose down -v",
     "init-db": "pnpm pre && pnpm run prisma db push && pnpm run prisma db seed",

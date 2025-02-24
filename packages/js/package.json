@@ -1,5 +1,6 @@
 {
   "name": "@stackframe/js",
+
   "version": "2.7.18",
   "sideEffects": false,
   "main": "./dist/index.js",
