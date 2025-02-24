@@ -507,7 +507,6 @@ generateFromTemplate({
   },
 });
 
-
 generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "react"),
