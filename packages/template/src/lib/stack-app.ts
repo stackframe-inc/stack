@@ -3662,6 +3662,8 @@ export type StackAdminApp<HasTokenStore extends boolean = boolean, ProjectId ext
       emailConfig: EmailConfig,
     }): Promise<Result<undefined, { errorMessage: string }>>,
     listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]>,
+    // NEXT_LINE_PLATFORM react-like
+    useSentEmails(): InternalEmailsCrud["Admin"]["List"],
   }
   & StackServerApp<HasTokenStore, ProjectId>
 );
