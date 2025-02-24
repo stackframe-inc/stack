@@ -2427,6 +2427,9 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
   private readonly _metricsCache = createCache(async () => {
     return await this._interface.getMetrics();
   });
+  private readonly _sentEmailsCache = createCache(async () => {
+    return await this._interface.listSentEmails();
+  });
 
   constructor(options: StackAdminAppConstructorOptions<HasTokenStore, ProjectId>) {
     super({
@@ -2677,6 +2680,12 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
     return crud.token;
   }
   // END_PLATFORM react-like
+  // IF_PLATFORM react-like
+  useSentEmails(): InternalEmailsCrud["Admin"]["List"] {
+    const crud = useAsyncCache(this._sentEmailsCache, [], "useSentEmails()");
+    return crud;
+  }
+  // END_PLATFORM react-like
 
   protected override async _refreshProject() {
     await Promise.all([
@@ -2721,7 +2730,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
   }
 
   async listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]> {
-    return this._interface.listSentEmails();
+    return await this._interface.listSentEmails();
   }
 }
 
