@@ -20,53 +20,6 @@ By default, if no language is provided, it will be set to `en-US`.
 
 You can choose which languages to use by employing your own methods, such as storing the language in `localStorage` or using the user's browser language.
 
-## Dynamic Language Switching
-
-To implement language switching functionality in your application, you can create a language selector component:
-
-```jsx
-'use client';
-import { useState, useEffect } from 'react';
-import { useStackApp } from '@stackframe/stack';
-
-export function LanguageSwitcher() {
-  const app = useStackApp();
-  const [currentLang, setCurrentLang] = useState('en-US');
-  
-  // Update language in Stack and store preference
-  const changeLanguage = (lang) => {
-    app.setLanguage(lang);
-    localStorage.setItem('preferredLanguage', lang);
-    setCurrentLang(lang);
-  };
-  
-  // Load user's preferred language on component mount
-  useEffect(() => {
-    const savedLang = localStorage.getItem('preferredLanguage');
-    if (savedLang) {
-      changeLanguage(savedLang);
-    } else {
-      // Optionally detect browser language
-      const browserLang = navigator.language;
-      // Check if browser language is supported
-      if (['en-US', 'de-DE', 'es-419', 'es-ES', 'fr-CA', 'fr-FR', 'it-IT', 'pt-BR', 'pt-PT'].includes(browserLang)) {
-        changeLanguage(browserLang);
-      }
-    }
-  }, []);
-  
-  return (
-    <select value={currentLang} onChange={(e) => changeLanguage(e.target.value)}>
-      <option value="en-US">English</option>
-      <option value="de-DE">Deutsch</option>
-      <option value="es-ES">Español</option>
-      <option value="fr-FR">Français</option>
-      <option value="it-IT">Italiano</option>
-      <option value="pt-BR">Português</option>
-    </select>
-  );
-}
-
 ## Supported Languages
 
 Stack Auth currently supports the following languages:
