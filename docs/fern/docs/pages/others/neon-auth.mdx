@@ -1,0 +1,117 @@
+---
+title: Neon Auth Integration
+description: Learn how to integrate Stack Auth with Neon Auth to automatically sync user profiles from your auth provider directly to your Neon database.
+---
+
+# Neon Auth Integration
+
+Stack Auth integrates with Neon Auth to automatically sync user profiles from your authentication provider directly to your Neon database, ensuring your application always has access to up-to-date user information without requiring custom integration code.
+
+## About Neon Auth
+
+Neon Auth connects your authentication provider to your Neon database, automatically synchronizing user profiles so that you own your auth data. Access your user data directly in your database environment, with no custom integration code needed.
+
+When implementing user authentication, it is common to use managed authentication providers like Stack Auth, Clerk, and others to handle the complexities of user identity, passwords, and security. However, keeping your database in sync with these providers typically requires additional development work.
+
+Stack Auth solves this by integrating with Neon Auth, ensuring your application always has access to up-to-date user information right from your database.
+
+## Key benefits
+
+- Provision auth provider projects and manage your users directly from the Neon Console
+- Automated synchronization of user profiles between Stack Auth and your Neon database
+- Easy database relationships, since your user profiles are available as any other table
+
+## How it works
+
+When you set up Neon Auth with Stack Auth, Neon creates a `neon_auth` schema in your database. As users authenticate and manage their profiles in Stack Auth, their data is automatically synchronized to your Neon database.
+
+This integration ensures that:
+
+1. User data is stored in your own database
+2. Your application can directly query user information
+3. You can build relationships between users and your application data
+4. Changes to user profiles are automatically synchronized
+
+## Before and after Neon Auth
+
+**Before Neon Auth:**
+- Your application authenticates users through Stack Auth
+- User data is stored in Stack Auth's system
+- You need to implement custom code to sync user data to your database
+- Keeping user data in sync requires ongoing maintenance
+
+**After Neon Auth:**
+- Your application still authenticates users through Stack Auth
+- User data is automatically synchronized to your Neon database
+- No custom integration code is needed
+- Your application can directly query user data from your database
+
+## Getting started
+
+To integrate Stack Auth with Neon Auth:
+
+1. **Create a Neon project** (if you don't already have one)
+   - Sign up or log in to [Neon](https://console.neon.tech)
+   - Create a new project or use an existing one
+
+2. **Set up Stack Auth in Neon**
+   - In the Neon Console, navigate to the "Integrations" tab
+   - Select "Stack Auth" from the available integrations
+   - Follow the prompts to connect your Stack Auth project
+
+3. **Configure your Stack Auth project**
+   - In your Stack Auth dashboard, navigate to "Integrations"
+   - Enable the Neon Auth integration
+   - Enter your Neon project details and credentials
+   - Save your configuration
+
+4. **Verify the integration**
+   - Create or update a user in Stack Auth
+   - Check your Neon database to confirm the user data has been synchronized
+   - You should see the user data in the `neon_auth` schema
+
+## Transfer ownership
+
+If you decide to migrate away from Stack Auth in the future, having your user data already synchronized to your Neon database makes the transition easier. You'll have full ownership of your user data and can implement alternative authentication methods while maintaining user records.
+
+## Using the API
+
+Once your user data is synchronized to your Neon database, you can query it directly using standard SQL:
+
+```sql
+-- Query all users
+SELECT * FROM neon_auth.users;
+
+-- Find a specific user by email
+SELECT * FROM neon_auth.users WHERE email = 'user@example.com';
+
+-- Join user data with your application data
+SELECT 
+  u.id, 
+  u.email, 
+  u.first_name, 
+  u.last_name, 
+  p.subscription_tier
+FROM 
+  neon_auth.users u
+JOIN 
+  app.profiles p ON u.id = p.user_id;
+```
+
+## Best practices
+
+- **Don't modify the `neon_auth` schema directly**: Let Neon Auth handle the synchronization to avoid conflicts
+- **Use user IDs as foreign keys**: Reference the `neon_auth.users.id` field in your application tables
+- **Create views for common user queries**: Set up views that join user data with your application data for convenience
+- **Set up proper database permissions**: Ensure your application has appropriate read/write access to the user data
+- **Monitor synchronization**: Periodically verify that user data is being properly synchronized
+
+## Troubleshooting
+
+If you encounter issues with the Stack Auth and Neon Auth integration:
+
+1. **Check connection settings**: Verify that your Stack Auth project is properly configured to connect to Neon
+2. **Verify credentials**: Ensure that the API keys and credentials are correct and have not expired
+3. **Check logs**: Review logs in both Stack Auth and Neon for any error messages
+4. **Test synchronization**: Create a test user to verify if synchronization is working
+5. **Contact support**: If issues persist, contact Stack Auth or Neon support for assistance
