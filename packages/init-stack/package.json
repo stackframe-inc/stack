@@ -2,15 +2,17 @@
   "name": "@stackframe/init-stack",
   "version": "2.7.18",
   "description": "The setup wizard for Stack. https://stack-auth.com",
-  "main": "index.mjs",
+  "main": "dist/index.js",
   "type": "module",
-  "bin": "./index.mjs",
+  "bin": "./dist/index.js",
   "scripts": {
-    "clean": "rimraf test-run-output && rimraf node_modules",
-    "init-stack": "node init-stack/index.mjs",
-    "init-stack:local": "STACK_NEXT_INSTALL_PACKAGE_NAME_OVERRIDE=../../stack STACK_JS_INSTALL_PACKAGE_NAME_OVERRIDE=../../js node index.mjs",
-    "test-run": "pnpm run test-run-js && pnpm run test-run-node && pnpm run test-run-next && pnpm run test-run-neon",
-    "test-run:manual": "pnpm run test-run-js:manual && pnpm run test-run-node:manual && pnpm run test-run-next:manual && pnpm run test-run-neon:manual",
+    "clean": "rimraf test-run-output && rimraf node_modules && rimraf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "init-stack": "node dist/index.js",
+    "init-stack:local": "STACK_NEXT_INSTALL_PACKAGE_NAME_OVERRIDE=../../stack STACK_JS_INSTALL_PACKAGE_NAME_OVERRIDE=../../js node dist/index.js",
+    "test-run": "pnpm run build && pnpm run test-run-js && pnpm run test-run-node && pnpm run test-run-next && pnpm run test-run-neon",
+    "test-run:manual": "pnpm run build && pnpm run test-run-js:manual && pnpm run test-run-node:manual && pnpm run test-run-next:manual && pnpm run test-run-neon:manual",
     "ensure-neon": "grep -q '\"@neondatabase/serverless\"' ./test-run-output/package.json && echo 'Initialized Neon successfully!'",
     "test-run-neon": "pnpm run test-run-node --neon && pnpm run ensure-neon",
     "test-run-neon:manual": "pnpm run test-run-node:manual --neon && pnpm run ensure-neon",
@@ -23,7 +25,7 @@
   },
   "files": [
     "README.md",
-    "index.mjs",
+    "dist",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -35,5 +37,12 @@
     "@stackframe/stack-shared": "workspace:*",
     "inquirer": "^9.2.19",
     "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.13.5",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
   }
 }
