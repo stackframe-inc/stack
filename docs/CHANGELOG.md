@@ -1,4 +1,7 @@
-# @stackframe/docs
+# @stackframe/docs Changelog
+
+This file documents all notable changes to the Stack Auth documentation package across versions.
+
 
 ## 2.7.18
 
@@ -20,7 +23,15 @@
 
 ## 2.7.15
 
+### Patch Changes
+
+- Documentation updates and minor fixes
+
 ## 2.7.14
+
+### Patch Changes
+
+- Performance improvements
 
 ## 2.7.13
 
@@ -188,8 +199,8 @@
 
 ### Patch Changes
 
-- - list user pagination
-  - fixed visual glitches
+- - Added pagination for user lists
+  - Fixed visual glitches in the UI
 
 ## 2.6.15
 
@@ -224,8 +235,8 @@
 ### Patch Changes
 
 - - New contact channel API
-  - Fixed some visual gitches and typos
-  - Bug fixes
+  - Fixed some visual glitches and typos
+  - Bug fixes for authentication flows
 
 ## 2.6.8
 

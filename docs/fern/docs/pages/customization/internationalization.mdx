@@ -2,6 +2,10 @@
 slug: customization/internationalization
 ---
 
+# Internationalization
+
+Internationalization (i18n) allows your application to support multiple languages, making it accessible to users worldwide. Stack Auth provides built-in internationalization support for its components, enabling you to offer a localized authentication experience with minimal effort.
+
 ## Setup
 
 Internationalization with Stack is very straightforward. Simply pass the `lang` prop to the `StackProvider` component, and all the pages will be translated to the specified language.
@@ -16,16 +20,102 @@ Internationalization with Stack is very straightforward. Simply pass the `lang` 
 
 By default, if no language is provided, it will be set to `en-US`.
 
-You can choose which languages to use by employing your own methods, such as storing the language in `localStorage` or using the user's browser language. 
+You can choose which languages to use by employing your own methods, such as storing the language in `localStorage` or using the user's browser language.
 
-## Supported languages
+## Dynamic Language Switching
 
-- `en-US`: English (United States)
-- `de-DE`: German (Germany)
-- `es-419`: Spanish (Latin America)
-- `es-ES`: Spanish (Spain)
-- `fr-CA`: French (Canada)
-- `fr-FR`: French (France)
-- `it-IT`: Italian (Italy)
-- `pt-BR`: Portuguese (Brazil)
-- `pt-PT`: Portuguese (Portugal)
+To implement language switching functionality in your application, you can create a language selector component:
+
+```jsx
+'use client';
+import { useState, useEffect } from 'react';
+import { useStackApp } from '@stackframe/stack';
+
+export function LanguageSwitcher() {
+  const app = useStackApp();
+  const [currentLang, setCurrentLang] = useState('en-US');
+  
+  // Update language in Stack and store preference
+  const changeLanguage = (lang) => {
+    app.setLanguage(lang);
+    localStorage.setItem('preferredLanguage', lang);
+    setCurrentLang(lang);
+  };
+  
+  // Load user's preferred language on component mount
+  useEffect(() => {
+    const savedLang = localStorage.getItem('preferredLanguage');
+    if (savedLang) {
+      changeLanguage(savedLang);
+    } else {
+      // Optionally detect browser language
+      const browserLang = navigator.language;
+      // Check if browser language is supported
+      if (['en-US', 'de-DE', 'es-419', 'es-ES', 'fr-CA', 'fr-FR', 'it-IT', 'pt-BR', 'pt-PT'].includes(browserLang)) {
+        changeLanguage(browserLang);
+      }
+    }
+  }, []);
+  
+  return (
+    <select value={currentLang} onChange={(e) => changeLanguage(e.target.value)}>
+      <option value="en-US">English</option>
+      <option value="de-DE">Deutsch</option>
+      <option value="es-ES">Español</option>
+      <option value="fr-FR">Français</option>
+      <option value="it-IT">Italiano</option>
+      <option value="pt-BR">Português</option>
+    </select>
+  );
+}
+
+## Supported Languages
+
+Stack Auth currently supports the following languages:
+
+| Language Code | Language Name |
+|--------------|---------------|
+| `en-US` | English (United States) |
+| `de-DE` | German (Germany) |
+| `es-419` | Spanish (Latin America) |
+| `es-ES` | Spanish (Spain) |
+| `fr-CA` | French (Canada) |
+| `fr-FR` | French (France) |
+| `it-IT` | Italian (Italy) |
+| `pt-BR` | Portuguese (Brazil) |
+| `pt-PT` | Portuguese (Portugal) |
+
+## Customizing Translations
+
+You can override the default translations for any language by providing a custom translations object:
+
+```jsx
+import { StackProvider } from '@stackframe/stack';
+
+// Custom translations to override default text
+const customTranslations = {
+  'en-US': {
+    'auth.signIn.title': 'Welcome Back',
+    'auth.signIn.subtitle': 'Sign in to continue to your account',
+    'auth.button.signIn': 'Log In',
+    // Add any other keys you want to override
+  },
+  'es-ES': {
+    'auth.signIn.title': 'Bienvenido de nuevo',
+    // Spanish translations
+  }
+};
+
+export default function Layout({ children }) {
+  return (
+    <StackProvider 
+      lang="en-US"
+      translations={customTranslations}
+    >
+      {children}
+    </StackProvider>
+  );
+}
+```
+
+This approach allows you to maintain consistent branding terminology across your application while still leveraging Stack's built-in internationalization system.
