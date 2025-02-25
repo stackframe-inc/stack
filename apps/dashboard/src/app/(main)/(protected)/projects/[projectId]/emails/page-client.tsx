@@ -118,9 +118,51 @@ type SentEmail = {
 }
 
 const emailTableColumns: ColumnDef<SentEmail>[] = [
-  { accessorKey: 'recipient', header: 'Recipient' },
-  { accessorKey: 'subject', header: 'Subject' },
-  { accessorKey: 'sentAt', header: 'Sent At' },
+  { 
+    id: 'recipient',
+    header: 'Recipients',
+    accessorFn: (row) => row.to?.join(', ') || '-',
+    cell: ({ getValue }) => <div>{getValue<string>()}</div>
+  },
+  { 
+    accessorKey: 'subject', 
+    header: 'Subject',
+    cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('subject')}</div>
+  },
+  { 
+    id: 'sentAt',
+    header: 'Sent At',
+    accessorFn: (row) => row.sent_at_millis,
+    cell: ({ getValue }) => {
+      const timestamp = getValue<number>();
+      const date = new Date(timestamp);
+      return <div>{date.toLocaleString()}</div>;
+    },
+    sortingFn: 'datetime'
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    accessorFn: (row) => row.error ? 'error' : 'success',
+    cell: ({ getValue }) => {
+      const status = getValue<string>();
+      return (
+        <div className="flex items-center">
+          {status === 'success' ? (
+            <div className="flex items-center">
+              <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+              <span>Success</span>
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <div className="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
+              <span>Failed</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+  }
 ];
 
 function EmailSendDataTable() {
