@@ -118,18 +118,18 @@ type SentEmail = {
 }
 
 const emailTableColumns: ColumnDef<SentEmail>[] = [
-  { 
+  {
     id: 'recipient',
     header: 'Recipients',
     accessorFn: (row) => row.to ? row.to.join(', ') : '-',
     cell: ({ getValue }) => <div>{getValue<string>()}</div>
   },
-  { 
-    accessorKey: 'subject', 
+  {
+    accessorKey: 'subject',
     header: 'Subject',
     cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('subject')}</div>
   },
-  { 
+  {
     id: 'sentAt',
     header: 'Sent At',
     accessorFn: (row) => row.sent_at_millis,
