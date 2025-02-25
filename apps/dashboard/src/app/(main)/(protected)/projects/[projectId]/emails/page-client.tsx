@@ -91,7 +91,7 @@ export default function PageClient() {
                   if (emailConfig?.type === 'shared') {
                     setSharedSmtpWarningDialogOpen(template.type);
                   } else {
-                    router.push('emails/templates/' + template.type);
+                    router.push(`emails/templates/${template.type}`);
                   }
                 }}>Edit Template</Button>
                 {!template.isDefault && <ActionCell
@@ -115,7 +115,9 @@ export default function PageClient() {
         open={sharedSmtpWarningDialogOpen !== null}
         onClose={() => setSharedSmtpWarningDialogOpen(null)}
         title="Shared Email Server"
-        okButton={{ label: "Configure Email Server" }}
+        okButton={{ label: "Edit Templates Anyway", onClick: async () => {
+          router.push(`emails/templates/${sharedSmtpWarningDialogOpen}`);
+        } }}
         cancelButton={{ label: "Cancel" }}
       >
         <Alert variant="default">
@@ -123,6 +125,7 @@ export default function PageClient() {
           <AlertTitle>Warning</AlertTitle>
           <AlertDescription>
             You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
+            You can edit the templates anyway, but you will not be able to save them.
           </AlertDescription>
         </Alert>
       </ActionDialog>
