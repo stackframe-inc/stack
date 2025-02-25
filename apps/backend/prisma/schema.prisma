@@ -945,7 +945,7 @@ model SentEmail {
 
   error   Json?
   tenancy Tenancy      @relation(fields: [tenancyId], references: [id], onDelete: Cascade)
-  user    ProjectUser? @relation(fields: [tenancyId, userId], references: [tenancyId, projectUserId])
+  user    ProjectUser? @relation(fields: [tenancyId, userId], references: [tenancyId, projectUserId], onDelete: Cascade)
 
   @@id([tenancyId, id])
 }
