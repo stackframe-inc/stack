@@ -20,53 +20,14 @@ By default, if no language is provided, it will be set to `en-US`.
 
 You can choose which languages to use by employing your own methods, such as storing the language in `localStorage` or using the user's browser language.
 
-## Supported Languages
+## Supported languages
 
-Stack Auth currently supports the following languages:
-
-| Language Code | Language Name |
-|--------------|---------------|
-| `en-US` | English (United States) |
-| `de-DE` | German (Germany) |
-| `es-419` | Spanish (Latin America) |
-| `es-ES` | Spanish (Spain) |
-| `fr-CA` | French (Canada) |
-| `fr-FR` | French (France) |
-| `it-IT` | Italian (Italy) |
-| `pt-BR` | Portuguese (Brazil) |
-| `pt-PT` | Portuguese (Portugal) |
-
-## Customizing Translations
-
-You can override the default translations for any language by providing a custom translations object:
-
-```jsx
-import { StackProvider } from '@stackframe/stack';
-
-// Custom translations to override default text
-const customTranslations = {
-  'en-US': {
-    'auth.signIn.title': 'Welcome Back',
-    'auth.signIn.subtitle': 'Sign in to continue to your account',
-    'auth.button.signIn': 'Log In',
-    // Add any other keys you want to override
-  },
-  'es-ES': {
-    'auth.signIn.title': 'Bienvenido de nuevo',
-    // Spanish translations
-  }
-};
-
-export default function Layout({ children }) {
-  return (
-    <StackProvider 
-      lang="en-US"
-      translations={customTranslations}
-    >
-      {children}
-    </StackProvider>
-  );
-}
-```
-
-This approach allows you to maintain consistent branding terminology across your application while still leveraging Stack's built-in internationalization system.
+- `en-US`: English (United States)
+- `de-DE`: German (Germany)
+- `es-419`: Spanish (Latin America)
+- `es-ES`: Spanish (Spain)
+- `fr-CA`: French (Canada)
+- `fr-FR`: French (France)
+- `it-IT`: Italian (Italy)
+- `pt-BR`: Portuguese (Brazil)
+- `pt-PT`: Portuguese (Portugal)
