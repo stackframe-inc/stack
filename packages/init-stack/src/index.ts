@@ -1,12 +1,10 @@
-#!/usr/bin/env node
-
 import * as child_process from "child_process";
 import * as fs from "fs";
 import inquirer from "inquirer";
 import open from "open";
 import * as path from "path";
 
-const jsLikeFileExtensions = [
+const jsLikeFileExtensions: string[] = [
   "mtsx",
   "ctsx",
   "tsx",
@@ -22,22 +20,31 @@ const jsLikeFileExtensions = [
 ];
 
 class UserError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.name = "UserError";
   }
 }
 
-let savedProjectPath = process.argv[2] || undefined;
+let savedProjectPath: string | undefined = process.argv[2] || undefined;
 
-const isDryRun = process.argv.includes("--dry-run");
-const isNeon = process.argv.includes("--neon");
-const typeFromArgs = ["js", "next"].find(s => process.argv.includes(`--${s}`));
-const packageManagerFromArgs = ["npm", "yarn", "pnpm", "bun"].find(s => process.argv.includes(`--${s}`));
-const isClient = process.argv.includes("--client");
-const isServer = process.argv.includes("--server");
+const isDryRun: boolean = process.argv.includes("--dry-run");
+const isNeon: boolean = process.argv.includes("--neon");
+const typeFromArgs: string | undefined = ["js", "next"].find(s => process.argv.includes(`--${s}`));
+const packageManagerFromArgs: string | undefined = ["npm", "yarn", "pnpm", "bun"].find(s => process.argv.includes(`--${s}`));
+const isClient: boolean = process.argv.includes("--client");
+const isServer: boolean = process.argv.includes("--server");
 
-const ansis = {
+type Ansis = {
+  red: string,
+  blue: string,
+  green: string,
+  yellow: string,
+  clear: string,
+  bold: string,
+};
+
+const ansis: Ansis = {
   red: "\x1b[31m",
   blue: "\x1b[34m",
   green: "\x1b[32m",
@@ -47,25 +54,35 @@ const ansis = {
   bold: "\x1b[1m",
 };
 
-const colorize = {
+type TemplateFunction = (strings: TemplateStringsArray, ...values: any[]) => string;
+
+type Colorize = {
+  red: TemplateFunction,
+  blue: TemplateFunction,
+  green: TemplateFunction,
+  yellow: TemplateFunction,
+  bold: TemplateFunction,
+};
+
+const colorize: Colorize = {
   red: (strings, ...values) => ansis.red + templateIdentity(strings, ...values) + ansis.clear,
   blue: (strings, ...values) => ansis.blue + templateIdentity(strings, ...values) + ansis.clear,
   green: (strings, ...values) => ansis.green + templateIdentity(strings, ...values) + ansis.clear,
   yellow: (strings, ...values) => ansis.yellow + templateIdentity(strings, ...values) + ansis.clear,
   bold: (strings, ...values) => ansis.bold + templateIdentity(strings, ...values) + ansis.clear,
-}
+};
 
-const filesCreated = [];
-const filesModified = [];
-const commandsExecuted = [];
+const filesCreated: string[] = [];
+const filesModified: string[] = [];
+const commandsExecuted: string[] = [];
 
-const packagesToInstall = [];
-const writeFileHandlers = [];
-const nextSteps = [
+const packagesToInstall: string[] = [];
+const writeFileHandlers: Array<() => Promise<void>> = [];
+const nextSteps: string[] = [
   `Create an account and Stack Auth API key for your project on https://app.stack-auth.com`,
 ];
 
-async function main() {
+async function main(): Promise<void> {
   // Welcome message
   console.log();
   console.log(`
@@ -86,7 +103,7 @@ async function main() {
 
 
   // Wait just briefly so we can use `Steps` in here (it's defined only after the call to `main()`)
-  await new Promise((resolve) => resolve());
+  await new Promise<void>((resolve) => resolve());
 
 
   // Prepare some stuff
@@ -109,12 +126,12 @@ async function main() {
     await Steps.writeStackAppFile(projectInfo, "server");
     await Steps.writeNextHandlerFile(projectInfo);
     await Steps.writeNextLoadingFile(projectInfo);
-    nextSteps.push(`Copy the environment variables from the new API key into your .env.local file`)
+    nextSteps.push(`Copy the environment variables from the new API key into your .env.local file`);
   } else if (type === "js") {
     const defaultExtension = await Steps.guessDefaultFileExtension();
     const where = await Steps.getServerOrClientOrBoth();
     const srcPath = await Steps.guessSrcPath();
-    const appFiles = [];
+    const appFiles: string[] = [];
     for (const w of where) {
       const { fileName } = await Steps.writeStackAppFile({
         type,
@@ -223,13 +240,44 @@ main()
   });
 
 
+type PackageJson = {
+  dependencies?: Record<string, string>,
+  devDependencies?: Record<string, string>,
+  [key: string]: any,
+}
+
+type ProjectInfo = {
+  type: string,
+  srcPath: string,
+  appPath: string,
+  defaultExtension: string,
+  indentation: string,
+}
+
+type NextProjectInfoError = {
+  error: string,
+}
+
+type NextProjectInfoResult = ProjectInfo | NextProjectInfoError;
+
+type StackAppFileOptions = {
+  type: string,
+  srcPath: string,
+  defaultExtension: string,
+  indentation: string,
+}
+
+type StackAppFileResult = {
+  fileName: string,
+}
+
 const Steps = {
-  async getProject() {
+  async getProject(): Promise<{ packageJson: PackageJson }> {
     let projectPath = await getProjectPath();
     if (!fs.existsSync(projectPath)) {
       throw new UserError(`The project path ${projectPath} does not exist`);
     }
-  
+
     const packageJsonPath = path.join(projectPath, "package.json");
     if (!fs.existsSync(packageJsonPath)) {
       throw new UserError(
@@ -238,7 +286,7 @@ const Steps = {
     }
 
     const packageJsonText = fs.readFileSync(packageJsonPath, "utf-8");
-    let packageJson;
+    let packageJson: PackageJson;
     try {
       packageJson = JSON.parse(packageJsonText);
     } catch (e) {
@@ -248,13 +296,13 @@ const Steps = {
     return { packageJson };
   },
 
-  async getProjectType({ packageJson }) {
+  async getProjectType({ packageJson }: { packageJson: PackageJson }): Promise<string> {
     if (typeFromArgs) return typeFromArgs;
 
     const maybeNextProject = await Steps.maybeGetNextProjectInfo({ packageJson });
     if (!("error" in maybeNextProject)) return "next";
 
-    const { type } = assertInteractive() && await inquirer.prompt([
+    const { type } = await inquirer.prompt([
       {
         type: "list",
         name: "type",
@@ -269,27 +317,27 @@ const Steps = {
     return type;
   },
 
-  async getStackPackageName(type, install = false) {
+  async getStackPackageName(type: string, install = false): Promise<string> {
     return {
       "js": (install && process.env.STACK_JS_INSTALL_PACKAGE_NAME_OVERRIDE) || "@stackframe/js",
       "next": (install && process.env.STACK_NEXT_INSTALL_PACKAGE_NAME_OVERRIDE) || "@stackframe/stack",
     }[type] ?? throwErr("Unknown type in addStackPackage: " + type);
   },
 
-  async addStackPackage(type) {
-    packagesToInstall.push(await Steps.getStackPackageName(type, true));  
+  async addStackPackage(type: string): Promise<void> {
+    packagesToInstall.push(await Steps.getStackPackageName(type, true));
   },
 
-  async getNextProjectInfo({ packageJson }) {
+  async getNextProjectInfo({ packageJson }: { packageJson: PackageJson }): Promise<ProjectInfo> {
     const maybe = await Steps.maybeGetNextProjectInfo({ packageJson });
     if ("error" in maybe) throw new UserError(maybe.error);
     return maybe;
   },
 
-  async maybeGetNextProjectInfo({ packageJson }) {
+  async maybeGetNextProjectInfo({ packageJson }: { packageJson: PackageJson }): Promise<NextProjectInfoResult> {
     const projectPath = await getProjectPath();
-  
-    const nextVersionInPackageJson = packageJson?.dependencies?.["next"] ?? packageJson?.devDependencies?.["next"];
+
+    const nextVersionInPackageJson = packageJson.dependencies?.["next"] ?? packageJson.devDependencies?.["next"];
     if (!nextVersionInPackageJson) {
       return { error: `The project at ${projectPath} does not appear to be a Next.js project, or does not have 'next' installed as a dependency.` };
     }
@@ -300,7 +348,7 @@ const Steps = {
     ) {
       return { error: `The project at ${projectPath} is using an unsupported version of Next.js (found ${nextVersionInPackageJson}).\n\nOnly Next.js 14 & 15 projects are currently supported. See Next's upgrade guide: https://nextjs.org/docs/app/building-your-application/upgrading/version-14` };
     }
-  
+
     const nextConfigPathWithoutExtension = path.join(projectPath, "next.config");
     const nextConfigFileExtension = await findJsExtension(
       nextConfigPathWithoutExtension
@@ -329,7 +377,7 @@ const Steps = {
     };
   },
 
-  async writeEnvVars(type) {
+  async writeEnvVars(type: string): Promise<boolean> {
     const projectPath = await getProjectPath();
 
     // TODO: in non-Next environments, ask the user what method they prefer for envvars
@@ -356,7 +404,12 @@ const Steps = {
     return false;
   },
 
-  async dryUpdateNextLayoutFile({ appPath, defaultExtension }) {
+  async dryUpdateNextLayoutFile({ appPath, defaultExtension }: { appPath: string, defaultExtension: string }): Promise<{
+    path: string,
+    updatedContent: string,
+    fileExtension: string,
+    indentation: string,
+  }> {
     const layoutPathWithoutExtension = path.join(appPath, "layout");
     const layoutFileExtension =
       (await findJsExtension(layoutPathWithoutExtension)) ?? defaultExtension;
@@ -380,13 +433,18 @@ const Steps = {
     };
   },
 
-  async updateNextLayoutFile(projectInfo) {
+  async updateNextLayoutFile(projectInfo: ProjectInfo): Promise<{
+    path: string,
+    updatedContent: string,
+    fileExtension: string,
+    indentation: string,
+  }> {
     const res = await Steps.dryUpdateNextLayoutFile(projectInfo);
     laterWriteFile(res.path, res.updatedContent);
     return res;
   },
 
-  async writeStackAppFile({ type, srcPath, defaultExtension, indentation }, clientOrServer) {
+  async writeStackAppFile({ type, srcPath, defaultExtension, indentation }: StackAppFileOptions, clientOrServer: string): Promise<StackAppFileResult> {
     const packageName = await Steps.getStackPackageName(type);
 
     const clientOrServerCap = {
@@ -433,7 +491,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     return { fileName: stackAppPath };
   },
 
-  async writeNextHandlerFile(projectInfo) {
+  async writeNextHandlerFile(projectInfo: ProjectInfo): Promise<void> {
     const handlerPathWithoutExtension = path.join(
       projectInfo.appPath,
       "handler/[...stack]/page"
@@ -455,7 +513,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     );
   },
 
-  async writeNextLoadingFile(projectInfo) {
+  async writeNextLoadingFile(projectInfo: ProjectInfo): Promise<void> {
     let loadingPathWithoutExtension = path.join(projectInfo.appPath, "loading");
     const loadingFileExtension =
       (await findJsExtension(loadingPathWithoutExtension)) ?? projectInfo.defaultExtension;
@@ -466,11 +524,11 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     );
   },
 
-  async getPackageManager() {
+  async getPackageManager(): Promise<{ packageManager: string }> {
     if (packageManagerFromArgs) return { packageManager: packageManagerFromArgs };
     const packageManager = await promptPackageManager();
     const versionCommand = `${packageManager} --version`;
-  
+
     try {
       await shellNicelyFormatted(versionCommand, { shell: true, quiet: true });
     } catch (err) {
@@ -483,7 +541,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     return { packageManager };
   },
 
-  async ensureReady(type) {
+  async ensureReady(type: string): Promise<void> {
     const projectPath = await getProjectPath();
 
     const typeString = {
@@ -503,13 +561,13 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     }
   },
 
-  async getServerOrClientOrBoth() {
+  async getServerOrClientOrBoth(): Promise<string[]> {
     if (isClient && isServer) return ["server", "client"];
     if (isServer) return ["server"];
     if (isClient) return ["client"];
 
     return (await inquirer.prompt([{
-      type: "list", 
+      type: "list",
       name: "type",
       message: "Do you want to use Stack Auth on the server, or on the client?",
       choices: [
@@ -523,7 +581,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
   /**
    * note: this is a heuristic, specific frameworks may have better heuristics (eg. the Next.js code uses the extension of the global layout file)
    */
-  async guessDefaultFileExtension() {
+  async guessDefaultFileExtension(): Promise<string> {
     const projectPath = await getProjectPath();
     const hasTsConfig = fs.existsSync(
       path.join(projectPath, "tsconfig.json")
@@ -534,7 +592,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
   /**
    * note: this is a heuristic, specific frameworks may have better heuristics (eg. the Next.js code uses the location of the app folder)
    */
-  async guessSrcPath() {
+  async guessSrcPath(): Promise<string> {
     const projectPath = await getProjectPath();
     const potentialSrcPath = path.join(projectPath, "src");
     const hasSrcFolder = fs.existsSync(
@@ -543,11 +601,16 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     return hasSrcFolder ? potentialSrcPath : projectPath;
   },
 
-  
+
 };
 
 
-async function getUpdatedLayout(originalLayout) {
+type LayoutResult = {
+  content: string,
+  indentation: string,
+}
+
+async function getUpdatedLayout(originalLayout: string): Promise<LayoutResult | undefined> {
   let layout = originalLayout;
   const indentation = guessIndentation(originalLayout);
 
@@ -601,10 +664,10 @@ async function getUpdatedLayout(originalLayout) {
   };
 }
 
-function guessIndentation(str) {
+function guessIndentation(str: string): string {
   const lines = str.split("\n");
   const linesLeadingWhitespaces = lines
-    .map((line) => line.match(/^\s*/)[0])
+    .map((line) => line.match(/^\s*/)![0])
     .filter((ws) => ws.length > 0);
   const isMostlyTabs =
     linesLeadingWhitespaces.filter((ws) => ws.includes("\t")).length >=
@@ -617,7 +680,7 @@ function guessIndentation(str) {
   return Number.isFinite(min) ? " ".repeat(Math.max(2, min)) : "  ";
 }
 
-function getLineIndex(lines, stringIndex) {
+function getLineIndex(lines: string[], stringIndex: number): [number, number] {
   let lineIndex = 0;
   for (let l = 0; l < lines.length; l++) {
     const line = lines[l];
@@ -631,7 +694,7 @@ function getLineIndex(lines, stringIndex) {
   );
 }
 
-async function getProjectPath() {
+async function getProjectPath(): Promise<string> {
   if (savedProjectPath === undefined) {
     savedProjectPath = process.cwd();
 
@@ -640,7 +703,7 @@ async function getProjectPath() {
     );
     if (askForPathModification) {
       savedProjectPath = (
-        assertInteractive() && await inquirer.prompt([
+        await inquirer.prompt([
           {
             type: "input",
             name: "newPath",
@@ -651,10 +714,10 @@ async function getProjectPath() {
       ).newPath;
     }
   }
-  return savedProjectPath;
+  return savedProjectPath as string;
 }
 
-async function findJsExtension(fullPathWithoutExtension) {
+async function findJsExtension(fullPathWithoutExtension: string): Promise<string | null> {
   for (const ext of jsLikeFileExtensions) {
     const fullPath = fullPathWithoutExtension + "." + ext;
     if (fs.existsSync(fullPath)) {
@@ -664,7 +727,7 @@ async function findJsExtension(fullPathWithoutExtension) {
   return null;
 }
 
-async function promptPackageManager() {
+async function promptPackageManager(): Promise<string> {
   const projectPath = await getProjectPath();
   const yarnLock = fs.existsSync(path.join(projectPath, "yarn.lock"));
   const pnpmLock = fs.existsSync(path.join(projectPath, "pnpm-lock.yaml"));
@@ -681,7 +744,7 @@ async function promptPackageManager() {
     return "bun";
   }
 
-  const answers = assertInteractive() && await inquirer.prompt([
+  const answers = await inquirer.prompt([
     {
       type: "list",
       name: "packageManager",
@@ -692,9 +755,17 @@ async function promptPackageManager() {
   return answers.packageManager;
 }
 
-async function shellNicelyFormatted(command, { quiet, ...options }) {
-  let ui, interval;
-  if (!quiet) { 
+type ShellOptions = {
+  quiet?: boolean,
+  shell?: boolean,
+  cwd?: string,
+  [key: string]: any,
+}
+
+async function shellNicelyFormatted(command: string, { quiet, ...options }: ShellOptions): Promise<void> {
+  let ui: any;
+  let interval: NodeJS.Timeout | undefined;
+  if (!quiet) {
     console.log();
     ui = new inquirer.ui.BottomBar();
     let dots = 4;
@@ -718,7 +789,7 @@ async function shellNicelyFormatted(command, { quiet, ...options }) {
         child.stderr.pipe(ui.log);
       }
 
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         child.on("exit", (code) => {
           if (code === 0) {
             resolve();
@@ -745,19 +816,22 @@ async function shellNicelyFormatted(command, { quiet, ...options }) {
     }
     throw e;
   } finally {
-    clearTimeout(interval);
+    if (interval) {
+      clearTimeout(interval);
+    }
     if (!quiet) {
       ui.close();
     }
   }
 }
 
-async function readFile(fullPath) {
+async function readFile(fullPath: string): Promise<string | null> {
   try {
     if (!isDryRun) {
       return fs.readFileSync(fullPath, "utf-8");
     }
-  } catch (err) {
+    return null;
+  } catch (err: any) {
     if (err.code === "ENOENT") {
       return null;
     }
@@ -765,7 +839,7 @@ async function readFile(fullPath) {
   }
 }
 
-async function writeFile(fullPath, content) {
+async function writeFile(fullPath: string, content: string): Promise<void> {
   let create = !fs.existsSync(fullPath);
   if (!isDryRun) {
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -781,56 +855,56 @@ async function writeFile(fullPath, content) {
   }
 }
 
-function laterWriteFile(...args) {
+function laterWriteFile(fullPath: string, content: string): void {
   writeFileHandlers.push(async () => {
-    await writeFile(...args);
-  })
+    await writeFile(fullPath, content);
+  });
 }
 
-async function writeFileIfNotExists(fullPath, content) {
+async function writeFileIfNotExists(fullPath: string, content: string): Promise<void> {
   if (!fs.existsSync(fullPath)) {
     await writeFile(fullPath, content);
   }
 }
 
-function laterWriteFileIfNotExists(...args) {
+function laterWriteFileIfNotExists(fullPath: string, content: string): void {
   writeFileHandlers.push(async () => {
-    await writeFileIfNotExists(...args);
-  })
+    await writeFileIfNotExists(fullPath, content);
+  });
 }
 
-function assertInteractive() {
+function assertInteractive(): true {
   if (process.env.STACK_DISABLE_INTERACTIVE) {
     throw new UserError("STACK_DISABLE_INTERACTIVE is set, but wizard requires interactivity to complete. Make sure you supplied all required command line arguments!");
   }
   return true;
 }
 
-function throwErr(message) {
+function throwErr(message: string): never {
   throw new Error(message);
 }
 
 // TODO import this function from stack-shared instead (but that would require us to fix the build to let us import it)
-export function templateIdentity(strings, ...values) {
+export function templateIdentity(strings: TemplateStringsArray, ...values: any[]): string {
   if (strings.length === 0) return "";
   if (values.length !== strings.length - 1) throw new Error("Invalid number of values; must be one less than strings");
 
   return strings.slice(1).reduce((result, string, i) => `${result}${values[i] ?? "n/a"}${string}`, strings[0]);
 }
 
-async function clearStdin() {
-  await new Promise((resolve) => {
-      if (process.stdin.isTTY) {
+async function clearStdin(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    if (process.stdin.isTTY) {
         process.stdin.setRawMode(true);
-      }
+    }
       process.stdin.resume();
       process.stdin.removeAllListeners('data');
 
       const flush = () => {
-          while (process.stdin.read() !== null) {}
-          if (process.stdin.isTTY) {
+        while (process.stdin.read() !== null) {}
+        if (process.stdin.isTTY) {
             process.stdin.setRawMode(false);
-          }
+        }
           resolve();
       };
 
