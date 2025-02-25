@@ -3,6 +3,15 @@ import { StackAssertionError } from "./errors";
 export function isNotNull<T>(value: T): value is NonNullable<T> {
   return value !== null && value !== undefined;
 }
+import.meta.vitest?.test("isNotNull", ({ expect }) => {
+  expect(isNotNull(null)).toBe(false);
+  expect(isNotNull(undefined)).toBe(false);
+  expect(isNotNull(0)).toBe(true);
+  expect(isNotNull("")).toBe(true);
+  expect(isNotNull(false)).toBe(true);
+  expect(isNotNull({})).toBe(true);
+  expect(isNotNull([])).toBe(true);
+});
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
 
@@ -48,6 +57,31 @@ export function deepPlainEquals<T>(obj1: T, obj2: unknown, options: { ignoreUnde
     }
   }
 }
+import.meta.vitest?.test("deepPlainEquals", ({ expect }) => {
+  // Simple values
+  expect(deepPlainEquals(1, 1)).toBe(true);
+  expect(deepPlainEquals("test", "test")).toBe(true);
+  expect(deepPlainEquals(1, 2)).toBe(false);
+  expect(deepPlainEquals("test", "other")).toBe(false);
+
+  // Arrays
+  expect(deepPlainEquals([1, 2, 3], [1, 2, 3])).toBe(true);
+  expect(deepPlainEquals([1, 2, 3], [1, 2, 4])).toBe(false);
+  expect(deepPlainEquals([1, 2, 3], [1, 2])).toBe(false);
+
+  // Objects
+  expect(deepPlainEquals({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
+  expect(deepPlainEquals({ a: 1, b: 2 }, { a: 1, b: 3 })).toBe(false);
+  expect(deepPlainEquals({ a: 1, b: 2 }, { a: 1 })).toBe(false);
+
+  // Nested structures
+  expect(deepPlainEquals({ a: 1, b: [1, 2, { c: 3 }] }, { a: 1, b: [1, 2, { c: 3 }] })).toBe(true);
+  expect(deepPlainEquals({ a: 1, b: [1, 2, { c: 3 }] }, { a: 1, b: [1, 2, { c: 4 }] })).toBe(false);
+
+  // With options
+  expect(deepPlainEquals({ a: 1, b: undefined }, { a: 1 }, { ignoreUndefinedValues: true })).toBe(true);
+  expect(deepPlainEquals({ a: 1, b: undefined }, { a: 1 })).toBe(false);
+});
 
 export function deepPlainClone<T>(obj: T): T {
   if (typeof obj === 'function') throw new StackAssertionError("deepPlainClone does not support functions");
@@ -56,6 +90,37 @@ export function deepPlainClone<T>(obj: T): T {
   if (Array.isArray(obj)) return obj.map(deepPlainClone) as any;
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, deepPlainClone(v)])) as any;
 }
+import.meta.vitest?.test("deepPlainClone", ({ expect }) => {
+  // Primitive values
+  expect(deepPlainClone(1)).toBe(1);
+  expect(deepPlainClone("test")).toBe("test");
+  expect(deepPlainClone(null)).toBe(null);
+  expect(deepPlainClone(undefined)).toBe(undefined);
+
+  // Arrays
+  const arr = [1, 2, 3];
+  const clonedArr = deepPlainClone(arr);
+  expect(clonedArr).toEqual(arr);
+  expect(clonedArr).not.toBe(arr); // Different reference
+
+  // Objects
+  const obj = { a: 1, b: 2 };
+  const clonedObj = deepPlainClone(obj);
+  expect(clonedObj).toEqual(obj);
+  expect(clonedObj).not.toBe(obj); // Different reference
+
+  // Nested structures
+  const nested = { a: 1, b: [1, 2, { c: 3 }] };
+  const clonedNested = deepPlainClone(nested);
+  expect(clonedNested).toEqual(nested);
+  expect(clonedNested).not.toBe(nested); // Different reference
+  expect(clonedNested.b).not.toBe(nested.b); // Different reference for nested array
+  expect(clonedNested.b[2]).not.toBe(nested.b[2]); // Different reference for nested object
+
+  // Error cases
+  expect(() => deepPlainClone(() => {})).toThrow();
+  expect(() => deepPlainClone(Symbol())).toThrow();
+});
 
 export function typedEntries<T extends {}>(obj: T): [keyof T, T[keyof T]][] {
   return Object.entries(obj) as any;
@@ -88,15 +153,44 @@ export type FilterUndefined<T> =
 export function filterUndefined<T extends {}>(obj: T): FilterUndefined<T> {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as any;
 }
+import.meta.vitest?.test("filterUndefined", ({ expect }) => {
+  expect(filterUndefined({})).toEqual({});
+  expect(filterUndefined({ a: 1, b: 2 })).toEqual({ a: 1, b: 2 });
+  expect(filterUndefined({ a: 1, b: undefined })).toEqual({ a: 1 });
+  expect(filterUndefined({ a: undefined, b: undefined })).toEqual({});
+  expect(filterUndefined({ a: null, b: undefined })).toEqual({ a: null });
+  expect(filterUndefined({ a: 0, b: "", c: false, d: undefined })).toEqual({ a: 0, b: "", c: false });
+});
 
 export function pick<T extends {}, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([k]) => keys.includes(k as K))) as any;
 }
+import.meta.vitest?.test("pick", ({ expect }) => {
+  const obj = { a: 1, b: 2, c: 3, d: 4 };
+  expect(pick(obj, ["a", "c"])).toEqual({ a: 1, c: 3 });
+  expect(pick(obj, [])).toEqual({});
+  expect(pick(obj, ["a", "e" as keyof typeof obj])).toEqual({ a: 1 });
+  expect(pick({}, ["a"])).toEqual({});
+});
 
 export function omit<T extends {}, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k as K))) as any;
 }
+import.meta.vitest?.test("omit", ({ expect }) => {
+  const obj = { a: 1, b: 2, c: 3, d: 4 };
+  expect(omit(obj, ["a", "c"])).toEqual({ b: 2, d: 4 });
+  expect(omit(obj, [])).toEqual(obj);
+  expect(omit(obj, ["a", "e" as keyof typeof obj])).toEqual({ b: 2, c: 3, d: 4 });
+  expect(omit({}, ["a"])).toEqual({});
+});
 
 export function split<T extends {}, K extends keyof T>(obj: T, keys: K[]): [Pick<T, K>, Omit<T, K>] {
   return [pick(obj, keys), omit(obj, keys)];
 }
+import.meta.vitest?.test("split", ({ expect }) => {
+  const obj = { a: 1, b: 2, c: 3, d: 4 };
+  expect(split(obj, ["a", "c"])).toEqual([{ a: 1, c: 3 }, { b: 2, d: 4 }]);
+  expect(split(obj, [])).toEqual([{}, obj]);
+  expect(split(obj, ["a", "e" as keyof typeof obj])).toEqual([{ a: 1 }, { b: 2, c: 3, d: 4 }]);
+  expect(split({}, ["a"])).toEqual([{}, {}]);
+});
