@@ -133,23 +133,6 @@ export default function PageClient() {
   );
 }
 
-function SharedSmtpWarningDialog() {
-  return <ActionDialog
-    open
-    title="Shared Email Server"
-    okButton={{ label: "Configure Email Server" }}
-    cancelButton={{ label: "Cancel" }}
-  >
-    <Alert variant="default">
-      <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Warning</AlertTitle>
-      <AlertDescription>
-        You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
-      </AlertDescription>
-    </Alert>
-  </ActionDialog>;
-}
-
 function EmailPreview(props: { content: any, type: EmailTemplateType }) {
   const project = useAdminApp().useProject();
   const [valid, document] = useMemo(() => {
