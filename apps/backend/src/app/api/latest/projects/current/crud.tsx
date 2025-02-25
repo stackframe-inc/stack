@@ -101,7 +101,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
           });
 
           if (customTemplateCount !== 0) {
-            throw new StatusError(StatusError.Forbidden, 'Cannot change email service type when custom templates are defined. Disable custom templates first, before changing the email service type.');
+            throw new StatusError(StatusError.BadRequest, 'Cannot change email service type to shared when custom templates are defined. Disable custom templates first, before changing the email service type.');
           }
         }
 
