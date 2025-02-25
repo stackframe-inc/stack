@@ -36,12 +36,12 @@ const isClient: boolean = process.argv.includes("--client");
 const isServer: boolean = process.argv.includes("--server");
 
 type Ansis = {
-  red: string;
-  blue: string;
-  green: string;
-  yellow: string;
-  clear: string;
-  bold: string;
+  red: string,
+  blue: string,
+  green: string,
+  yellow: string,
+  clear: string,
+  bold: string,
 };
 
 const ansis: Ansis = {
@@ -57,11 +57,11 @@ const ansis: Ansis = {
 type TemplateFunction = (strings: TemplateStringsArray, ...values: any[]) => string;
 
 type Colorize = {
-  red: TemplateFunction;
-  blue: TemplateFunction;
-  green: TemplateFunction;
-  yellow: TemplateFunction;
-  bold: TemplateFunction;
+  red: TemplateFunction,
+  blue: TemplateFunction,
+  green: TemplateFunction,
+  yellow: TemplateFunction,
+  bold: TemplateFunction,
 };
 
 const colorize: Colorize = {
@@ -126,7 +126,7 @@ async function main(): Promise<void> {
     await Steps.writeStackAppFile(projectInfo, "server");
     await Steps.writeNextHandlerFile(projectInfo);
     await Steps.writeNextLoadingFile(projectInfo);
-    nextSteps.push(`Copy the environment variables from the new API key into your .env.local file`)
+    nextSteps.push(`Copy the environment variables from the new API key into your .env.local file`);
   } else if (type === "js") {
     const defaultExtension = await Steps.guessDefaultFileExtension();
     const where = await Steps.getServerOrClientOrBoth();
@@ -240,35 +240,35 @@ main()
   });
 
 
-interface PackageJson {
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  [key: string]: any;
+type PackageJson = {
+  dependencies?: Record<string, string>,
+  devDependencies?: Record<string, string>,
+  [key: string]: any,
 }
 
-interface ProjectInfo {
-  type: string;
-  srcPath: string;
-  appPath: string;
-  defaultExtension: string;
-  indentation: string;
+type ProjectInfo = {
+  type: string,
+  srcPath: string,
+  appPath: string,
+  defaultExtension: string,
+  indentation: string,
 }
 
-interface NextProjectInfoError {
-  error: string;
+type NextProjectInfoError = {
+  error: string,
 }
 
 type NextProjectInfoResult = ProjectInfo | NextProjectInfoError;
 
-interface StackAppFileOptions {
-  type: string;
-  srcPath: string;
-  defaultExtension: string;
-  indentation: string;
+type StackAppFileOptions = {
+  type: string,
+  srcPath: string,
+  defaultExtension: string,
+  indentation: string,
 }
 
-interface StackAppFileResult {
-  fileName: string;
+type StackAppFileResult = {
+  fileName: string,
 }
 
 const Steps = {
@@ -277,7 +277,7 @@ const Steps = {
     if (!fs.existsSync(projectPath)) {
       throw new UserError(`The project path ${projectPath} does not exist`);
     }
-  
+
     const packageJsonPath = path.join(projectPath, "package.json");
     if (!fs.existsSync(packageJsonPath)) {
       throw new UserError(
@@ -302,7 +302,7 @@ const Steps = {
     const maybeNextProject = await Steps.maybeGetNextProjectInfo({ packageJson });
     if (!("error" in maybeNextProject)) return "next";
 
-    const { type } = assertInteractive() && await inquirer.prompt([
+    const { type } = await inquirer.prompt([
       {
         type: "list",
         name: "type",
@@ -325,7 +325,7 @@ const Steps = {
   },
 
   async addStackPackage(type: string): Promise<void> {
-    packagesToInstall.push(await Steps.getStackPackageName(type, true));  
+    packagesToInstall.push(await Steps.getStackPackageName(type, true));
   },
 
   async getNextProjectInfo({ packageJson }: { packageJson: PackageJson }): Promise<ProjectInfo> {
@@ -336,8 +336,8 @@ const Steps = {
 
   async maybeGetNextProjectInfo({ packageJson }: { packageJson: PackageJson }): Promise<NextProjectInfoResult> {
     const projectPath = await getProjectPath();
-  
-    const nextVersionInPackageJson = packageJson?.dependencies?.["next"] ?? packageJson?.devDependencies?.["next"];
+
+    const nextVersionInPackageJson = packageJson.dependencies?.["next"] ?? packageJson.devDependencies?.["next"];
     if (!nextVersionInPackageJson) {
       return { error: `The project at ${projectPath} does not appear to be a Next.js project, or does not have 'next' installed as a dependency.` };
     }
@@ -348,7 +348,7 @@ const Steps = {
     ) {
       return { error: `The project at ${projectPath} is using an unsupported version of Next.js (found ${nextVersionInPackageJson}).\n\nOnly Next.js 14 & 15 projects are currently supported. See Next's upgrade guide: https://nextjs.org/docs/app/building-your-application/upgrading/version-14` };
     }
-  
+
     const nextConfigPathWithoutExtension = path.join(projectPath, "next.config");
     const nextConfigFileExtension = await findJsExtension(
       nextConfigPathWithoutExtension
@@ -405,10 +405,10 @@ const Steps = {
   },
 
   async dryUpdateNextLayoutFile({ appPath, defaultExtension }: { appPath: string, defaultExtension: string }): Promise<{
-    path: string;
-    updatedContent: string;
-    fileExtension: string;
-    indentation: string;
+    path: string,
+    updatedContent: string,
+    fileExtension: string,
+    indentation: string,
   }> {
     const layoutPathWithoutExtension = path.join(appPath, "layout");
     const layoutFileExtension =
@@ -434,10 +434,10 @@ const Steps = {
   },
 
   async updateNextLayoutFile(projectInfo: ProjectInfo): Promise<{
-    path: string;
-    updatedContent: string;
-    fileExtension: string;
-    indentation: string;
+    path: string,
+    updatedContent: string,
+    fileExtension: string,
+    indentation: string,
   }> {
     const res = await Steps.dryUpdateNextLayoutFile(projectInfo);
     laterWriteFile(res.path, res.updatedContent);
@@ -528,7 +528,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     if (packageManagerFromArgs) return { packageManager: packageManagerFromArgs };
     const packageManager = await promptPackageManager();
     const versionCommand = `${packageManager} --version`;
-  
+
     try {
       await shellNicelyFormatted(versionCommand, { shell: true, quiet: true });
     } catch (err) {
@@ -567,7 +567,7 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     if (isClient) return ["client"];
 
     return (await inquirer.prompt([{
-      type: "list", 
+      type: "list",
       name: "type",
       message: "Do you want to use Stack Auth on the server, or on the client?",
       choices: [
@@ -601,13 +601,13 @@ type === "js" && clientOrServer === "server" ? `\n${indentation}secretServerKey:
     return hasSrcFolder ? potentialSrcPath : projectPath;
   },
 
-  
+
 };
 
 
-interface LayoutResult {
-  content: string;
-  indentation: string;
+type LayoutResult = {
+  content: string,
+  indentation: string,
 }
 
 async function getUpdatedLayout(originalLayout: string): Promise<LayoutResult | undefined> {
@@ -703,7 +703,7 @@ async function getProjectPath(): Promise<string> {
     );
     if (askForPathModification) {
       savedProjectPath = (
-        assertInteractive() && await inquirer.prompt([
+        await inquirer.prompt([
           {
             type: "input",
             name: "newPath",
@@ -744,7 +744,7 @@ async function promptPackageManager(): Promise<string> {
     return "bun";
   }
 
-  const answers = assertInteractive() && await inquirer.prompt([
+  const answers = await inquirer.prompt([
     {
       type: "list",
       name: "packageManager",
@@ -755,17 +755,17 @@ async function promptPackageManager(): Promise<string> {
   return answers.packageManager;
 }
 
-interface ShellOptions {
-  quiet?: boolean;
-  shell?: boolean;
-  cwd?: string;
-  [key: string]: any;
+type ShellOptions = {
+  quiet?: boolean,
+  shell?: boolean,
+  cwd?: string,
+  [key: string]: any,
 }
 
 async function shellNicelyFormatted(command: string, { quiet, ...options }: ShellOptions): Promise<void> {
   let ui: any;
   let interval: NodeJS.Timeout | undefined;
-  if (!quiet) { 
+  if (!quiet) {
     console.log();
     ui = new inquirer.ui.BottomBar();
     let dots = 4;
@@ -894,17 +894,17 @@ export function templateIdentity(strings: TemplateStringsArray, ...values: any[]
 
 async function clearStdin(): Promise<void> {
   await new Promise<void>((resolve) => {
-      if (process.stdin.isTTY) {
+    if (process.stdin.isTTY) {
         process.stdin.setRawMode(true);
-      }
+    }
       process.stdin.resume();
       process.stdin.removeAllListeners('data');
 
       const flush = () => {
-          while (process.stdin.read() !== null) {}
-          if (process.stdin.isTTY) {
+        while (process.stdin.read() !== null) {}
+        if (process.stdin.isTTY) {
             process.stdin.setRawMode(false);
-          }
+        }
           resolve();
       };
 
