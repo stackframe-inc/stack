@@ -1,3 +1,4 @@
+// IF_PLATFORM next
 import { StackAssertionError } from "@stackframe/stack-shared/dist/utils/errors";
 import { FilterUndefined, filterUndefined, pick } from "@stackframe/stack-shared/dist/utils/objects";
 import { getRelativePart } from "@stackframe/stack-shared/dist/utils/urls";
@@ -218,3 +219,31 @@ export default async function StackHandler<HasTokenStore extends boolean>(props:
 function filterUndefinedINU<T extends {}>(value: T | undefined): FilterUndefined<T> | undefined {
   return value === undefined ? value : filterUndefined(value);
 }
+
+/* ELSE_IF_PLATFORM react-like *//*
+import { StackClientApp } from "../lib/stack-app";
+
+type Components = {
+  SignIn: typeof SignIn,
+  SignUp: typeof SignUp,
+  EmailVerification: typeof EmailVerification,
+  PasswordReset: typeof PasswordReset,
+  ForgotPassword: typeof ForgotPassword,
+  SignOut: typeof SignOut,
+  OAuthCallback: typeof OAuthCallback,
+  MagicLinkCallback: typeof MagicLinkCallback,
+  TeamInvitation: typeof TeamInvitation,
+  ErrorPage: typeof ErrorPage,
+  AccountSettings: typeof AccountSettings,
+};
+
+export default function StackHandler(props: {
+  app: StackClientApp<true>,
+  fullPage: boolean,
+  componentProps?: {
+    [K in keyof Components]?: Parameters<Components[K]>[0];
+  },
+}) {
+  return <></>;
+}
+*//* END_PLATFORM */

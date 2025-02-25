@@ -3,8 +3,8 @@
 import { useHash } from '@stackframe/stack-shared/dist/hooks/use-hash';
 import { Button, Typography, cn } from '@stackframe/stack-ui';
 import { XIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React, { ReactNode, useEffect } from 'react';
+import { useStackApp } from '../..';
 
 export type SidebarItem = {
   title: React.ReactNode,
@@ -17,13 +17,14 @@ export type SidebarItem = {
 }
 
 export function SidebarLayout(props: { items: SidebarItem[], title?: ReactNode, className?: string }) {
-  const router = useRouter();
+  const app = useStackApp();
+  const navigate = app.useNavigate();
   const hash = useHash();
   const selectedIndex = props.items.findIndex(item => item.id && (item.id === hash));
 
   useEffect(() => {
     if (selectedIndex === -1) {
-      router.push('#' + props.items[0].id);
+      navigate('#' + props.items[0].id);
     }
   }, [hash]);
 
@@ -40,7 +41,8 @@ export function SidebarLayout(props: { items: SidebarItem[], title?: ReactNode, 
 }
 
 function Items(props: { items: SidebarItem[], selectedIndex: number }) {
-  const router = useRouter();
+  const app = useStackApp();
+  const navigate = app.useNavigate();
 
   return props.items.map((item, index) => (
     item.type === 'item' ?
@@ -54,7 +56,7 @@ function Items(props: { items: SidebarItem[], selectedIndex: number }) {
         )}
         onClick={() => {
           if (item.id) {
-            router.push('#' + item.id);
+            navigate('#' + item.id);
           }
         }}
       >
@@ -97,7 +99,8 @@ function DesktopLayout(props: { items: SidebarItem[], title?: ReactNode, selecte
 
 function MobileLayout(props: { items: SidebarItem[], title?: ReactNode, selectedIndex: number }) {
   const selectedItem = props.items[props.selectedIndex];
-  const router = useRouter();
+  const app = useStackApp();
+  const navigate = app.useNavigate();
 
   if (props.selectedIndex === -1) {
     return (
@@ -118,7 +121,7 @@ function MobileLayout(props: { items: SidebarItem[], title?: ReactNode, selected
             <Button
               variant='ghost'
               size='icon'
-              onClick={() => { router.push('#'); }}
+              onClick={() => { navigate('#'); }}
             >
               <XIcon className='h-5 w-5' />
             </Button>

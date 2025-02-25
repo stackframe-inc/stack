@@ -1,7 +1,8 @@
 'use client';
 
+// NEXT_LINE_PLATFORM next
+import { cn } from "@stackframe/stack-ui";
 import NextLink from 'next/link';
-import { cn } from "../../lib/utils";
 
 type LinkProps = {
   href: string,
@@ -13,6 +14,7 @@ type LinkProps = {
 };
 
 function Link(props: LinkProps) {
+  // IF_PLATFORM next
   return <NextLink
     href={props.href}
     target={props.target}
@@ -22,6 +24,16 @@ function Link(props: LinkProps) {
   >
     {props.children}
   </NextLink>;
+  // ELSE_PLATFORM
+  return <a
+    href={props.href}
+    target={props.target}
+    className={props.className}
+    onClick={props.onClick}
+  >
+    {props.children}
+  </a>;
+  // END_PLATFORM
 }
 
 function StyledLink(props: LinkProps) {

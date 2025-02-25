@@ -30,6 +30,7 @@ import { mergeScopeStrings } from "@stackframe/stack-shared/dist/utils/strings";
 import { getRelativePart, isRelative } from "@stackframe/stack-shared/dist/utils/urls";
 import { generateUuid } from "@stackframe/stack-shared/dist/utils/uuids";
 import * as cookie from "cookie";
+// NEXT_LINE_PLATFORM next
 import * as NextNavigationUnscrambled from "next/navigation"; // import the entire module to get around some static compiler warnings emitted by Next.js in some cases
 // NEXT_LINE_PLATFORM react-like
 import React, { useCallback, useMemo } from "react";
@@ -38,13 +39,15 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmptyCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "./cookie";
 
 let isReactServer = false;
-// IF_PLATFORM react-like
+// IF_PLATFORM next
 import * as sc from "@stackframe/stack-sc";
 isReactServer = sc.isReactServer;
 // END_PLATFORM
 
+// IF_PLATFORM next
 // NextNavigation.useRouter does not exist in react-server environments and some bundlers try to be helpful and throw a warning. Ignore the warning.
 const NextNavigation = scrambleDuringCompileTime(NextNavigationUnscrambled);
+// END_PLATFORM
 
 const clientVersion = "STACK_COMPILE_TIME_CLIENT_PACKAGE_VERSION_SENTINEL";
 if (clientVersion.startsWith("STACK_COMPILE_TIME")) {
@@ -1243,6 +1246,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     if (this._redirectMethod === "none") {
       return;
     } else if (isReactServer && this._redirectMethod === "nextjs") {
+      // NEXT_LINE_PLATFORM next
       NextNavigation.redirect(options.url.toString(), options.replace ? NextNavigation.RedirectType.replace : NextNavigation.RedirectType.push);
     } else if (typeof this._redirectMethod === "object" && this._redirectMethod.navigate) {
       this._redirectMethod.navigate(options.url.toString());
@@ -1257,6 +1261,20 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     await wait(2000);
   }
 
+  // IF_PLATFORM react-like
+  useNavigate() {
+    if (typeof this._redirectMethod === "object") {
+      return this._redirectMethod.useNavigate();
+    } else if (this._redirectMethod === "window") {
+      return () => window.location.assign;
+    } else if (this._redirectMethod === "nextjs") {
+      // NEXT_LINE_PLATFORM next
+      return NextNavigation.useRouter().push;
+    } else {
+      return undefined;
+    }
+  }
+  // END_PLATFORM
   protected async _redirectIfTrusted(url: string, options?: RedirectToOptions) {
     if (!await this._isTrusted(url)) {
       throw new Error(`Redirect URL ${url} is not trusted; should be relative.`);
@@ -1415,7 +1433,6 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   useUser(options?: GetUserOptions<HasTokenStore>): ProjectCurrentUser<ProjectId> | null {
     this._ensurePersistentTokenStore(options?.tokenStore);
 
-    const router = NextNavigation.useRouter();
     const session = this._useSession(options?.tokenStore);
     const crud = useAsyncCache(this._currentUserCache, [session], "useUser()");
 
@@ -2297,7 +2314,6 @@ class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extends strin
       // TODO this code is duplicated from the client app; fix that
       this._ensurePersistentTokenStore(options?.tokenStore);
 
-      const router = NextNavigation.useRouter();
       const session = this._useSession(options?.tokenStore);
       const crud = useAsyncCache(this._currentServerUserCache, [session], "useUser()");
 
@@ -3569,6 +3585,9 @@ export type StackClientApp<HasTokenStore extends boolean = boolean, ProjectId ex
     getUser(options: GetUserOptions<HasTokenStore> & { or: 'redirect' }): Promise<ProjectCurrentUser<ProjectId>>,
     getUser(options: GetUserOptions<HasTokenStore> & { or: 'throw' }): Promise<ProjectCurrentUser<ProjectId>>,
     getUser(options?: GetUserOptions<HasTokenStore>): Promise<ProjectCurrentUser<ProjectId> | null>,
+
+    // NEXT_LINE_PLATFORM react-like
+    useNavigate(): (to: string) => void,
 
     [stackAppInternalsSymbol]: {
       toClientJson(): StackClientAppJson<HasTokenStore, ProjectId>,
