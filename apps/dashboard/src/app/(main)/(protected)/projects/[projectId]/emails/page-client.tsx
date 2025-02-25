@@ -27,6 +27,7 @@ export default function PageClient() {
   const router = useRouter();
   const [resetTemplateType, setResetTemplateType] = useState<EmailTemplateType>("email_verification");
   const [resetTemplateDialogOpen, setResetTemplateDialogOpen] = useState(false);
+  const [sharedSmtpWarningDialogOpen, setSharedSmtpWarningDialogOpen] = useState<EmailTemplateType|null>(null);
 
   return (
     <PageLayout title="Emails" description="Configure email settings for your project">
@@ -86,7 +87,13 @@ export default function PageClient() {
                 </Typography>
               </div>
               <div className="flex-grow flex justify-start items-end gap-2">
-                <Button variant='secondary' onClick={() => router.push('emails/templates/' + template.type)}>Edit Template</Button>
+                <Button variant='secondary' onClick={() => {
+                  if (emailConfig?.type === 'shared') {
+                    setSharedSmtpWarningDialogOpen(template.type);
+                  } else {
+                    router.push('emails/templates/' + template.type);
+                  }
+                }}>Edit Template</Button>
                 {!template.isDefault && <ActionCell
                   items={[{
                     item: 'Reset to Default',
@@ -104,13 +111,40 @@ export default function PageClient() {
         ))}
       </SettingCard>
 
-      <ResetEmailTemplateDialog
-        templateType={resetTemplateType}
-        open={resetTemplateDialogOpen}
-        onClose={() => setResetTemplateDialogOpen(false)}
-      />
+      <ActionDialog
+        open={sharedSmtpWarningDialogOpen !== null}
+        onClose={() => setSharedSmtpWarningDialogOpen(null)}
+        title="Shared Email Server"
+        okButton={{ label: "Configure Email Server" }}
+        cancelButton={{ label: "Cancel" }}
+      >
+        <Alert variant="default">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Warning</AlertTitle>
+          <AlertDescription>
+            You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
+          </AlertDescription>
+        </Alert>
+      </ActionDialog>
     </PageLayout>
   );
+}
+
+function SharedSmtpWarningDialog() {
+  return <ActionDialog
+    open
+    title="Shared Email Server"
+    okButton={{ label: "Configure Email Server" }}
+    cancelButton={{ label: "Cancel" }}
+  >
+    <Alert variant="default">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Warning</AlertTitle>
+      <AlertDescription>
+        You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
+      </AlertDescription>
+    </Alert>
+  </ActionDialog>;
 }
 
 function EmailPreview(props: { content: any, type: EmailTemplateType }) {
