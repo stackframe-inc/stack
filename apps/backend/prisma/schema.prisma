@@ -944,7 +944,7 @@ model SentEmail {
   text         String?
 
   error   Json?
-  tenancy Tenancy      @relation(fields: [tenancyId], references: [id])
+  tenancy Tenancy      @relation(fields: [tenancyId], references: [id], onDelete: Cascade)
   user    ProjectUser? @relation(fields: [tenancyId, userId], references: [tenancyId, projectUserId])
 
   @@id([tenancyId, id])
