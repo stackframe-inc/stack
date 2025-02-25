@@ -170,7 +170,8 @@ import.meta.vitest?.test("pick", ({ expect }) => {
   expect(pick(obj, ["a", "c"])).toEqual({ a: 1, c: 3 });
   expect(pick(obj, [])).toEqual({});
   expect(pick(obj, ["a", "e" as keyof typeof obj])).toEqual({ a: 1 });
-  expect(pick({}, ["a"])).toEqual({});
+  // Use type assertion for empty object to avoid TypeScript error
+  expect(pick({} as Record<string, unknown>, ["a"])).toEqual({});
 });
 
 export function omit<T extends {}, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
@@ -181,7 +182,8 @@ import.meta.vitest?.test("omit", ({ expect }) => {
   expect(omit(obj, ["a", "c"])).toEqual({ b: 2, d: 4 });
   expect(omit(obj, [])).toEqual(obj);
   expect(omit(obj, ["a", "e" as keyof typeof obj])).toEqual({ b: 2, c: 3, d: 4 });
-  expect(omit({}, ["a"])).toEqual({});
+  // Use type assertion for empty object to avoid TypeScript error
+  expect(omit({} as Record<string, unknown>, ["a"])).toEqual({});
 });
 
 export function split<T extends {}, K extends keyof T>(obj: T, keys: K[]): [Pick<T, K>, Omit<T, K>] {
@@ -192,5 +194,6 @@ import.meta.vitest?.test("split", ({ expect }) => {
   expect(split(obj, ["a", "c"])).toEqual([{ a: 1, c: 3 }, { b: 2, d: 4 }]);
   expect(split(obj, [])).toEqual([{}, obj]);
   expect(split(obj, ["a", "e" as keyof typeof obj])).toEqual([{ a: 1 }, { b: 2, c: 3, d: 4 }]);
-  expect(split({}, ["a"])).toEqual([{}, {}]);
+  // Use type assertion for empty object to avoid TypeScript error
+  expect(split({} as Record<string, unknown>, ["a"])).toEqual([{}, {}]);
 });

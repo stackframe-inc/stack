@@ -29,17 +29,26 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Mock current date for consistent testing
   const now = new Date("2023-01-15T12:00:00.000Z");
   const originalDate = Date;
-  global.Date = class extends Date {
-    constructor(...args) {
-      if (args.length === 0) {
-        return new originalDate(now);
-      }
-      return new originalDate(...args);
+  
+  // Use a different approach to mock Date that's TypeScript-friendly
+  const mockDate = {
+    now: () => now.getTime()
+  } as unknown as DateConstructor;
+  
+  // Save original Date implementation
+  const OriginalDate = global.Date;
+  
+  // Replace global Date with our mock
+  global.Date = function(this: Date, ...args: any[]) {
+    if (args.length === 0) {
+      return new OriginalDate(now);
     }
-    static now() {
-      return now.getTime();
-    }
-  };
+    // Use apply instead of spread operator to avoid TypeScript error
+    return new OriginalDate(args[0]);
+  } as unknown as DateConstructor;
+  
+  // Copy static methods
+  global.Date.now = mockDate.now;
 
   // Test past times
   expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
