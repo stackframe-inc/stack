@@ -121,7 +121,7 @@ const emailTableColumns: ColumnDef<SentEmail>[] = [
   {
     id: 'recipient',
     header: 'Recipients',
-    accessorFn: (row) => row.to ? row.to.join(', ') : '-',
+    accessorFn: (row) => row.to?.join(', ') || '-',
     cell: ({ getValue }) => <div>{getValue<string>()}</div>
   },
   {
