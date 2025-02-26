@@ -65,7 +65,11 @@ type RequestLike = {
   },
 };
 
-type RedirectMethod = "window" | "nextjs" | "none" | {
+type RedirectMethod = "window"
+// NEXT_LINE_PLATFORM next
+| "nextjs"
+| "none"
+| {
   useNavigate: () => (to: string) => void,
   navigate?: (to: string) => void,
 }
@@ -1250,9 +1254,10 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   protected async _redirectTo(options: { url: URL | string, replace?: boolean }) {
     if (this._redirectMethod === "none") {
       return;
+    // IF_PLATFORM next
     } else if (isReactServer && this._redirectMethod === "nextjs") {
-      // NEXT_LINE_PLATFORM next
       NextNavigation.redirect(options.url.toString(), options.replace ? NextNavigation.RedirectType.replace : NextNavigation.RedirectType.push);
+    // END_PLATFORM
     } else if (typeof this._redirectMethod === "object" && this._redirectMethod.navigate) {
       this._redirectMethod.navigate(options.url.toString());
     } else {
@@ -1272,11 +1277,12 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
       return this._redirectMethod.useNavigate();
     } else if (this._redirectMethod === "window") {
       return () => window.location.assign;
+    // IF_PLATFORM next
     } else if (this._redirectMethod === "nextjs") {
-      // NEXT_LINE_PLATFORM next
       return NextNavigation.useRouter().push;
+    // END_PLATFORM
     } else {
-      return () => {};
+      return (to: string) => {};
     }
   }
   // END_PLATFORM
