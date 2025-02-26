@@ -511,7 +511,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
         projectId: _options.projectId ?? getDefaultProjectId(),
         clientVersion,
         publishableClientKey: _options.publishableClientKey ?? getDefaultPublishableClientKey(),
-        ensureNoCache: async () => {
+        prepareRequest: async () => {
           // NEXT_LINE_PLATFORM next
           await cookies?.();
         }
