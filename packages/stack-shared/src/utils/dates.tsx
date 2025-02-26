@@ -27,58 +27,14 @@ export function fromNow(date: Date): string {
   return fromNowDetailed(date).result;
 }
 
-import.meta.vitest?.test("fromNow", ({ expect }) => {
-  // Mock current date for consistent testing
-  const now = new Date("2023-01-15T12:00:00.000Z");
-  const originalDate = Date;
-
-  // Save original Date implementation and create a fixed date
-  const fixedDate = new Date(now);
-
-  // Mock Date.now() to return our fixed time
-  const originalNow = Date.now;
-  Date.now = () => now.getTime();
-
-  // Need to mock the Date constructor to ensure new Date() returns our fixed date
-  const OriginalDate = global.Date;
-
-  // Create a simple Date mock that returns our fixed date for new Date()
-  // but passes through all other calls to the original Date
-  const MockDate = function(this: any) {
-    if (arguments.length === 0) {
-      return new OriginalDate(now);
-    } else if (arguments.length === 1) {
-      return new OriginalDate(arguments[0]);
-    } else if (arguments.length === 2) {
-      return new OriginalDate(arguments[0], arguments[1]);
-    } else if (arguments.length === 3) {
-      return new OriginalDate(arguments[0], arguments[1], arguments[2]);
-    } else if (arguments.length === 4) {
-      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3]);
-    } else if (arguments.length === 5) {
-      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
-    } else if (arguments.length === 6) {
-      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
-    } else {
-      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
-    }
-  } as any;
-
-  // Copy all static methods and properties from the original Date
-  Object.getOwnPropertyNames(OriginalDate).forEach((prop: string) => {
-    if (prop !== 'prototype' && prop !== 'length' && prop !== 'name') {
-      // Use type assertion to safely access properties
-      MockDate[prop as keyof typeof MockDate] = OriginalDate[prop as keyof typeof OriginalDate];
-    }
-  });
-
-  MockDate.prototype = OriginalDate.prototype;
-  MockDate.now = () => now.getTime();
-
-  // Replace the global Date
-  global.Date = MockDate;
-  global.Date.now = Date.now;
-
+import.meta.vitest?.test("fromNow", ({ expect, vi }) => {
+  // Set a fixed date for testing
+  const fixedDate = new Date("2023-01-15T12:00:00.000Z");
+  
+  // Use Vitest's fake timers
+  vi.useFakeTimers();
+  vi.setSystemTime(fixedDate);
+  
   // Test past times
   expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
   expect(fromNow(new Date("2023-01-15T11:59:00.000Z"))).toBe("1 minute ago");
@@ -95,10 +51,9 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
 
   // Test very old dates (should use date format)
   expect(fromNow(new Date("2022-01-15T12:00:00.000Z"))).toMatch(/Jan 15, 2022/);
-
-  // Restore original Date and Date.now
-  global.Date = OriginalDate;
-  Date.now = originalNow;
+  
+  // Restore real timers
+  vi.useRealTimers();
 });
 
 export function fromNowDetailed(date: Date): {
@@ -157,8 +112,11 @@ export function getInputDatetimeLocalString(date: Date): string {
   return date.toISOString().slice(0, 19);
 }
 
-import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
-  // Mock date to avoid timezone issues in tests
+import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect, vi }) => {
+  // Use Vitest's fake timers to ensure consistent timezone behavior
+  vi.useFakeTimers();
+  
+  // Test with a specific date
   const mockDate = new Date("2023-01-15T12:30:45.000Z");
   const result = getInputDatetimeLocalString(mockDate);
 
@@ -176,4 +134,7 @@ import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
     const result = getInputDatetimeLocalString(date);
     expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
   }
+  
+  // Restore real timers
+  vi.useRealTimers();
 });
