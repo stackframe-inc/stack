@@ -1,5 +1,5 @@
 import { remainder } from "./math";
-import { vi } from "vitest"; 
+import { vi } from "vitest";
 
 export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
