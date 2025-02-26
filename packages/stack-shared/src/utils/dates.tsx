@@ -31,11 +31,11 @@ export function fromNow(date: Date): string {
 import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Set a fixed date for testing
   const fixedDate = new Date("2023-01-15T12:00:00.000Z");
-  
+
   // Use Vitest's fake timers
   vi.useFakeTimers();
   vi.setSystemTime(fixedDate);
-  
+
   // Test past times
   expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
   expect(fromNow(new Date("2023-01-15T11:59:00.000Z"))).toBe("1 minute ago");
@@ -52,7 +52,7 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
 
   // Test very old dates (should use date format)
   expect(fromNow(new Date("2022-01-15T12:00:00.000Z"))).toMatch(/Jan 15, 2022/);
-  
+
   // Restore real timers
   vi.useRealTimers();
 });
@@ -116,7 +116,7 @@ export function getInputDatetimeLocalString(date: Date): string {
 import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
   // Use Vitest's fake timers to ensure consistent timezone behavior
   vi.useFakeTimers();
-  
+
   // Test with a specific date
   const mockDate = new Date("2023-01-15T12:30:45.000Z");
   const result = getInputDatetimeLocalString(mockDate);
@@ -135,7 +135,7 @@ import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
     const result = getInputDatetimeLocalString(date);
     expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
   }
-  
+
   // Restore real timers
   vi.useRealTimers();
 });
