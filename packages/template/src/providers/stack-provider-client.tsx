@@ -11,11 +11,13 @@ export const StackContext = React.createContext<null | {
 }>(null);
 
 export function StackProviderClient(props: {
-  appJson: StackClientAppJson<true, string>,
+  app: StackClientAppJson<true, string> | StackClientApp<true>,
+  serialized: boolean,
   children?: React.ReactNode,
 }) {
-  const appJson = props.appJson;
-  const app = StackClientApp[stackAppInternalsSymbol].fromClientJson(appJson);
+  const app = props.serialized
+    ? StackClientApp[stackAppInternalsSymbol].fromClientJson(props.app as StackClientAppJson<true, string>)
+    : props.app as StackClientApp<true>;
 
   globalVar.__STACK_AUTH__ = { app };
 
@@ -29,7 +31,7 @@ export function StackProviderClient(props: {
 export function UserSetter(props: { userJsonPromise: Promise<CurrentUserCrud['Client']['Read'] | null> }) {
   const app = useStackApp();
   useEffect(() => {
-    const promise = (async () => await props.userJsonPromise)();  // there is a Next.js bug where Promises passed by server components return `undefined` as their `then` value, so wrap it in a normal promise
+    const promise = (async () => await props.userJsonPromise)(); // there is a Next.js bug where Promises passed by server components return `undefined` as their `then` value, so wrap it in a normal promise
     app[stackAppInternalsSymbol].setCurrentUser(promise);
   }, []);
   return null;

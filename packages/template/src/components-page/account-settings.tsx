@@ -10,7 +10,6 @@ import { throwErr } from '@stackframe/stack-shared/dist/utils/errors';
 import { runAsynchronously, runAsynchronouslyWithAlert } from '@stackframe/stack-shared/dist/utils/promises';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, ActionCell, Badge, Button, Input, Label, PasswordInput, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Typography } from '@stackframe/stack-ui';
 import { Edit, Trash, icons } from 'lucide-react';
-import { useRouter } from "next/navigation";
 import { TOTPController, createTOTPKeyURI } from "oslo/otp";
 import * as QRCode from 'qrcode';
 import React, { Suspense, useEffect, useState } from "react";
@@ -1100,7 +1099,7 @@ export function TeamCreation() {
   const app = useStackApp();
   const project = app.useProject();
   const user = useUser({ or: 'redirect' });
-  const router = useRouter();
+  const navigate = app.useNavigate();
   const [loading, setLoading] = useState(false);
 
   if (!project.config.clientTeamCreationEnabled) {
@@ -1117,7 +1116,7 @@ export function TeamCreation() {
       setLoading(false);
     }
 
-    router.push(`#team-${team.id}`);
+    navigate(`#team-${team.id}`);
   };
 
   return (
