@@ -1,5 +1,13 @@
 # @stackframe/example-demo-app
 
+## 2.7.19
+
+### Patch Changes
+
+- @stackframe/stack@2.7.19
+- @stackframe/stack-shared@2.7.19
+- @stackframe/stack-ui@2.7.19
+
 ## 2.7.18
 
 ### Patch Changes
