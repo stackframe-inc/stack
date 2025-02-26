@@ -105,6 +105,8 @@ function getUrls(partial: Partial<HandlerUrls>): HandlerUrls {
   const handler = partial.handler ?? "/handler";
   const home = partial.home ?? "/";
   const afterSignIn = partial.afterSignIn ?? home;
+  // Use a different default for afterSignOut to avoid redirecting to home
+  const afterSignOut = partial.afterSignOut ?? `${handler}/signed-out`;
   return {
     handler,
     signIn: `${handler}/sign-in`,
@@ -112,7 +114,7 @@ function getUrls(partial: Partial<HandlerUrls>): HandlerUrls {
     signUp: `${handler}/sign-up`,
     afterSignUp: afterSignIn,
     signOut: `${handler}/sign-out`,
-    afterSignOut: home,
+    afterSignOut: afterSignOut,
     emailVerification: `${handler}/email-verification`,
     passwordReset: `${handler}/password-reset`,
     forgotPassword: `${handler}/forgot-password`,
@@ -1654,6 +1656,10 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   protected async _signOut(session: InternalSession, options?: { redirectUrl?: URL | string }): Promise<void> {
     await storeLock.withWriteLock(async () => {
       await this._interface.signOut(session);
+
+      // Add a small delay to ensure the session is properly cleared before redirecting
+      await wait(100);
+
       if (options?.redirectUrl) {
         await this._redirectTo({ url: options.redirectUrl, replace: true });
       } else {
@@ -1662,6 +1668,15 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     });
   }
 
+  /**
+   * Signs out the current user.
+   *
+   * @param options - Options for signing out
+   * @param options.redirectUrl - The URL to redirect to after signing out.
+   *                             If not provided, redirects to the `afterSignOut` URL from the Stack app's `urls` object.
+   *                             This can be configured when initializing the Stack app.
+   * @returns A promise that resolves when the sign-out process is complete
+   */
   async signOut(options?: { redirectUrl?: URL | string }): Promise<void> {
     const user = await this.getUser();
     if (user) {
