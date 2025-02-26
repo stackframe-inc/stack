@@ -3,16 +3,6 @@ import { Suspense } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { stackClientApp } from "./stack";
 
-function StackRoutes(props: { children: React.ReactNode }) {
-  return (
-    <StackProvider app={stackClientApp}>
-      <StackTheme>
-        {props.children}
-      </StackTheme>
-    </StackProvider>
-  );
-}
-
 function HandlerRoutes() {
   const location = useLocation();
   
@@ -25,11 +15,14 @@ function App() {
   return (
     <Suspense fallback={null}>
       <BrowserRouter>
-        <StackRoutes>
-          <Routes>
-            <Route path="/handler/*" element={<HandlerRoutes />} />
-          </Routes>
-        </StackRoutes>
+        <StackProvider app={stackClientApp}>
+          <StackTheme>
+            <Routes>
+              <Route path="/handler/*" element={<HandlerRoutes />} />
+              <Route path="/" element={<div>hello world</div>} />
+            </Routes>
+          </StackTheme>
+        </StackProvider>
       </BrowserRouter>
     </Suspense>
   );
