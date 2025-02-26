@@ -61,7 +61,7 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
       return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
     }
   } as any;
-  
+
   // Copy all static methods and properties from the original Date
   Object.getOwnPropertyNames(OriginalDate).forEach((prop: string) => {
     if (prop !== 'prototype' && prop !== 'length' && prop !== 'name') {
