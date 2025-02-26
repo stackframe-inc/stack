@@ -20,5 +20,9 @@
 - No direct 'use' imports from React (use React.use instead)
 - Follow existing file structure and naming patterns
 
+## Testing Guidelines
+- Import test utilities from `/apps/e2e/test/helpers.ts`
+- Prefer inline snapshot testing with `expect(response).toMatchInlineSnapshot(...)`
+
 ## Monorepo Structure
 Managed with Turbo and pnpm workspaces. Core packages in `packages/`, apps in `apps/`.
