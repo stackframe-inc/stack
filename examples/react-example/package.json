@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --force",
     "build": "tsc -b && vite build",
+    "clean": "rimraf dist && rimraf node_modules",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -61,7 +61,6 @@ const pathAliases = {
 } as const;
 
 type BaseHandlerProps = {
-  app: StackServerApp<any>,
   fullPage: boolean,
   componentProps?: {
     [K in keyof Components]?: Parameters<Components[K]>[0];
@@ -75,7 +74,7 @@ function renderComponent(props: {
   componentProps?: BaseHandlerProps['componentProps'],
   redirectIfNotHandler?: (name: keyof HandlerUrls) => void,
   onNotFound: () => any,
-  app: BaseHandlerProps['app'],
+  app: StackClientApp<any> | StackServerApp<any>,
 }) {
   const { path, searchParams, fullPage, componentProps, redirectIfNotHandler, onNotFound, app } = props;
 
@@ -178,7 +177,9 @@ function renderComponent(props: {
 }
 
 // IF_PLATFORM next
-async function NextStackHandler<HasTokenStore extends boolean>(props: BaseHandlerProps & (
+async function NextStackHandler<HasTokenStore extends boolean>(props: BaseHandlerProps & {
+  app: StackServerApp<HasTokenStore>,
+} & (
   | Partial<RouteProps>
   | {
     routeProps: RouteProps | unknown,
@@ -248,8 +249,8 @@ async function NextStackHandler<HasTokenStore extends boolean>(props: BaseHandle
 
 // ELSE_IF_PLATFORM react
 
-function ReactStackHandler(props: BaseHandlerProps & {
-  app: StackClientApp<any>,
+function ReactStackHandler<HasTokenStore extends boolean>(props: BaseHandlerProps & {
+  app: StackClientApp<HasTokenStore>,
   location: string, // Path like "/abc/def"
 }) {
   const { path, searchParams } = useMemo(() => {

@@ -7,7 +7,7 @@ function HandlerRoutes() {
   const location = useLocation();
   
   return (
-    <StackHandler app={stackClientApp} location={location.pathname} />
+    <StackHandler app={stackClientApp} location={location.pathname} fullPage />
   );
 }
 
