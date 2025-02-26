@@ -3,7 +3,8 @@
   "version": "2.7.18",
   "private": true,
   "scripts": {
-    "dev": "serve -p 8100 -s public"
+    "dev": "serve -p 8100 -s public",
+    "clean": "rimraf node_modules"
   },
   "dependencies": {
     "serve": "^14.2.4"
