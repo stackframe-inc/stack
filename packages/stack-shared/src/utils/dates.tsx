@@ -29,14 +29,14 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Mock current date for consistent testing
   const now = new Date("2023-01-15T12:00:00.000Z");
   const originalDate = Date;
-  
+
   // Save original Date implementation and create a fixed date
   const fixedDate = new Date(now);
-  
+
   // Mock Date.now() to return our fixed time
   const originalNow = Date.now;
   Date.now = () => now.getTime();
-  
+
   // No need to mock the Date constructor as we're just using Date.now()
 
   // Test past times
