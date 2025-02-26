@@ -3,6 +3,16 @@ import { remainder } from "./math";
 export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
 }
+import.meta.vitest?.test("isWeekend", ({ expect }) => {
+  // Sunday (day 0)
+  expect(isWeekend(new Date("2023-01-01"))).toBe(true);
+  // Saturday (day 6)
+  expect(isWeekend(new Date("2023-01-07"))).toBe(true);
+  // Monday (day 1)
+  expect(isWeekend(new Date("2023-01-02"))).toBe(false);
+  // Friday (day 5)
+  expect(isWeekend(new Date("2023-01-06"))).toBe(false);
+});
 
 const agoUnits = [
   [60, 'second'],
@@ -15,6 +25,79 @@ const agoUnits = [
 export function fromNow(date: Date): string {
   return fromNowDetailed(date).result;
 }
+import.meta.vitest?.test("fromNow", ({ expect }) => {
+  // Mock current date for consistent testing
+  const now = new Date("2023-01-15T12:00:00.000Z");
+  const originalDate = Date;
+
+  // Save original Date implementation and create a fixed date
+  const fixedDate = new Date(now);
+
+  // Mock Date.now() to return our fixed time
+  const originalNow = Date.now;
+  Date.now = () => now.getTime();
+
+  // Need to mock the Date constructor to ensure new Date() returns our fixed date
+  const OriginalDate = global.Date;
+
+  // Create a simple Date mock that returns our fixed date for new Date()
+  // but passes through all other calls to the original Date
+  const MockDate = function(this: any) {
+    if (arguments.length === 0) {
+      return new OriginalDate(now);
+    } else if (arguments.length === 1) {
+      return new OriginalDate(arguments[0]);
+    } else if (arguments.length === 2) {
+      return new OriginalDate(arguments[0], arguments[1]);
+    } else if (arguments.length === 3) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2]);
+    } else if (arguments.length === 4) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3]);
+    } else if (arguments.length === 5) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+    } else if (arguments.length === 6) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+    } else {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
+    }
+  } as any;
+
+  // Copy all static methods and properties from the original Date
+  Object.getOwnPropertyNames(OriginalDate).forEach((prop: string) => {
+    if (prop !== 'prototype' && prop !== 'length' && prop !== 'name') {
+      // Use type assertion to safely access properties
+      MockDate[prop as keyof typeof MockDate] = OriginalDate[prop as keyof typeof OriginalDate];
+    }
+  });
+
+  MockDate.prototype = OriginalDate.prototype;
+  MockDate.now = () => now.getTime();
+
+  // Replace the global Date
+  global.Date = MockDate;
+  global.Date.now = Date.now;
+
+  // Test past times
+  expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
+  expect(fromNow(new Date("2023-01-15T11:59:00.000Z"))).toBe("1 minute ago");
+  expect(fromNow(new Date("2023-01-15T11:00:00.000Z"))).toBe("1 hour ago");
+  expect(fromNow(new Date("2023-01-14T12:00:00.000Z"))).toBe("1 day ago");
+  expect(fromNow(new Date("2023-01-08T12:00:00.000Z"))).toBe("1 week ago");
+
+  // Test future times
+  expect(fromNow(new Date("2023-01-15T12:00:10.000Z"))).toBe("just now");
+  expect(fromNow(new Date("2023-01-15T12:01:00.000Z"))).toBe("in 1 minute");
+  expect(fromNow(new Date("2023-01-15T13:00:00.000Z"))).toBe("in 1 hour");
+  expect(fromNow(new Date("2023-01-16T12:00:00.000Z"))).toBe("in 1 day");
+  expect(fromNow(new Date("2023-01-22T12:00:00.000Z"))).toBe("in 1 week");
+
+  // Test very old dates (should use date format)
+  expect(fromNow(new Date("2022-01-15T12:00:00.000Z"))).toMatch(/Jan 15, 2022/);
+
+  // Restore original Date and Date.now
+  global.Date = OriginalDate;
+  Date.now = originalNow;
+});
 
 export function fromNowDetailed(date: Date): {
   result: string,
@@ -71,3 +154,23 @@ export function getInputDatetimeLocalString(date: Date): string {
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   return date.toISOString().slice(0, 19);
 }
+import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
+  // Mock date to avoid timezone issues in tests
+  const mockDate = new Date("2023-01-15T12:30:45.000Z");
+  const result = getInputDatetimeLocalString(mockDate);
+
+  // The result should be in the format YYYY-MM-DDTHH:MM:SS
+  expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+
+  // Test with different dates
+  const dates = [
+    new Date("2023-01-01T00:00:00.000Z"),
+    new Date("2023-06-15T23:59:59.000Z"),
+    new Date("2023-12-31T12:34:56.000Z"),
+  ];
+
+  for (const date of dates) {
+    const result = getInputDatetimeLocalString(date);
+    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+  }
+});
