@@ -81,18 +81,6 @@ export const EMAIL_TEMPLATES_METADATA = {
       { name: 'teamInvitationLink', label: 'Team Invitation Link', defined: true, example: '<team invitation link>' },
     ],
   },
-  'email_digest': {
-    label: "Email Digest",
-    description: "Will be sent to the user when a project admin gets email digest",
-    defaultContent: { 1: teamInvitationTemplate, 2: teamInvitationTemplate },
-    defaultSubject: "You have {{ failedEmailSendCount }} failed email sends",
-    variables: [
-      ...userVars,
-      ...projectVars,
-      { name: 'failedEmailSendCount', label: 'Failed Email Send Count', defined: true, example: '3' },
-      { name: 'failedEmailSends', label: 'Failed Email Sends', defined: true, example: 'My Team' },
-    ],
-  },
 } as const satisfies Record<string, EmailTemplateMetadata>;
 
 export function validateEmailTemplateContent(content: any): content is TEditorConfiguration {
