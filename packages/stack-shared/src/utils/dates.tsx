@@ -1,5 +1,4 @@
 import { remainder } from "./math";
-import { vi } from "vitest";
 
 export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
@@ -33,8 +32,8 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   const fixedDate = new Date("2023-01-15T12:00:00.000Z");
 
   // Use Vitest's fake timers
-  vi.useFakeTimers();
-  vi.setSystemTime(fixedDate);
+  import.meta.vitest?.vi?.useFakeTimers();
+  import.meta.vitest?.vi?.setSystemTime(fixedDate);
 
   // Test past times
   expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
@@ -54,7 +53,7 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   expect(fromNow(new Date("2022-01-15T12:00:00.000Z"))).toMatch(/Jan 15, 2022/);
 
   // Restore real timers
-  vi.useRealTimers();
+  import.meta.vitest?.vi?.useRealTimers();
 });
 
 export function fromNowDetailed(date: Date): {
@@ -115,7 +114,7 @@ export function getInputDatetimeLocalString(date: Date): string {
 
 import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
   // Use Vitest's fake timers to ensure consistent timezone behavior
-  vi.useFakeTimers();
+  import.meta.vitest?.vi?.useFakeTimers();
 
   // Test with a specific date
   const mockDate = new Date("2023-01-15T12:30:45.000Z");
@@ -137,5 +136,5 @@ import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
   }
 
   // Restore real timers
-  vi.useRealTimers();
+  import.meta.vitest?.vi?.useRealTimers();
 });
