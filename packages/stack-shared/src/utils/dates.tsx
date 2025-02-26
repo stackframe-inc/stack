@@ -39,8 +39,8 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
 
   // Need to mock the Date constructor to ensure new Date() returns our fixed date
   const OriginalDate = global.Date;
-  global.Date = function(this: any, ...args: any[]) {
-    return args.length === 0 ? new OriginalDate(now) : new OriginalDate(...args);
+  global.Date = function(this: any) {
+    return arguments.length === 0 ? new OriginalDate(now) : new OriginalDate(...Array.from(arguments));
   } as any;
   global.Date.now = Date.now;
 
