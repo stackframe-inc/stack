@@ -37,7 +37,12 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   const originalNow = Date.now;
   Date.now = () => now.getTime();
 
-  // No need to mock the Date constructor as we're just using Date.now()
+  // Need to mock the Date constructor to ensure new Date() returns our fixed date
+  const OriginalDate = global.Date;
+  global.Date = function(this: any, ...args: any[]) {
+    return args.length === 0 ? new OriginalDate(now) : new OriginalDate(...args);
+  } as any;
+  global.Date.now = Date.now;
 
   // Test past times
   expect(fromNow(new Date("2023-01-15T11:59:50.000Z"))).toBe("just now");
@@ -56,7 +61,8 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Test very old dates (should use date format)
   expect(fromNow(new Date("2022-01-15T12:00:00.000Z"))).toMatch(/Jan 15, 2022/);
 
-  // Restore original Date.now
+  // Restore original Date and Date.now
+  global.Date = OriginalDate;
   Date.now = originalNow;
 });
 
