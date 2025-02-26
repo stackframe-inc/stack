@@ -112,6 +112,11 @@ export function decodeBase64Url(input: string): Uint8Array {
     throw new StackAssertionError("Invalid base64url string");
   }
 
+  // Handle empty string case
+  if (input === "") {
+    return new Uint8Array(0);
+  }
+
   return decodeBase64(input.replace(/-/g, "+").replace(/_/g, "/") + "====".slice((input.length - 1) % 4 + 1));
 }
 import.meta.vitest?.test("encodeBase64Url/decodeBase64Url", ({ expect }) => {
