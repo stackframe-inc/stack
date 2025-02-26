@@ -40,7 +40,7 @@ jobs:
           run: |
             NODE_OPTIONS="--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker" pnpm run dev
           wait-on: http://localhost:8102
-          wait-on-timeout: 120
+          wait-for: 120
 
       - name: Run tests
         run: pnpm test
