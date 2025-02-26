@@ -3,6 +3,7 @@ import { remainder } from "./math";
 export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
 }
+
 import.meta.vitest?.test("isWeekend", ({ expect }) => {
   // Sunday (day 0)
   expect(isWeekend(new Date("2023-01-01"))).toBe(true);
@@ -25,6 +26,7 @@ const agoUnits = [
 export function fromNow(date: Date): string {
   return fromNowDetailed(date).result;
 }
+
 import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Mock current date for consistent testing
   const now = new Date("2023-01-15T12:00:00.000Z");
@@ -154,6 +156,7 @@ export function getInputDatetimeLocalString(date: Date): string {
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   return date.toISOString().slice(0, 19);
 }
+
 import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
   // Mock date to avoid timezone issues in tests
   const mockDate = new Date("2023-01-15T12:30:45.000Z");
