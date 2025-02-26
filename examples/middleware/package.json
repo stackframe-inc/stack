@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 8112",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .next && rimraf node_modules"
   },
   "dependencies": {
     "@stackframe/stack": "workspace:*",
