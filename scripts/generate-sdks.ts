@@ -102,6 +102,11 @@ function generateFromTemplate(options: {
   });
 }
 
+function processPackageJson(content: string) {
+  const jsonObj = JSON.parse(content);
+  return JSON.stringify({ "//": COMMENT_LINE, ...jsonObj }, null, 2);
+}
+
 
 const baseDir = path.resolve(__dirname, "..", "packages");
 const srcDir = path.resolve(baseDir, "template");
@@ -113,14 +118,9 @@ const packageTemplateContent = fs.readFileSync(
   "utf-8"
 );
 const processedPackageJson = processMacros(packageTemplateContent, PLATFORMS["template"]);
-const packageJson = JSON.parse(processedPackageJson);
-const packageJsonWithComment = {
-  "//": COMMENT_LINE,
-  ...packageJson,
-};
 writeFileSyncIfChanged(
   path.join(srcDir, "package.json"),
-  JSON.stringify(packageJsonWithComment, null, 2)
+  processPackageJson(processedPackageJson)
 );
 
 // Generate the JS SDK version.
@@ -128,7 +128,11 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "js"),
   editFn: (relativePath, content) => {
-    return processMacros(content, PLATFORMS["js"]);
+    const result = processMacros(content, PLATFORMS["js"]);
+    if (relativePath === 'package-template.json') {
+      return processPackageJson(result);
+    }
+    return result;
   },
   filterFn: (relativePath) => {
     const ignores = [
@@ -161,7 +165,11 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "stack"),
   editFn: (relativePath, content) => {
-    return processMacros(content, PLATFORMS["next"]);
+    const result = processMacros(content, PLATFORMS["next"]);
+    if (relativePath === 'package-template.json') {
+      return processPackageJson(result);
+    }
+    return result;
   },
   filterFn: (relativePath) => {
     if (relativePath.startsWith("src/generated")) {

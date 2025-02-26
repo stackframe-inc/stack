@@ -6,6 +6,7 @@
   "//": "ELSE_IF_PLATFORM next",
   "name": "@stackframe/stack",
   "//": "END_PLATFORM",
+  
   "//": "NEXT_LINE_PLATFORM template",
   "private": true,
   "version": "2.7.19",
