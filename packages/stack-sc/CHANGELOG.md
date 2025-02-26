@@ -1,5 +1,7 @@
 # @stackframe/stack-sc
 
+## 2.7.19
+
 ## 2.7.18
 
 ### Patch Changes
