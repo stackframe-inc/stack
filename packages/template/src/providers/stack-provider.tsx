@@ -72,6 +72,6 @@ function ReactStackProvider({
 
 // IF_PLATFORM next
 export default NextStackProvider;
-/* ELSE_PLATFORM */ /*
+/* ELSE_PLATFORM
 export default ReactStackProvider;
-*/ /* END_PLATFORM */
+END_PLATFORM */

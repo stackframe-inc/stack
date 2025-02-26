@@ -31,7 +31,7 @@ export function StackProviderClient(props: {
 export function UserSetter(props: { userJsonPromise: Promise<CurrentUserCrud['Client']['Read'] | null> }) {
   const app = useStackApp();
   useEffect(() => {
-    const promise = (async () => await props.userJsonPromise)();  // there is a Next.js bug where Promises passed by server components return `undefined` as their `then` value, so wrap it in a normal promise
+    const promise = (async () => await props.userJsonPromise)(); // there is a Next.js bug where Promises passed by server components return `undefined` as their `then` value, so wrap it in a normal promise
     app[stackAppInternalsSymbol].setCurrentUser(promise);
   }, []);
   return null;
