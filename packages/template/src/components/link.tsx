@@ -1,7 +1,7 @@
 'use client';
 
-// NEXT_LINE_PLATFORM next
 import { cn } from "@stackframe/stack-ui";
+// NEXT_LINE_PLATFORM next
 import NextLink from 'next/link';
 
 type LinkProps = {

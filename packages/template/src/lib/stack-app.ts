@@ -1262,7 +1262,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   }
 
   // IF_PLATFORM react-like
-  useNavigate() {
+  useNavigate(): (to: string) => void {
     if (typeof this._redirectMethod === "object") {
       return this._redirectMethod.useNavigate();
     } else if (this._redirectMethod === "window") {
@@ -1271,7 +1271,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
       // NEXT_LINE_PLATFORM next
       return NextNavigation.useRouter().push;
     } else {
-      return undefined;
+      return () => {};
     }
   }
   // END_PLATFORM
