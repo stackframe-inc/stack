@@ -45,14 +45,28 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
   const MockDate = function(this: any) {
     if (arguments.length === 0) {
       return new OriginalDate(now);
+    } else if (arguments.length === 1) {
+      return new OriginalDate(arguments[0]);
+    } else if (arguments.length === 2) {
+      return new OriginalDate(arguments[0], arguments[1]);
+    } else if (arguments.length === 3) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2]);
+    } else if (arguments.length === 4) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3]);
+    } else if (arguments.length === 5) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+    } else if (arguments.length === 6) {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+    } else {
+      return new OriginalDate(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
     }
-    return new OriginalDate(...Array.from(arguments));
   } as any;
   
   // Copy all static methods and properties from the original Date
-  Object.getOwnPropertyNames(OriginalDate).forEach(prop => {
+  Object.getOwnPropertyNames(OriginalDate).forEach((prop: string) => {
     if (prop !== 'prototype' && prop !== 'length' && prop !== 'name') {
-      MockDate[prop] = OriginalDate[prop];
+      // Use type assertion to safely access properties
+      MockDate[prop as keyof typeof MockDate] = OriginalDate[prop as keyof typeof OriginalDate];
     }
   });
   
