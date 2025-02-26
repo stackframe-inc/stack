@@ -7,7 +7,8 @@
     "start": "tsx src/index.ts",
     "dev": "tsx watch --clear-screen=false src/index.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "rimraf dist && rimraf node_modules"
   },
   "dependencies": {
     "@types/express": "^5.0.0",
