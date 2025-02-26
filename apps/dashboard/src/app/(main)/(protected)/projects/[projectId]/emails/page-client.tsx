@@ -12,7 +12,8 @@ import { EmailTemplateType } from "@stackframe/stack-shared/dist/interface/crud/
 import { strictEmailSchema } from "@stackframe/stack-shared/dist/schema-fields";
 import { throwErr } from "@stackframe/stack-shared/dist/utils/errors";
 import { deepPlainEquals } from "@stackframe/stack-shared/dist/utils/objects";
-import { ActionCell, ActionDialog, Alert, Button, Card, SimpleTooltip, Typography, useToast } from "@stackframe/stack-ui";
+import { ActionCell, ActionDialog, Alert, Button, Card, DataTable, SimpleTooltip, Typography, useToast } from "@stackframe/stack-ui";
+import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import * as yup from "yup";
 import { PageLayout } from "../page-layout";
@@ -95,6 +96,9 @@ export default function PageClient() {
           </Card>
         ))}
       </SettingCard>
+      <SettingCard title="Email Log" description="Manage email sending history">
+        <EmailSendDataTable />
+      </SettingCard>
 
       <ResetEmailTemplateDialog
         templateType={resetTemplateType}
@@ -103,6 +107,73 @@ export default function PageClient() {
       />
     </PageLayout>
   );
+}
+
+type SentEmail = {
+  id: string,
+  to?: string[],
+  subject: string,
+  sent_at_millis: number,
+  error?: unknown,
+}
+
+const emailTableColumns: ColumnDef<SentEmail>[] = [
+  {
+    id: 'recipient',
+    header: 'Recipients',
+    accessorFn: (row) => row.to?.join(', ') || '-',
+    cell: ({ getValue }) => <div>{getValue<string>()}</div>
+  },
+  {
+    accessorKey: 'subject',
+    header: 'Subject',
+    cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('subject')}</div>
+  },
+  {
+    id: 'sentAt',
+    header: 'Sent At',
+    accessorFn: (row) => row.sent_at_millis,
+    cell: ({ getValue }) => {
+      const timestamp = getValue<number>();
+      const date = new Date(timestamp);
+      return <div>{date.toLocaleString()}</div>;
+    },
+    sortingFn: 'datetime'
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    accessorFn: (row) => row.error ? 'error' : 'success',
+    cell: ({ getValue }) => {
+      const status = getValue<string>();
+      return (
+        <div className="flex items-center">
+          {status === 'success' ? (
+            <div className="flex items-center">
+              <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+              <span>Success</span>
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <div className="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
+              <span>Failed</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+  }
+];
+
+function EmailSendDataTable() {
+  const stackAdminApp = useAdminApp();
+  const data = stackAdminApp.useSentEmails();
+  return <DataTable
+    data={data.items}
+    defaultColumnFilters={[]}
+    columns={emailTableColumns}
+    defaultSorting={[]}
+  />;
 }
 
 function EmailPreview(props: { content: any, type: EmailTemplateType }) {
