@@ -5,6 +5,7 @@
 ### Patch Changes
 
 - Various changes
+- Added dummy change for PR demo
 
 ## 2.7.17
 
