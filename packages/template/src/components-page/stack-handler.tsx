@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { SignIn, SignUp, StackServerApp } from "..";
 import { IframePreventer } from "../components/iframe-preventer";
 import { MessageCard } from "../components/message-cards/message-card";
-import { HandlerUrls } from "../lib/stack-app";
+import { HandlerUrls, StackClientApp } from "../lib/stack-app";
 import { AccountSettings } from "./account-settings";
 import { EmailVerification } from "./email-verification";
 import { ErrorPage } from "./error-page";
@@ -249,6 +249,7 @@ async function NextStackHandler<HasTokenStore extends boolean>(props: BaseHandle
 // ELSE_IF_PLATFORM react
 
 function ReactStackHandler(props: BaseHandlerProps & {
+  app: StackClientApp<any>,
   location: string, // Path like "/abc/def"
 }) {
   const { path, searchParams } = useMemo(() => {
