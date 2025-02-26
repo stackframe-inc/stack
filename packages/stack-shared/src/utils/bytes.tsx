@@ -192,6 +192,7 @@ import.meta.vitest?.test("isBase64", ({ expect }) => {
 });
 
 export function isBase64Url(input: string): boolean {
+  if (input === "") return true;
   const regex = /^[0-9a-zA-Z_-]+$/;
   return regex.test(input);
 }
