@@ -232,7 +232,7 @@ export function isBase64Url(input: string): boolean {
   if (input.includes("?")) return false;
   // Base64Url should not contain = character (no padding)
   if (input.includes("=")) return false;
-  
+
   const regex = /^[0-9a-zA-Z_-]+$/;
   return regex.test(input);
 }

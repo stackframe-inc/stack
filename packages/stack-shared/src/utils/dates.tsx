@@ -39,7 +39,7 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
 
   // Need to mock the Date constructor to ensure new Date() returns our fixed date
   const OriginalDate = global.Date;
-  
+
   // Create a simple Date mock that returns our fixed date for new Date()
   // but passes through all other calls to the original Date
   const MockDate = function(this: any) {
@@ -69,10 +69,10 @@ import.meta.vitest?.test("fromNow", ({ expect }) => {
       MockDate[prop as keyof typeof MockDate] = OriginalDate[prop as keyof typeof OriginalDate];
     }
   });
-  
+
   MockDate.prototype = OriginalDate.prototype;
   MockDate.now = () => now.getTime();
-  
+
   // Replace the global Date
   global.Date = MockDate;
   global.Date.now = Date.now;
