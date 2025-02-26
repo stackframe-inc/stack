@@ -1,0 +1,44 @@
+name: "Restart Dev Environment and Test"
+
+on: push
+
+env:
+  SHELL: /usr/bin/bash
+
+jobs:
+  test:
+    runs-on: ubicloud-standard-8
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+            version: 9.1.2
+
+      - name: Install packages
+        run: pnpm install
+
+      - name: Build packages
+        run: pnpm run build:packages
+
+      - name: Run codegen
+        run: pnpm run codegen
+
+      - name: Start dependencies
+        run: pnpm run restart-deps
+
+      - name: Start dev server in background
+        run: |
+          NODE_OPTIONS="--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker" pnpm run dev > dev-server.log.untracked.txt 2>&1 &
+          echo $! > .dev-server.pid
+          npx wait-on http://localhost:8102 -t 120000
+
+      - name: Run tests
+        run: pnpm test
