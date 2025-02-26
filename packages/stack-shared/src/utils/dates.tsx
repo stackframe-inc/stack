@@ -1,4 +1,5 @@
 import { remainder } from "./math";
+import { vi } from "vitest";
 
 export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
@@ -27,7 +28,7 @@ export function fromNow(date: Date): string {
   return fromNowDetailed(date).result;
 }
 
-import.meta.vitest?.test("fromNow", ({ expect, vi }) => {
+import.meta.vitest?.test("fromNow", ({ expect }) => {
   // Set a fixed date for testing
   const fixedDate = new Date("2023-01-15T12:00:00.000Z");
   
@@ -112,7 +113,7 @@ export function getInputDatetimeLocalString(date: Date): string {
   return date.toISOString().slice(0, 19);
 }
 
-import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect, vi }) => {
+import.meta.vitest?.test("getInputDatetimeLocalString", ({ expect }) => {
   // Use Vitest's fake timers to ensure consistent timezone behavior
   vi.useFakeTimers();
   
