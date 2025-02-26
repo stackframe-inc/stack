@@ -117,6 +117,8 @@ This is for you if you want to contribute to the Stack project or run the Stack 
 
 Pre-populated .env files for the setup below are available and used by default in `.env.development` in each of the packages. (Note: If you're creating a production build (eg. with `pnpm run build`), you must supply the environment variables manually.)
 
+> **Note**: This is a test change for PR demonstration purposes.
+
 In a new terminal:
 
 ```sh
