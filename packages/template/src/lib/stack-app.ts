@@ -41,6 +41,7 @@ import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmpt
 let isReactServer = false;
 // IF_PLATFORM next
 import * as sc from "@stackframe/stack-sc";
+import { cookies } from '@stackframe/stack-sc';
 isReactServer = sc.isReactServer;
 // END_PLATFORM
 
@@ -506,6 +507,10 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
         projectId: _options.projectId ?? getDefaultProjectId(),
         clientVersion,
         publishableClientKey: _options.publishableClientKey ?? getDefaultPublishableClientKey(),
+        ensureNoCache: async () => {
+          // NEXT_LINE_PLATFORM next
+          await cookies?.();
+        }
       });
     }
 

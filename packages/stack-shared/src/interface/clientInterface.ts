@@ -27,6 +27,7 @@ export type ClientInterfaceOptions = {
   // This is a function instead of a string because it might be different based on the environment (for example client vs server)
   getBaseUrl: () => string,
   projectId: string,
+  ensureNoCache?: () => Promise<void>,
 } & ({
   publishableClientKey: string,
 } | {
@@ -252,7 +253,7 @@ export class StackClientInterface {
     let adminTokenObj = adminSession ? await adminSession.getOrFetchLikelyValidTokens(20_000) : null;
 
     // all requests should be dynamic to prevent Next.js caching
-    // await cookies?.();
+    await this.options.ensureNoCache?.();
 
     let url = this.getApiUrl() + path;
     if (url.endsWith("/")) {
