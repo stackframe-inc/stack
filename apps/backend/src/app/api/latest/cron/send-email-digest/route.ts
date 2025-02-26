@@ -1,4 +1,5 @@
-import { sendEmailFromTemplate } from "@/lib/emails";
+import { getEmailConfig, sendEmail, sendEmailFromTemplate } from "@/lib/emails";
+import { getSoleTenancyFromProject } from "@/lib/tenancies";
 import { prismaClient } from "@/prisma-client";
 import { Project } from "@prisma/client";
 import { getEnvVariable } from "@stackframe/stack-shared/dist/utils/env";
@@ -68,18 +69,22 @@ export async function GET(request: Request) {
     });
   }));
 
+  const internal = await getSoleTenancyFromProject('internal');
+  const emailConfig = await getEmailConfig(internal);
+
   await Promise.all(usersBase.flat().map(async (user) => {
     if (user.contactChannels.length === 0) {
       return;
     }
     const contactChannel = user.contactChannels[0];
-    // TODO: Fill in the rest
-    await sendEmailFromTemplate({
-      tenancy: {} as any,
-      templateType: 'email-digest' as any,
-      user: user as any,
-      email: contactChannel.value,
-      extraVariables: {},
+
+    await sendEmail({
+      tenancyId: internal.id,
+      to: contactChannel.value,
+      subject: `You have ${projectWithEmails[user.mirroredProjectId]?.emails.length} emails that failed to deliver in your project`,
+      // list all the failed emails
+      text: projectWithEmails[user.mirroredProjectId]?.emails.map(email => JSON.stringify(email.error)).join('\n'),
+      emailConfig,
     });
   }));
 
