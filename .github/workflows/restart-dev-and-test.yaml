@@ -30,3 +30,7 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+      
+      - name: Print dev server logs
+        run: cat dev-server.log.untracked.txt
+        if: always()
