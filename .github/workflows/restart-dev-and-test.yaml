@@ -25,22 +25,8 @@ jobs:
       - name: Install packages
         run: pnpm install
 
-      - name: Build packages
-        run: pnpm run build:packages
-
-      - name: Run codegen
-        run: pnpm run codegen
-
-      - name: Start dependencies
-        run: pnpm run restart-deps
-
-      - name: Start dev server in background
-        uses: JarvusInnovations/background-action@v1.0.7
-        with:
-          run: |
-            NODE_OPTIONS="--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker" pnpm run dev
-          wait-on: http://localhost:8102
-          wait-for: 120
+      - name: Restart dev environment
+        run: pnpm run restart-dev-environment
 
       - name: Run tests
         run: pnpm test
