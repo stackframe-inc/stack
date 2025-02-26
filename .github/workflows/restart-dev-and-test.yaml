@@ -37,7 +37,7 @@ jobs:
       - uses: JarvusInnovations/background-action@v1.0.7
         name: Start dev server
         with:
-          run: NODE_OPTIONS="--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker" pnpm run dev
+          run: NODE_OPTIONS="--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker" pnpm run dev &
           wait-on: |
             http://localhost:8102
           tail: true
