@@ -37,6 +37,7 @@ For any security-related concerns & bug bounties, please email us at [security@s
 Please make sure to:
 
 - Install ESLint in your IDE and follow the code format of the code base (e.g., spaces around `=`, semicolons at the end, etc.).
+- This is a test change for PR demonstration purposes.
   - If you are using VSCode, select "Show Recommended Extensions" from the command palette (`Ctrl+Shift+P`) to install the recommended extensions.
 - Run `pnpm run test`. All tests should pass.
 - If you changed the Prisma schema, make sure you've created a migration file. Create only one DB migration file per PR.
