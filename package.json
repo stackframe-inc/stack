@@ -13,7 +13,7 @@
     "build:dashboard": "pnpm pre && turbo run build --filter=@stackframe/stack-dashboard...",
     "build:demo": "pnpm pre && turbo run build --filter=demo-app...",
     "build:packages": "pnpm pre && turbo run build --filter=./packages/*",
-    "restart-dev-environment": "pnpm run build:packages && pnpm run codegen && pnpm run restart-deps && (if [ -f .dev-server.pid ]; then kill $(cat .dev-server.pid) || true; rm .dev-server.pid; fi) && (sleep 2 && (pnpm run dev > dev-server.log.untracked.txt 2>&1 & echo $! > .dev-server.pid)) && npx wait-on http://localhost:8102 -t 120000",
+    "restart-dev-environment": "pnpm run build:packages && pnpm run codegen && pnpm run restart-deps && (pkill -f 'node.*stack-dev-server-marker' || true) && (sleep 2 && NODE_OPTIONS=\"--unhandled-rejections=strict --stack-trace-limit=100 --title=stack-dev-server-marker\" pnpm run dev > dev-server.log.untracked.txt 2>&1 &) && npx wait-on http://localhost:8102 -t 120000",
     "clean": "pnpm pre && turbo run clean && rimraf --glob **/.next && rimraf --glob **/.turbo && rimraf .turbo && rimraf --glob **/node_modules",
     "codegen": "pnpm pre && turbo run codegen && pnpm run generate-from-template",
     "deps-compose": "docker compose -p stack-dependencies -f docker/dependencies/docker.compose.yaml",
