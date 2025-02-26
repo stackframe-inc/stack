@@ -39,6 +39,10 @@ navigation:
           - page: Users
             icon: fa-regular fa-address-book
             path: ./{base}/getting-started/users.mdx
+          - page: Example Pages
+            icon: fa-regular fa-file-lines
+            path: ./{base}/getting-started/example-pages.mdx
+            platform: js
           - page: Going to Production
             icon: fa-regular fa-rocket
             path: ./{base}/getting-started/production.mdx
@@ -107,9 +111,6 @@ navigation:
           - page: Self-Hosting
             icon: fa-regular fa-house-laptop
             path: ./{base}/others/self-host.mdx
-          - page: Vanilla JavaScript Client
-            icon: fa-brands fa-js
-            path: ./{base}/others/js-client.mdx
   - tab: components
     platform: react-like
     layout: 
