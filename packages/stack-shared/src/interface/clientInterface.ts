@@ -1,6 +1,5 @@
 import * as oauth from 'oauth4webapi';
 
-// import { cookies } from '@stackframe/stack-sc';
 import { KnownError, KnownErrors } from '../known-errors';
 import { AccessToken, InternalSession, RefreshToken } from '../sessions';
 import { generateSecureRandomString } from '../utils/crypto';
