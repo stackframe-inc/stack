@@ -142,7 +142,7 @@ async function checkAuthData(
   }
 ) {
   if (!data.primaryEmail && data.primaryEmailAuthEnabled) {
-    throw new StatusError(400, "primary_email_auth_enabled cannot be true without primary_email");
+    throw new StatusError(400, "primary_email_auth_enabled cannot be true without primary_email. If you're trying to create a user with password or OTP authentication, you need to provide both primary_email and set primary_email_auth_enabled to true.");
   }
   if (!data.primaryEmail && data.primaryEmailVerified) {
     throw new StatusError(400, "primary_email_verified cannot be true without primary_email");
