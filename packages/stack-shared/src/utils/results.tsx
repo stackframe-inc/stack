@@ -44,7 +44,9 @@ export const Result = {
     return result.status === "ok" ? result.data : fallback;
   },
   orThrow: <T, E>(result: Result<T, E>): T => {
-    if (result.status === "error") throw result.error;
+    if (result.status === "error") {
+      throw result.error;
+    }
     return result.data;
   },
   orThrowAsync: async <T, E>(result: Promise<Result<T, E>>): Promise<T> => {
@@ -246,14 +248,18 @@ import.meta.vitest?.test("fromThrowingAsync", async ({ expect }) => {
 function mapResult<T, U, E = unknown, P = unknown>(result: Result<T, E>, fn: (data: T) => U): Result<U, E>;
 function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>, fn: (data: T) => U): AsyncResult<U, E, P>;
 function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>, fn: (data: T) => U): AsyncResult<U, E, P> {
-  if (result.status === "error") return {
-    status: "error",
-    error: result.error,
-  };
-  if (result.status === "pending") return {
-    status: "pending",
-    ..."progress" in result ? { progress: result.progress } : {},
-  } as any;
+  if (result.status === "error") {
+    return {
+      status: "error",
+      error: result.error,
+    };
+  }
+  if (result.status === "pending") {
+    return {
+      status: "pending",
+      ..."progress" in result ? { progress: result.progress } : {},
+    } as any;
+  }
 
   return Result.ok(fn(result.data));
 }
