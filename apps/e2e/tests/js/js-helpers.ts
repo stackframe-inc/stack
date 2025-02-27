@@ -17,6 +17,7 @@ export async function scaffoldProject() {
   await internalApp.signUpWithCredential({
     email: fakeEmail,
     password: "password",
+    noRedirect: true,
   });
   await wait(2000);
   const user = await internalApp.getUser({

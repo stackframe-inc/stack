@@ -1561,7 +1561,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   }): Promise<Result<undefined, KnownErrors["UserEmailAlreadyExists"] | KnownErrors['PasswordRequirementsNotMet']>> {
     this._ensurePersistentTokenStore();
     const session = await this._getSession();
-    const emailVerificationRedirectUrl = constructRedirectUrl(this.urls.emailVerification);
+    const emailVerificationRedirectUrl = options.noRedirect ? '' : constructRedirectUrl(this.urls.emailVerification);
     const result = await this._interface.signUpWithCredential(
       options.email,
       options.password,
