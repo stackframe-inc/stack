@@ -189,3 +189,85 @@ export function createCrud<SO extends CrudSchemaCreationOptions>(options: SO & {
     hasDelete: !!admin.deleteSchema,
   };
 }
+import.meta.vitest?.test("createCrud", ({ expect }) => {
+  // Test with empty options
+  const emptyCrud = createCrud({});
+  expect(emptyCrud.hasCreate).toBe(false);
+  expect(emptyCrud.hasRead).toBe(false);
+  expect(emptyCrud.hasUpdate).toBe(false);
+  expect(emptyCrud.hasDelete).toBe(false);
+  expect(emptyCrud.client.createSchema).toBeUndefined();
+  expect(emptyCrud.server.createSchema).toBeUndefined();
+  expect(emptyCrud.admin.createSchema).toBeUndefined();
+  
+  // Test with client schemas only
+  const mockSchema = yup.object().shape({
+    name: yup.string().required(),
+  });
+  
+  const clientOnlyCrud = createCrud({
+    clientCreateSchema: mockSchema,
+    clientReadSchema: mockSchema,
+  });
+  expect(clientOnlyCrud.hasCreate).toBe(true);
+  expect(clientOnlyCrud.hasRead).toBe(true);
+  expect(clientOnlyCrud.hasUpdate).toBe(false);
+  expect(clientOnlyCrud.hasDelete).toBe(false);
+  expect(clientOnlyCrud.client.createSchema).toBe(mockSchema);
+  expect(clientOnlyCrud.server.createSchema).toBe(mockSchema);
+  expect(clientOnlyCrud.admin.createSchema).toBe(mockSchema);
+  
+  // Test with server overrides
+  const serverSchema = yup.object().shape({
+    name: yup.string().required(),
+    internalField: yup.string().required(),
+  });
+  
+  const serverOverrideCrud = createCrud({
+    clientCreateSchema: mockSchema,
+    serverCreateSchema: serverSchema,
+  });
+  expect(serverOverrideCrud.hasCreate).toBe(true);
+  expect(serverOverrideCrud.client.createSchema).toBe(mockSchema);
+  expect(serverOverrideCrud.server.createSchema).toBe(serverSchema);
+  expect(serverOverrideCrud.admin.createSchema).toBe(serverSchema);
+  
+  // Test with admin overrides
+  const adminSchema = yup.object().shape({
+    name: yup.string().required(),
+    internalField: yup.string().required(),
+    adminField: yup.string().required(),
+  });
+  
+  const fullOverrideCrud = createCrud({
+    clientCreateSchema: mockSchema,
+    serverCreateSchema: serverSchema,
+    adminCreateSchema: adminSchema,
+  });
+  expect(fullOverrideCrud.hasCreate).toBe(true);
+  expect(fullOverrideCrud.client.createSchema).toBe(mockSchema);
+  expect(fullOverrideCrud.server.createSchema).toBe(serverSchema);
+  expect(fullOverrideCrud.admin.createSchema).toBe(adminSchema);
+  
+  // Test with documentation
+  const crudWithDocs = createCrud({
+    clientCreateSchema: mockSchema,
+    docs: {
+      clientCreate: {
+        summary: "Create a resource",
+        description: "Creates a new resource",
+        tags: ["resources"],
+      },
+    },
+  });
+  expect(crudWithDocs.client.createDocs).toEqual({
+    summary: "Create a resource",
+    description: "Creates a new resource",
+    tags: ["resources"],
+  });
+  expect(crudWithDocs.server.createDocs).toEqual({
+    summary: "Create a resource",
+    description: "Creates a new resource",
+    tags: ["resources"],
+  });
+});
