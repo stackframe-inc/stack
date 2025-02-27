@@ -76,7 +76,6 @@ for (const platform of ["next", "js"]) {
   const macroProcessed = processMacros(mainYmlContent, PLATFORMS[platform]);
   const template = yaml.parse(macroProcessed);
   const { result: processed, validPaths: processedValidPaths } = processDocObject(template, PLATFORMS[platform]);
-  console.log(processedValidPaths);
   const output = yaml.stringify(processed);
   writeFileSyncIfChanged(path.join(docsDir, `${platform}.yml`), output);
 
