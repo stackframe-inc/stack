@@ -790,6 +790,8 @@ async function generateTotpQrCode(project: Project, user: CurrentUser, secret: U
 function useSignOutSection() {
   const { t } = useTranslation();
   const user = useUser({ or: "throw" });
+  const stackApp = useStackApp();
+  const urls = stackApp.urls;
 
   return (
     <Section
@@ -799,7 +801,7 @@ function useSignOutSection() {
       <div>
         <Button
           variant='secondary'
-          onClick={() => user.signOut()}
+          onClick={() => user.signOut({ redirectUrl: urls.afterSignOut })}
         >
           {t("Sign out")}
         </Button>
