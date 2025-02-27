@@ -189,6 +189,8 @@ export function createCrud<SO extends CrudSchemaCreationOptions>(options: SO & {
     hasDelete: !!admin.deleteSchema,
   };
 }
+import { yupObject, yupString } from './schema-fields';
+
 import.meta.vitest?.test("createCrud", ({ expect }) => {
   // Test with empty options
   const emptyCrud = createCrud({});
@@ -199,12 +201,12 @@ import.meta.vitest?.test("createCrud", ({ expect }) => {
   expect(emptyCrud.client.createSchema).toBeUndefined();
   expect(emptyCrud.server.createSchema).toBeUndefined();
   expect(emptyCrud.admin.createSchema).toBeUndefined();
-  
+
   // Test with client schemas only
-  const mockSchema = yup.object().shape({
-    name: yup.string().required(),
+  const mockSchema = yupObject().shape({
+    name: yupString().defined(),
   });
-  
+
   const clientOnlyCrud = createCrud({
     clientCreateSchema: mockSchema,
     clientReadSchema: mockSchema,
@@ -216,13 +218,13 @@ import.meta.vitest?.test("createCrud", ({ expect }) => {
   expect(clientOnlyCrud.client.createSchema).toBe(mockSchema);
   expect(clientOnlyCrud.server.createSchema).toBe(mockSchema);
   expect(clientOnlyCrud.admin.createSchema).toBe(mockSchema);
-  
+
   // Test with server overrides
-  const serverSchema = yup.object().shape({
-    name: yup.string().required(),
-    internalField: yup.string().required(),
+  const serverSchema = yupObject().shape({
+    name: yupString().defined(),
+    internalField: yupString().defined(),
   });
-  
+
   const serverOverrideCrud = createCrud({
     clientCreateSchema: mockSchema,
     serverCreateSchema: serverSchema,
@@ -231,14 +233,14 @@ import.meta.vitest?.test("createCrud", ({ expect }) => {
   expect(serverOverrideCrud.client.createSchema).toBe(mockSchema);
   expect(serverOverrideCrud.server.createSchema).toBe(serverSchema);
   expect(serverOverrideCrud.admin.createSchema).toBe(serverSchema);
-  
+
   // Test with admin overrides
-  const adminSchema = yup.object().shape({
-    name: yup.string().required(),
-    internalField: yup.string().required(),
-    adminField: yup.string().required(),
+  const adminSchema = yupObject().shape({
+    name: yupString().defined(),
+    internalField: yupString().defined(),
+    adminField: yupString().defined(),
   });
-  
+
   const fullOverrideCrud = createCrud({
     clientCreateSchema: mockSchema,
     serverCreateSchema: serverSchema,
@@ -248,7 +250,7 @@ import.meta.vitest?.test("createCrud", ({ expect }) => {
   expect(fullOverrideCrud.client.createSchema).toBe(mockSchema);
   expect(fullOverrideCrud.server.createSchema).toBe(serverSchema);
   expect(fullOverrideCrud.admin.createSchema).toBe(adminSchema);
-  
+
   // Test with documentation
   const crudWithDocs = createCrud({
     clientCreateSchema: mockSchema,

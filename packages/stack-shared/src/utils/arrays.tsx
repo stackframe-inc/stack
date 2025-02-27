@@ -8,7 +8,7 @@ import.meta.vitest?.test("typedIncludes", ({ expect }) => {
   expect(typedIncludes(arr, 1)).toBe(true);
   expect(typedIncludes(arr, 4)).toBe(false);
   expect(typedIncludes(arr, "1")).toBe(false);
-  
+
   const strArr = ["a", "b", "c"] as const;
   expect(typedIncludes(strArr, "a")).toBe(true);
   expect(typedIncludes(strArr, "d")).toBe(false);
@@ -74,16 +74,16 @@ export function groupBy<T extends any, K>(
 }
 import.meta.vitest?.test("groupBy", ({ expect }) => {
   expect(groupBy([], (x) => x)).toEqual(new Map());
-  
+
   const numbers = [1, 2, 3, 4, 5, 6];
   const grouped = groupBy(numbers, (n) => n % 2 === 0 ? "even" : "odd");
   expect(grouped.get("even")).toEqual([2, 4, 6]);
   expect(grouped.get("odd")).toEqual([1, 3, 5]);
-  
+
   // Check the actual lengths of the words to ensure our test is correct
   const words = ["apple", "banana", "cherry", "date", "elderberry"];
   console.log("Word lengths:", words.map(w => `${w}: ${w.length}`));
-  
+
   const byLength = groupBy(words, (w) => w.length);
   // Adjust expectations based on actual word lengths
   expect(byLength.get(5)).toEqual(["apple"]);
@@ -159,18 +159,18 @@ export function shuffle<T>(arr: readonly T[]): T[] {
 import.meta.vitest?.test("shuffle", ({ expect }) => {
   // Test empty array
   expect(shuffle([])).toEqual([]);
-  
+
   // Test single element array
   expect(shuffle([1])).toEqual([1]);
-  
+
   // Test that shuffle returns a new array
   const original = [1, 2, 3, 4, 5];
   const shuffled = shuffle(original);
   expect(shuffled).not.toBe(original);
-  
+
   // Test that all elements are preserved
   expect(shuffled.sort((a, b) => a - b)).toEqual(original);
-  
+
   // Test with a larger array to ensure randomness
   // This is a probabilistic test, but it's very unlikely to fail
   const large = Array.from({ length: 100 }, (_, i) => i);

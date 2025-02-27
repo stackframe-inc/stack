@@ -124,8 +124,10 @@ function createKnownErrorConstructor<ErrorCode extends string, Super extends Abs
     public readonly constructorArgs: Args;
 
     constructor(...args: Args) {
-      // @ts-expect-error
-      super(...createFn(...args));
+      // We need to spread the result of createFn which returns a tuple
+      const superArgs = createFn(...args);
+      // @ts-ignore - We know that superArgs is a tuple that can be spread
+      super(...superArgs);
       this.constructorArgs = args;
     }
 

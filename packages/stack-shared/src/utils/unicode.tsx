@@ -14,7 +14,7 @@ import.meta.vitest?.test("getFlagEmoji", ({ expect }) => {
   expect(getFlagEmoji("us")).toBe("🇺🇸");
   expect(getFlagEmoji("GB")).toBe("🇬🇧");
   expect(getFlagEmoji("JP")).toBe("🇯🇵");
-  
+
   // Test with invalid country codes
   expect(() => getFlagEmoji("")).toThrow("Country code must be two alphabetical letters");
   expect(() => getFlagEmoji("A")).toThrow("Country code must be two alphabetical letters");

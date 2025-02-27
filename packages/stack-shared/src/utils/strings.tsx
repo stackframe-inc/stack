@@ -52,26 +52,26 @@ import.meta.vitest?.test("stringCompare", ({ expect }) => {
   // Equal strings
   expect(stringCompare("a", "a")).toBe(0);
   expect(stringCompare("", "")).toBe(0);
-  
+
   // Case comparison - note that this function is NOT case-insensitive
   // It compares uppercase versions first, then original strings
   expect(stringCompare("a", "A")).toBe(-1); // lowercase comes after uppercase
   expect(stringCompare("A", "a")).toBe(1);  // uppercase comes before lowercase
   expect(stringCompare("abc", "ABC")).toBe(-1);
   expect(stringCompare("ABC", "abc")).toBe(1);
-  
+
   // Different strings
   expect(stringCompare("a", "b")).toBe(-1);
   expect(stringCompare("b", "a")).toBe(1);
-  
+
   // Strings with different lengths
   expect(stringCompare("abc", "abcd")).toBe(-1);
   expect(stringCompare("abcd", "abc")).toBe(1);
-  
+
   // Strings with numbers
   expect(stringCompare("a1", "a2")).toBe(-1);
   expect(stringCompare("a10", "a2")).toBe(-1);
-  
+
   // Strings with special characters
   expect(stringCompare("a", "a!")).toBe(-1);
   expect(stringCompare("a!", "a")).toBe(1);
@@ -254,43 +254,43 @@ import.meta.vitest?.test("deindent", ({ expect }) => {
   expect(deindent("  hello\n  world")).toBe("hello\nworld");
   expect(deindent("  hello\n    world")).toBe("hello\n  world");
   expect(deindent("\n  hello\n  world\n")).toBe("hello\nworld");
-  
+
   // Test with empty input
   expect(deindent("")).toBe("");
   expect(deindent([])).toBe("");
-  
+
   // Test with template literal
   expect(deindent`
     hello
     world
   `).toBe("hello\nworld");
-  
+
   expect(deindent`
     hello
       world
   `).toBe("hello\n  world");
-  
+
   // Test with values
   const value = "test";
   expect(deindent`
     hello ${value}
     world
   `).toBe(`hello ${value}\nworld`);
-  
+
   // Test with multiline values
   const multilineValue = "line1\nline2";
   expect(deindent`
     hello ${multilineValue}
     world
   `).toBe(`hello ${multilineValue}\nworld`);
-  
+
   // Test with mixed indentation
   expect(deindent`
     hello
       world
         !
   `).toBe("hello\n  world\n    !");
-  
+
   // Test error cases
   expect(() => deindent(["a", "b", "c"], "too", "many", "values")).toThrow("Invalid number of values");
 });
@@ -305,25 +305,25 @@ export function extractScopes(scope: string, removeDuplicates=true): string[] {
 import.meta.vitest?.test("extractScopes", ({ expect }) => {
   // Test with empty string
   expect(extractScopes("")).toEqual([]);
-  
+
   // Test with single scope
   expect(extractScopes("read")).toEqual(["read"]);
-  
+
   // Test with multiple scopes
   expect(extractScopes("read write")).toEqual(["read", "write"]);
-  
+
   // Test with extra whitespace
   expect(extractScopes("  read  write  ")).toEqual(["read", "write"]);
-  
+
   // Test with newlines and tabs
   expect(extractScopes("read\nwrite\tdelete")).toEqual(["read", "write", "delete"]);
-  
+
   // Test with duplicates (default behavior)
   expect(extractScopes("read write read")).toEqual(["read", "write"]);
-  
+
   // Test with duplicates (explicitly set to remove)
   expect(extractScopes("read write read", true)).toEqual(["read", "write"]);
-  
+
   // Test with duplicates (explicitly set to keep)
   expect(extractScopes("read write read", false)).toEqual(["read", "write", "read"]);
 });
@@ -336,22 +336,22 @@ export function mergeScopeStrings(...scopes: string[]): string {
 import.meta.vitest?.test("mergeScopeStrings", ({ expect }) => {
   // Test with empty input
   expect(mergeScopeStrings()).toBe("");
-  
+
   // Test with single scope string
   expect(mergeScopeStrings("read write")).toBe("read write");
-  
+
   // Test with multiple scope strings
   expect(mergeScopeStrings("read", "write")).toBe("read write");
-  
+
   // Test with overlapping scopes
   expect(mergeScopeStrings("read write", "write delete")).toBe("read write delete");
-  
+
   // Test with extra whitespace
   expect(mergeScopeStrings("  read  write  ", "  delete  ")).toBe("read write delete");
-  
+
   // Test with duplicates across strings
   expect(mergeScopeStrings("read write", "write delete", "read")).toBe("read write delete");
-  
+
   // Test with empty strings
   expect(mergeScopeStrings("read write", "", "delete")).toBe("read write delete");
 });
@@ -362,31 +362,31 @@ export function escapeTemplateLiteral(s: string): string {
 import.meta.vitest?.test("escapeTemplateLiteral", ({ expect }) => {
   // Test with empty string
   expect(escapeTemplateLiteral("")).toBe("");
-  
+
   // Test with normal string (no special characters)
   expect(escapeTemplateLiteral("hello world")).toBe("hello world");
-  
+
   // Test with backtick
   const input1 = "hello `world`";
   const output1 = escapeTemplateLiteral(input1);
   // Verify backticks are escaped
   expect(output1.includes("\\`")).toBe(true);
   expect(output1).not.toBe(input1);
-  
+
   // Test with backslash
   const input2 = "hello \\world";
   const output2 = escapeTemplateLiteral(input2);
   // Verify backslashes are escaped
   expect(output2.includes("\\\\")).toBe(true);
   expect(output2).not.toBe(input2);
-  
+
   // Test with dollar sign
   const input3 = "hello $world";
   const output3 = escapeTemplateLiteral(input3);
   // Verify dollar signs are escaped
   expect(output3.includes("\\$")).toBe(true);
   expect(output3).not.toBe(input3);
-  
+
   // Test with multiple special characters
   const input4 = "`hello` $world\\";
   const output4 = escapeTemplateLiteral(input4);
@@ -395,7 +395,7 @@ import.meta.vitest?.test("escapeTemplateLiteral", ({ expect }) => {
   expect(output4.includes("\\$")).toBe(true);
   expect(output4.includes("\\\\")).toBe(true);
   expect(output4).not.toBe(input4);
-  
+
   // Test with already escaped characters
   const input5 = "\\`hello\\`";
   const output5 = escapeTemplateLiteral(input5);

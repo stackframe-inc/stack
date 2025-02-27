@@ -12,12 +12,12 @@ import.meta.vitest?.test("isIpAddress", ({ expect }) => {
   expect(isIpAddress("127.0.0.1")).toBe(true);
   expect(isIpAddress("0.0.0.0")).toBe(true);
   expect(isIpAddress("255.255.255.255")).toBe(true);
-  
+
   // Test valid IPv6 addresses
   expect(isIpAddress("::1")).toBe(true);
   expect(isIpAddress("2001:db8::")).toBe(true);
   expect(isIpAddress("2001:db8:85a3:8d3:1319:8a2e:370:7348")).toBe(true);
-  
+
   // Test invalid IP addresses
   expect(isIpAddress("")).toBe(false);
   expect(isIpAddress("not an ip")).toBe(false);
@@ -35,10 +35,10 @@ export function assertIpAddress(ip: string): asserts ip is Ipv4Address | Ipv6Add
 import.meta.vitest?.test("assertIpAddress", ({ expect }) => {
   // Test with valid IPv4 address
   expect(() => assertIpAddress("192.168.1.1")).not.toThrow();
-  
+
   // Test with valid IPv6 address
   expect(() => assertIpAddress("::1")).not.toThrow();
-  
+
   // Test with invalid IP addresses
   expect(() => assertIpAddress("")).toThrow("Invalid IP address: ");
   expect(() => assertIpAddress("not an ip")).toThrow("Invalid IP address: not an ip");

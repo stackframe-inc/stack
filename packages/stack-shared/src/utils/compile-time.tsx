@@ -13,15 +13,15 @@ import.meta.vitest?.test("scrambleDuringCompileTime", ({ expect }) => {
   expect(scrambleDuringCompileTime(true)).toBe(true);
   expect(scrambleDuringCompileTime(null)).toBe(null);
   expect(scrambleDuringCompileTime(undefined)).toBe(undefined);
-  
+
   // Test with objects (reference equality)
   const obj = { a: 1 };
   expect(scrambleDuringCompileTime(obj)).toBe(obj);
-  
+
   // Test with arrays (reference equality)
   const arr = [1, 2, 3];
   expect(scrambleDuringCompileTime(arr)).toBe(arr);
-  
+
   // Test with functions (reference equality)
   const fn = () => "test";
   expect(scrambleDuringCompileTime(fn)).toBe(fn);

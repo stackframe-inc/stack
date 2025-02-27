@@ -56,12 +56,12 @@ import.meta.vitest?.test("decodeBasicAuthorizationHeader", ({ expect }) => {
   const password = "pass";
   const encoded = encodeBasicAuthorizationHeader(username, password);
   expect(decodeBasicAuthorizationHeader(encoded)).toEqual([username, password]);
-  
+
   // Test with password containing colons
   const complexPassword = "pass:with:colons";
   const encodedComplex = encodeBasicAuthorizationHeader(username, complexPassword);
   expect(decodeBasicAuthorizationHeader(encodedComplex)).toEqual([username, complexPassword]);
-  
+
   // Test with invalid headers
   expect(decodeBasicAuthorizationHeader("NotBasic dXNlcjpwYXNz")).toBe(null); // Wrong type
   expect(decodeBasicAuthorizationHeader("Basic")).toBe(null); // Missing encoded part
@@ -77,15 +77,15 @@ import.meta.vitest?.test("encodeBasicAuthorizationHeader", ({ expect }) => {
   // Test with simple username and password
   const encoded = encodeBasicAuthorizationHeader("user", "pass");
   expect(encoded).toMatch(/^Basic [A-Za-z0-9+/=]+$/); // Should start with "Basic " followed by base64
-  
+
   // Test with empty password
   const encodedEmptyPass = encodeBasicAuthorizationHeader("user", "");
   expect(encodedEmptyPass).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
-  
+
   // Test with password containing special characters
   const encodedSpecialChars = encodeBasicAuthorizationHeader("user", "p@ss!w0rd");
   expect(encodedSpecialChars).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
-  
+
   // Test with username containing colon should throw
   expect(() => encodeBasicAuthorizationHeader("user:name", "pass")).toThrow();
 });

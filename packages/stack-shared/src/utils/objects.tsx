@@ -129,7 +129,7 @@ import.meta.vitest?.test("typedEntries", ({ expect }) => {
   expect(typedEntries({})).toEqual([]);
   expect(typedEntries({ a: 1, b: 2 })).toEqual([["a", 1], ["b", 2]]);
   expect(typedEntries({ a: "hello", b: true, c: null })).toEqual([["a", "hello"], ["b", true], ["c", null]]);
-  
+
   // Test with object containing methods
   const objWithMethod = { a: 1, b: () => "test" };
   const entries = typedEntries(objWithMethod);
@@ -146,14 +146,21 @@ export function typedFromEntries<K extends PropertyKey, V>(entries: [K, V][]): R
 import.meta.vitest?.test("typedFromEntries", ({ expect }) => {
   expect(typedFromEntries([])).toEqual({});
   expect(typedFromEntries([["a", 1], ["b", 2]])).toEqual({ a: 1, b: 2 });
-  expect(typedFromEntries([["a", "hello"], ["b", true], ["c", null]])).toEqual({ a: "hello", b: true, c: null });
-  
+
+  // Test with mixed types (using type assertion)
+  const mixedEntries = [["a", "hello"], ["b", true], ["c", null]] as [string, string | boolean | null][];
+  const mixedObj = typedFromEntries(mixedEntries);
+  expect(mixedObj).toEqual({ a: "hello", b: true, c: null });
+
   // Test with function values
   const fn = () => "test";
-  const obj = typedFromEntries([["a", 1], ["b", fn]]);
+  type MixedValue = number | (() => string);
+  const fnEntries: [string, MixedValue][] = [["a", 1], ["b", fn]];
+  const obj = typedFromEntries(fnEntries);
   expect(obj.a).toBe(1);
   expect(typeof obj.b).toBe("function");
-  expect(obj.b()).toBe("test");
+  // Type assertion needed for the function call
+  expect((obj.b as () => string)()).toBe("test");
 });
 
 export function typedKeys<T extends {}>(obj: T): (keyof T)[] {
@@ -163,7 +170,7 @@ import.meta.vitest?.test("typedKeys", ({ expect }) => {
   expect(typedKeys({})).toEqual([]);
   expect(typedKeys({ a: 1, b: 2 })).toEqual(["a", "b"]);
   expect(typedKeys({ a: "hello", b: true, c: null })).toEqual(["a", "b", "c"]);
-  
+
   // Test with object containing methods
   const objWithMethod = { a: 1, b: () => "test" };
   expect(typedKeys(objWithMethod)).toEqual(["a", "b"]);
@@ -175,16 +182,23 @@ export function typedValues<T extends {}>(obj: T): T[keyof T][] {
 import.meta.vitest?.test("typedValues", ({ expect }) => {
   expect(typedValues({})).toEqual([]);
   expect(typedValues({ a: 1, b: 2 })).toEqual([1, 2]);
-  expect(typedValues({ a: "hello", b: true, c: null })).toEqual(["hello", true, null]);
-  
+
+  // Test with mixed types
+  type MixedObj = { a: string, b: boolean, c: null };
+  const mixedObj: MixedObj = { a: "hello", b: true, c: null };
+  expect(typedValues(mixedObj)).toEqual(["hello", true, null]);
+
   // Test with object containing methods
+  type ObjWithFn = { a: number, b: () => string };
   const fn = () => "test";
-  const objWithMethod = { a: 1, b: fn };
+  const objWithMethod: ObjWithFn = { a: 1, b: fn };
   const values = typedValues(objWithMethod);
   expect(values.length).toBe(2);
   expect(values[0]).toBe(1);
   expect(typeof values[1]).toBe("function");
-  expect(values[1]()).toBe("test");
+  // Need to cast to the correct type
+  const fnValue = values[1] as () => string;
+  expect(fnValue()).toBe("test");
 });
 
 export function typedAssign<T extends {}, U extends {}>(target: T, source: U): T & U {
@@ -196,13 +210,13 @@ import.meta.vitest?.test("typedAssign", ({ expect }) => {
   const emptyResult = typedAssign(emptyTarget, { a: 1 });
   expect(emptyResult).toEqual({ a: 1 });
   expect(emptyResult).toBe(emptyTarget); // Same reference
-  
+
   // Test with non-empty target
   const target = { a: 1, b: 2 };
   const result = typedAssign(target, { c: 3, d: 4 });
   expect(result).toEqual({ a: 1, b: 2, c: 3, d: 4 });
   expect(result).toBe(target); // Same reference
-  
+
   // Test with overlapping properties
   const targetWithOverlap = { a: 1, b: 2 };
   const resultWithOverlap = typedAssign(targetWithOverlap, { b: 3, c: 4 });

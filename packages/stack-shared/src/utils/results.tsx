@@ -57,7 +57,7 @@ import.meta.vitest?.test("Result.ok and Result.error", ({ expect }) => {
   const okResult = Result.ok(42);
   expect(okResult.status).toBe("ok");
   expect(okResult.data).toBe(42);
-  
+
   // Test Result.error
   const error = new Error("Test error");
   const errorResult = Result.error(error);
@@ -69,7 +69,7 @@ import.meta.vitest?.test("Result.or", ({ expect }) => {
   // Test with ok result
   const okResult: Result<number, string> = { status: "ok", data: 42 };
   expect(Result.or(okResult, 0)).toBe(42);
-  
+
   // Test with error result
   const errorResult: Result<number, string> = { status: "error", error: "error message" };
   expect(Result.or(errorResult, 0)).toBe(0);
@@ -79,7 +79,7 @@ import.meta.vitest?.test("Result.orThrow", ({ expect }) => {
   // Test with ok result
   const okResult: Result<number, Error> = { status: "ok", data: 42 };
   expect(Result.orThrow(okResult)).toBe(42);
-  
+
   // Test with error result
   const error = new Error("Test error");
   const errorResult: Result<number, Error> = { status: "error", error };
@@ -90,7 +90,7 @@ import.meta.vitest?.test("Result.orThrowAsync", async ({ expect }) => {
   // Test with ok result
   const okPromise = Promise.resolve({ status: "ok", data: 42 } as Result<number, Error>);
   expect(await Result.orThrowAsync(okPromise)).toBe(42);
-  
+
   // Test with error result
   const error = new Error("Test error");
   const errorPromise = Promise.resolve({ status: "error", error } as Result<number, Error>);
@@ -118,11 +118,11 @@ import.meta.vitest?.test("AsyncResult.or", ({ expect }) => {
   // Test with ok result
   const okResult: AsyncResult<number, string> = { status: "ok", data: 42 };
   expect(AsyncResult.or(okResult, 0)).toBe(42);
-  
+
   // Test with error result
   const errorResult: AsyncResult<number, string> = { status: "error", error: "error message" };
   expect(AsyncResult.or(errorResult, 0)).toBe(0);
-  
+
   // Test with pending result
   const pendingResult: AsyncResult<number, string> = { status: "pending", progress: undefined };
   expect(AsyncResult.or(pendingResult, 0)).toBe(0);
@@ -132,12 +132,12 @@ import.meta.vitest?.test("AsyncResult.orThrow", ({ expect }) => {
   // Test with ok result
   const okResult: AsyncResult<number, Error> = { status: "ok", data: 42 };
   expect(AsyncResult.orThrow(okResult)).toBe(42);
-  
+
   // Test with error result
   const error = new Error("Test error");
   const errorResult: AsyncResult<number, Error> = { status: "error", error };
   expect(() => AsyncResult.orThrow(errorResult)).toThrow(error);
-  
+
   // Test with pending result
   const pendingResult: AsyncResult<number, Error> = { status: "pending", progress: undefined };
   expect(() => AsyncResult.orThrow(pendingResult)).toThrow("Result still pending");
@@ -156,7 +156,7 @@ import.meta.vitest?.test("pending", ({ expect }) => {
   const pendingResult = pending();
   expect(pendingResult.status).toBe("pending");
   expect(pendingResult.progress).toBe(undefined);
-  
+
   // Test with progress
   const progressValue = { loaded: 50, total: 100 };
   const pendingWithProgress = pending(progressValue);
@@ -177,14 +177,18 @@ import.meta.vitest?.test("promiseToResult", async ({ expect }) => {
   const resolvedPromise = Promise.resolve(42);
   const resolvedResult = await promiseToResult(resolvedPromise);
   expect(resolvedResult.status).toBe("ok");
-  expect(resolvedResult.data).toBe(42);
-  
+  if (resolvedResult.status === "ok") {
+    expect(resolvedResult.data).toBe(42);
+  }
+
   // Test with rejected promise
   const error = new Error("Test error");
   const rejectedPromise = Promise.reject(error);
   const rejectedResult = await promiseToResult(rejectedPromise);
   expect(rejectedResult.status).toBe("error");
-  expect(rejectedResult.error).toBe(error);
+  if (rejectedResult.status === "error") {
+    expect(rejectedResult.error).toBe(error);
+  }
 });
 
 function fromThrowing<T>(fn: () => T): Result<T, unknown> {
@@ -199,14 +203,18 @@ import.meta.vitest?.test("fromThrowing", ({ expect }) => {
   const successFn = () => 42;
   const successResult = fromThrowing(successFn);
   expect(successResult.status).toBe("ok");
-  expect(successResult.data).toBe(42);
-  
+  if (successResult.status === "ok") {
+    expect(successResult.data).toBe(42);
+  }
+
   // Test with function that throws
   const error = new Error("Test error");
   const errorFn = () => { throw error; };
   const errorResult = fromThrowing(errorFn);
   expect(errorResult.status).toBe("error");
-  expect(errorResult.error).toBe(error);
+  if (errorResult.status === "error") {
+    expect(errorResult.error).toBe(error);
+  }
 });
 
 async function fromThrowingAsync<T>(fn: () => Promise<T>): Promise<Result<T, unknown>> {
@@ -221,14 +229,18 @@ import.meta.vitest?.test("fromThrowingAsync", async ({ expect }) => {
   const successFn = async () => 42;
   const successResult = await fromThrowingAsync(successFn);
   expect(successResult.status).toBe("ok");
-  expect(successResult.data).toBe(42);
-  
+  if (successResult.status === "ok") {
+    expect(successResult.data).toBe(42);
+  }
+
   // Test with async function that throws
   const error = new Error("Test error");
   const errorFn = async () => { throw error; };
   const errorResult = await fromThrowingAsync(errorFn);
   expect(errorResult.status).toBe("error");
-  expect(errorResult.error).toBe(error);
+  if (errorResult.status === "error") {
+    expect(errorResult.error).toBe(error);
+  }
 });
 
 function mapResult<T, U, E = unknown, P = unknown>(result: Result<T, E>, fn: (data: T) => U): Result<U, E>;
@@ -248,30 +260,36 @@ function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>,
 import.meta.vitest?.test("mapResult", ({ expect }) => {
   // Test with ok result
   const okResult: Result<number, string> = { status: "ok", data: 42 };
-  const mappedOk = mapResult(okResult, (n) => n * 2);
+  const mappedOk = mapResult(okResult, (n: number) => n * 2);
   expect(mappedOk.status).toBe("ok");
-  expect(mappedOk.data).toBe(84);
-  
+  if (mappedOk.status === "ok") {
+    expect(mappedOk.data).toBe(84);
+  }
+
   // Test with error result
   const errorResult: Result<number, string> = { status: "error", error: "error message" };
-  const mappedError = mapResult(errorResult, (n) => n * 2);
+  const mappedError = mapResult(errorResult, (n: number) => n * 2);
   expect(mappedError.status).toBe("error");
-  expect(mappedError.error).toBe("error message");
-  
+  if (mappedError.status === "error") {
+    expect(mappedError.error).toBe("error message");
+  }
+
   // Test with pending result (no progress)
   const pendingResult: AsyncResult<number, string, void> = { status: "pending", progress: undefined };
-  const mappedPending = mapResult(pendingResult, (n) => n * 2);
+  const mappedPending = mapResult(pendingResult, (n: number) => n * 2);
   expect(mappedPending.status).toBe("pending");
-  
+
   // Test with pending result (with progress)
   const progressValue = { loaded: 50, total: 100 };
-  const pendingWithProgress: AsyncResult<number, string, typeof progressValue> = { 
-    status: "pending", 
-    progress: progressValue 
+  const pendingWithProgress: AsyncResult<number, string, typeof progressValue> = {
+    status: "pending",
+    progress: progressValue
   };
-  const mappedPendingWithProgress = mapResult(pendingWithProgress, (n) => n * 2);
+  const mappedPendingWithProgress = mapResult(pendingWithProgress, (n: number) => n * 2);
   expect(mappedPendingWithProgress.status).toBe("pending");
-  expect(mappedPendingWithProgress.progress).toBe(progressValue);
+  if (mappedPendingWithProgress.status === "pending") {
+    expect(mappedPendingWithProgress.progress).toBe(progressValue);
+  }
 });
 
 
@@ -312,7 +330,7 @@ import.meta.vitest?.test("RetryError", ({ expect }) => {
   expect(retryErrorSingle.retries).toBe(1);
   expect(retryErrorSingle.cause).toBe(singleError);
   expect(retryErrorSingle.message).toContain("Error after 1 attempts");
-  
+
   // Test with multiple different errors
   const error1 = new Error("Error 1");
   const error2 = new Error("Error 2");
@@ -324,7 +342,7 @@ import.meta.vitest?.test("RetryError", ({ expect }) => {
   expect(retryErrorMultiple.message).toContain("Error after 2 attempts");
   expect(retryErrorMultiple.message).toContain("Attempt 1");
   expect(retryErrorMultiple.message).toContain("Attempt 2");
-  
+
   // Test with multiple identical errors
   const sameError = new Error("Same error");
   const retryErrorSame = new RetryError([sameError, sameError]);
@@ -355,50 +373,56 @@ async function retry<T>(
   }
   return Result.error(new RetryError(errors));
 }
-import.meta.vitest?.test("retry", async ({ expect, vi }) => {
+import.meta.vitest?.test("retry", async ({ expect }) => {
   // Mock the wait function to avoid actual delays
-  vi?.spyOn(await import("./promises"), "wait").mockResolvedValue(undefined);
-  
-  // Test successful on first attempt
-  const successFn = vi?.fn().mockResolvedValue(Result.ok("success")) || 
-    (async () => Result.ok("success"));
-  const successResult = await retry(successFn, 3);
-  expect(successResult.status).toBe("ok");
-  expect(successResult.data).toBe("success");
-  
-  // Test successful after failures
-  let attemptCount = 0;
-  const eventualSuccessFn = async () => {
-    attemptCount++;
-    if (attemptCount < 2) {
-      return Result.error(new Error(`Attempt ${attemptCount} failed`));
+  const importedPromises = await import("./promises");
+  const originalWait = importedPromises.wait;
+  importedPromises.wait = async () => undefined;
+
+  try {
+    // Test successful on first attempt
+    const successFn = async () => Result.ok("success");
+    const successResult = await retry(successFn, 3);
+    expect(successResult.status).toBe("ok");
+    if (successResult.status === "ok") {
+      expect(successResult.data).toBe("success");
     }
-    return Result.ok("eventual success");
-  };
-  
-  const eventualSuccessResult = await retry(eventualSuccessFn, 3);
-  expect(eventualSuccessResult.status).toBe("ok");
-  expect(eventualSuccessResult.data).toBe("eventual success");
-  
-  // Test all attempts fail
-  const error1 = new Error("Error 1");
-  const error2 = new Error("Error 2");
-  const error3 = new Error("Error 3");
-  const allFailFn = vi?.fn()
-    .mockResolvedValueOnce(Result.error(error1))
-    .mockResolvedValueOnce(Result.error(error2))
-    .mockResolvedValueOnce(Result.error(error3)) || 
-    (async (attempt: number) => {
+
+    // Test successful after failures
+    let attemptCount = 0;
+    const eventualSuccessFn = async () => {
+      attemptCount++;
+      if (attemptCount < 2) {
+        return Result.error(new Error(`Attempt ${attemptCount} failed`));
+      }
+      return Result.ok("eventual success");
+    };
+
+    const eventualSuccessResult = await retry(eventualSuccessFn, 3);
+    expect(eventualSuccessResult.status).toBe("ok");
+    if (eventualSuccessResult.status === "ok") {
+      expect(eventualSuccessResult.data).toBe("eventual success");
+    }
+
+    // Test all attempts fail
+    const error1 = new Error("Error 1");
+    const error2 = new Error("Error 2");
+    const error3 = new Error("Error 3");
+    const allFailFn = async (attempt: number) => {
       const errors = [error1, error2, error3];
       return Result.error(errors[attempt]);
-    });
-  
-  const allFailResult = await retry(allFailFn, 3);
-  expect(allFailResult.status).toBe("error");
-  expect(allFailResult.error).toBeInstanceOf(RetryError);
-  if (allFailResult.status === "error") {
-    const retryError = allFailResult.error as RetryError;
-    expect(retryError.errors).toEqual([error1, error2, error3]);
-    expect(retryError.retries).toBe(3);
+    };
+
+    const allFailResult = await retry(allFailFn, 3);
+    expect(allFailResult.status).toBe("error");
+    if (allFailResult.status === "error") {
+      expect(allFailResult.error).toBeInstanceOf(RetryError);
+      const retryError = allFailResult.error as RetryError;
+      expect(retryError.errors).toEqual([error1, error2, error3]);
+      expect(retryError.retries).toBe(3);
+    }
+  } finally {
+    // Restore original wait function
+    importedPromises.wait = originalWait;
   }
 });

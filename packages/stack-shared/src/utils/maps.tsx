@@ -19,16 +19,16 @@ import.meta.vitest?.test("WeakRefIfAvailable", ({ expect }) => {
   // Test with an object
   const obj = { id: 1, name: "test" };
   const weakRef = new WeakRefIfAvailable(obj);
-  
+
   // Test deref returns the original object
   expect(weakRef.deref()).toBe(obj);
-  
+
   // Test with a different object
   const obj2 = { id: 2, name: "test2" };
   const weakRef2 = new WeakRefIfAvailable(obj2);
   expect(weakRef2.deref()).toBe(obj2);
   expect(weakRef2.deref()).not.toBe(obj);
-  
+
   // We can't easily test garbage collection in this environment,
   // but we can verify the basic functionality works
 });
@@ -93,60 +93,60 @@ export class IterableWeakMap<K extends object, V> {
 import.meta.vitest?.test("IterableWeakMap", ({ expect }) => {
   // Test basic functionality
   const map = new IterableWeakMap<{ id: number }, string>();
-  
+
   // Create object keys
   const obj1 = { id: 1 };
   const obj2 = { id: 2 };
-  
+
   // Test set and get
   map.set(obj1, "value1");
   expect(map.get(obj1)).toBe("value1");
-  
+
   // Test has
   expect(map.has(obj1)).toBe(true);
   expect(map.has(obj2)).toBe(false);
   expect(map.has({ id: 1 })).toBe(false); // Different object with same content
-  
+
   // Test with multiple keys
   map.set(obj2, "value2");
   expect(map.get(obj2)).toBe("value2");
   expect(map.get(obj1)).toBe("value1"); // Original still exists
-  
+
   // Test delete
   expect(map.delete(obj1)).toBe(true);
   expect(map.has(obj1)).toBe(false);
   expect(map.get(obj1)).toBeUndefined();
   expect(map.has(obj2)).toBe(true); // Other key still exists
-  
+
   // Test delete non-existent key
   expect(map.delete({ id: 3 })).toBe(false);
-  
+
   // Test iteration
   const iterMap = new IterableWeakMap<{ id: number }, number>();
   const iterObj1 = { id: 1 };
   const iterObj2 = { id: 2 };
   const iterObj3 = { id: 3 };
-  
+
   iterMap.set(iterObj1, 1);
   iterMap.set(iterObj2, 2);
   iterMap.set(iterObj3, 3);
-  
+
   const entries = Array.from(iterMap);
   expect(entries.length).toBe(3);
-  
+
   // Find entries by their values since we can't directly compare objects in the array
   const values = entries.map(entry => entry[1]);
   expect(values).toContain(1);
   expect(values).toContain(2);
   expect(values).toContain(3);
-  
+
   // Test constructor with entries
   const initialEntries: [{ id: number }, string][] = [
     [{ id: 4 }, "initial1"],
     [{ id: 5 }, "initial2"]
   ];
   const mapWithEntries = new IterableWeakMap(initialEntries);
-  
+
   // We can't directly access the initial entries since they're different object references
   // But we can verify the map has the correct number of entries
   const entriesFromConstructor = Array.from(mapWithEntries);
@@ -216,7 +216,7 @@ export class MaybeWeakMap<K, V> {
 import.meta.vitest?.test("MaybeWeakMap", ({ expect }) => {
   // Test with primitive keys
   const map = new MaybeWeakMap<string | object, number>();
-  
+
   // Test with string keys
   map.set("key1", 1);
   map.set("key2", 2);
@@ -224,7 +224,7 @@ import.meta.vitest?.test("MaybeWeakMap", ({ expect }) => {
   expect(map.get("key2")).toBe(2);
   expect(map.has("key1")).toBe(true);
   expect(map.has("nonexistent")).toBe(false);
-  
+
   // Test with object keys
   const obj1 = { id: 1 };
   const obj2 = { id: 2 };
@@ -233,22 +233,22 @@ import.meta.vitest?.test("MaybeWeakMap", ({ expect }) => {
   expect(map.get(obj1)).toBe(3);
   expect(map.get(obj2)).toBe(4);
   expect(map.has(obj1)).toBe(true);
-  
+
   // Test delete with primitive key
   expect(map.delete("key1")).toBe(true);
   expect(map.has("key1")).toBe(false);
   expect(map.delete("nonexistent")).toBe(false);
-  
+
   // Test delete with object key
   expect(map.delete(obj1)).toBe(true);
   expect(map.has(obj1)).toBe(false);
-  
+
   // Test iteration
   const entries = Array.from(map);
   expect(entries.length).toBe(2);
   expect(entries).toContainEqual(["key2", 2]);
   expect(entries).toContainEqual([obj2, 4]);
-  
+
   // Test constructor with entries
   const initialEntries: [string | object, number][] = [
     ["initial1", 10],
@@ -357,47 +357,48 @@ export class DependenciesMap<K extends any[], V> {
 import.meta.vitest?.test("DependenciesMap", ({ expect }) => {
   // Test basic functionality
   const map = new DependenciesMap<[string, number], string>();
-  
+
   // Test set and get
   map.set(["key", 1], "value1");
   expect(map.get(["key", 1])).toBe("value1");
-  
+
   // Test has
   expect(map.has(["key", 1])).toBe(true);
   expect(map.has(["key", 2])).toBe(false);
-  
+
   // Test with different dependencies
   map.set(["key", 2], "value2");
   expect(map.get(["key", 2])).toBe("value2");
   expect(map.get(["key", 1])).toBe("value1"); // Original still exists
-  
+
   // Test delete
   expect(map.delete(["key", 1])).toBe(true);
   expect(map.has(["key", 1])).toBe(false);
   expect(map.get(["key", 1])).toBeUndefined();
   expect(map.has(["key", 2])).toBe(true); // Other key still exists
-  
+
   // Test delete non-existent key
   expect(map.delete(["nonexistent", 1])).toBe(false);
-  
+
   // Test clear
   map.clear();
   expect(map.has(["key", 2])).toBe(false);
-  
+
   // Test with object keys
+  const objMap = new DependenciesMap<[object, number], string>();
   const obj1 = { id: 1 };
   const obj2 = { id: 2 };
-  map.set([obj1, 1], "object1");
-  map.set([obj2, 2], "object2");
-  expect(map.get([obj1, 1])).toBe("object1");
-  expect(map.get([obj2, 2])).toBe("object2");
-  
+  objMap.set([obj1, 1], "object1");
+  objMap.set([obj2, 2], "object2");
+  expect(objMap.get([obj1, 1])).toBe("object1");
+  expect(objMap.get([obj2, 2])).toBe("object2");
+
   // Test iteration
   const iterMap = new DependenciesMap<[string], number>();
   iterMap.set(["a"], 1);
   iterMap.set(["b"], 2);
   iterMap.set(["c"], 3);
-  
+
   const entries = Array.from(iterMap);
   expect(entries.length).toBe(3);
   expect(entries).toContainEqual([["a"], 1]);
