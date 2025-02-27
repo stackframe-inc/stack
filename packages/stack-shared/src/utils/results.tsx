@@ -394,7 +394,7 @@ async function retry<T>(
 import.meta.vitest?.test("retry", async ({ expect }) => {
   // We don't need to mock the wait function anymore
   // Instead, we've modified the retry function to use a minimal delay
-  
+
   try {
     // Test successful on first attempt
     const successFn = async () => Result.ok("success");

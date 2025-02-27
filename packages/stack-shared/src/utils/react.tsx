@@ -22,22 +22,22 @@ import.meta.vitest?.test("forwardRefIfNeeded", ({ expect }) => {
   try {
     // Test with React version < 19
     Object.defineProperty(React, 'version', { value: '18.2.0', writable: true });
-    
+
     // Create a render function
     const renderFn = (props: any, ref: any) => null;
-    
+
     // Call forwardRefIfNeeded
     const result = forwardRefIfNeeded(renderFn);
-    
+
     // Verify the function returns something
     expect(result).toBeDefined();
-    
+
     // Test with React version >= 19
     Object.defineProperty(React, 'version', { value: '19.0.0', writable: true });
-    
+
     // Call forwardRefIfNeeded again with React 19
     const result19 = forwardRefIfNeeded(renderFn);
-    
+
     // Verify the function returns something
     expect(result19).toBeDefined();
   } finally {
