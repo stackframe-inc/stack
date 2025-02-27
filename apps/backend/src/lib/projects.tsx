@@ -116,7 +116,7 @@ export function projectPrismaToCrud(
   return {
     id: prisma.id,
     display_name: prisma.displayName,
-    description: prisma.description ?? "", // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+    description: prisma.description ?? "",
     created_at_millis: prisma.createdAt.getTime(),
     user_count: prisma._count.projectUsers,
     is_production_mode: prisma.isProductionMode,
