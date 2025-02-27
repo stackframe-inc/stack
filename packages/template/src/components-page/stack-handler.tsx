@@ -292,11 +292,14 @@ function ReactStackHandler<HasTokenStore extends boolean>(props: BaseHandlerProp
     componentProps: props.componentProps,
     redirectIfNotHandler,
     onNotFound: () => (
-      <ErrorPage
-        searchParams={{ error: '404' }}
+      <MessageCard
+        title="Page does not exist"
         fullPage={props.fullPage}
-        {...filterUndefinedINU(props.componentProps?.ErrorPage)}
-      />
+        primaryButtonText="Go to Home"
+        primaryAction={() => props.app.redirectToHome()}
+      >
+        The page you are looking for could not be found. Please check the URL and try again.
+      </MessageCard>
     ),
     app: props.app,
   });

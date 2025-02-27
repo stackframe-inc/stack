@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --force",
+    "dev": "vite --force --port 8120",
     "build": "tsc -b && vite build",
     "clean": "rimraf dist && rimraf node_modules",
     "lint": "eslint .",
