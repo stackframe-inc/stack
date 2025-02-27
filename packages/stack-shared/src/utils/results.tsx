@@ -215,7 +215,9 @@ import.meta.vitest?.test("fromThrowing", ({ expect }) => {
 
   // Test with function that throws
   const error = new Error("Test error");
-  const errorFn = () => { throw error; };
+  const errorFn = () => {
+    throw error;
+  };
   const errorResult = fromThrowing(errorFn);
   expect(errorResult.status).toBe("error");
   if (errorResult.status === "error") {
@@ -241,7 +243,9 @@ import.meta.vitest?.test("fromThrowingAsync", async ({ expect }) => {
 
   // Test with async function that throws
   const error = new Error("Test error");
-  const errorFn = async () => { throw error; };
+  const errorFn = async () => {
+    throw error;
+  };
   const errorResult = await fromThrowingAsync(errorFn);
   expect(errorResult.status).toBe("error");
   if (errorResult.status === "error") {
@@ -259,10 +263,13 @@ function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>,
     };
   }
   if (result.status === "pending") {
-    return {
+    const pendingResult: any = {
       status: "pending",
-      ..."progress" in result ? { progress: result.progress } : {},
-    } as any;
+    };
+    if ("progress" in result) {
+      pendingResult.progress = result.progress;
+    }
+    return pendingResult;
   }
 
   return Result.ok(fn(result.data));
