@@ -43,22 +43,28 @@ type CurrentUser = {
   delete(): Promise<void>; //$stack-link-to:#currentuserdelete
 
   getTeam(id): Promise<Team | null>; //$stack-link-to:#currentusergetteamid
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useTeam(id): Team | null; //$stack-link-to:#currentuseruseteamid
   listTeams(): Promise<Team[]>; //$stack-link-to:#currentuserlistteams
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useTeams(): Team[]; //$stack-link-to:#currentuseruseteams
   setSelectedTeam(team): Promise<void>; //$stack-link-to:#currentusersetselectedteamteam
   createTeam(data): Promise<Team>; //$stack-link-to:#currentusercreateteamdata
   leaveTeam(team): Promise<void>; //$stack-link-to:#currentuserleaveteamteam
   getTeamProfile(team): Promise<EditableTeamMemberProfile>; //$stack-link-to:#currentusergetteamprofileteam
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useTeamProfile(team): EditableTeamMemberProfile; //$stack-link-to:#currentuseruseteamprofileteam
 
   hasPermission(scope, permissionId): Promise<boolean>; //$stack-link-to:#currentuserhaspermissionscope-permissionid
   getPermission(scope, permissionId[, options]): Promise<TeamPermission | null>; //$stack-link-to:#currentusergetpermissionscope-permissionid-options
+  // NEXT_LINE_PLATFORM react-like
    ⤷ usePermission(scope, permissionId[, options]): TeamPermission | null; //$stack-link-to:#currentuserusepermissionscope-permissionid-options
   listPermissions(scope[, options]): Promise<TeamPermission[]>; //$stack-link-to:#currentuserlistpermissionsscope-options
+  // NEXT_LINE_PLATFORM react-like
    ⤷ usePermissions(scope[, options]): TeamPermission[]; //$stack-link-to:#currentuserusepermissionsscope-options
 
   listContactChannels(): Promise<ContactChannel[]>; //$stack-link-to:#currentuserlistcontactchannels
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useContactChannels(): ContactChannel[]; //$stack-link-to:#currentuserusecontactchannels
 };
 ```
@@ -337,6 +343,7 @@ const team = await user.getTeam("teamId");
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
 ## `currentUser.useTeam(id)`
 </div><div className="stack-content">
 
@@ -374,6 +381,8 @@ const team = user.useTeam("teamId");
 
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
+
+{/* END_PLATFORM */}
 
 
 ## `currentUser.listTeams()`
@@ -413,6 +422,7 @@ const teams = await user.listTeams();
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
 ## `currentUser.useTeams()`
 </div><div className="stack-content">
 
@@ -449,6 +459,7 @@ const teams = user.useTeams();
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `currentUser.setSelectedTeam(team)`
 </div><div className="stack-content">
@@ -622,6 +633,7 @@ const profile = await user.getTeamProfile(team);
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
 ## `currentUser.useTeamProfile(team)`
 </div><div className="stack-content">
 
@@ -660,6 +672,7 @@ const profile = user.useTeamProfile(team);
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `currentUser.hasPermission(scope, permissionId)`
 </div><div className="stack-content">
@@ -753,6 +766,8 @@ const permission = await user.getPermission(team, "read_secret_info");
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
+
 ## `currentUser.usePermission(scope, permissionId, options?)`
 </div><div className="stack-content">
 
@@ -802,6 +817,7 @@ const permission = user.usePermission(team, "read_secret_info");
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `currentUser.listPermissions(scope[, options])`
 </div><div className="stack-content">
@@ -850,6 +866,8 @@ const permissions = await user.listPermissions(team);
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
+
 ## `currentUser.usePermissions(scope, options?)`
 </div><div className="stack-content">
 
@@ -896,6 +914,7 @@ const permissions = user.usePermissions(team);
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `currentUser.listContactChannels()`
 </div><div className="stack-content">
@@ -934,6 +953,8 @@ const contactChannels = await user.listContactChannels();
 <Markdown src="../../snippets/divider.mdx" />
 
 
+{/* IF_PLATFORM next */}
+
 ## `currentUser.useContactChannels()`
 </div><div className="stack-content">
 
@@ -970,6 +991,7 @@ const contactChannels = user.useContactChannels();
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `currentUser.updatePassword(data)`
 </div><div className="stack-content">
@@ -1244,6 +1266,7 @@ type ServerUser =
     update(data): Promise<void>; //$stack-link-to:#serveruserupdatedata
 
     listContactChannels(): Promise<ContactChannel[]>; //$stack-link-to:#serveruserlistcontactchannels
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useContactChannels(): ContactChannel[]; //$stack-link-to:#serveruserusecontactchannels
 
     grantPermission(scope, permissionId): Promise<void>; //$stack-link-to:#serverusergrantpermissionscope-permissionid
@@ -1412,6 +1435,7 @@ const contactChannels = await serverUser.listContactChannels();
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM next */}
 ## `serverUser.useContactChannels()`
 </div><div className="stack-content">
 
@@ -1422,6 +1446,8 @@ Functionally equivalent to [`listContactChannels()`](#serveruserlistcontactchann
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+
+{/* END_PLATFORM */}
 
 ## `serverUser.grantPermission(scope, permissionId)`
 </div><div className="stack-content">
