@@ -6,7 +6,7 @@
   "scripts": {
     "prepare-no-codegen": "npx -y only-allow pnpm",
     "prepare-preinstall": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=ts-node ts-node ./scripts/generate-sdks.ts')\"",
-    "prepare": "pnpm prepare-preinstall && pnpm pnpm run generate-docs",
+    "prepare": "pnpm prepare-preinstall && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') { require('child_process').execSync('pnpm run generate-docs') }\"",
     "preinstall": "pnpm prepare-preinstall",
     "typecheck": "pnpm prepare && turbo typecheck",
     "build:dev": "pnpm prepare && NODE_ENV=development pnpm run build",
