@@ -97,7 +97,7 @@ function generateFromTemplate(options: {
     filterFn: compositeFilterFn,
     destFn: compositeDestFn,
     destRemoveSkipFn: (relativePath) => {
-      return relativePath.startsWith("node_modules") || relativePath.startsWith(".next");
+      return relativePath.startsWith("node_modules") || relativePath.startsWith("dist") || relativePath.startsWith(".turbo");
     },
   });
 }
