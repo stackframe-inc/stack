@@ -107,6 +107,20 @@ function processPackageJson(content: string) {
   return JSON.stringify({ "//": COMMENT_LINE, ...jsonObj }, null, 2);
 }
 
+function baseEditFn(options: {
+  relativePath: string, 
+  content: string,
+  platforms: string[]
+}) {
+  if (options.relativePath.startsWith("src/generated")) {
+    return options.content;
+  }
+  if (options.relativePath === 'package-template.json') {
+    return processPackageJson(options.content);
+  }
+  return processMacros(options.content, options.platforms);
+}
+
 
 const baseDir = path.resolve(__dirname, "..", "packages");
 const srcDir = path.resolve(baseDir, "template");
@@ -127,11 +141,7 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "js"),
   editFn: (relativePath, content) => {
-    const result = processMacros(content, PLATFORMS["js"]);
-    if (relativePath === 'package-template.json') {
-      return processPackageJson(result);
-    }
-    return result;
+    return baseEditFn({ relativePath, content, platforms: PLATFORMS["js"] });
   },
   filterFn: (relativePath) => {
     const ignores = [
@@ -163,11 +173,7 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "stack"),
   editFn: (relativePath, content) => {
-    const result = processMacros(content, PLATFORMS["next"]);
-    if (relativePath === 'package-template.json') {
-      return processPackageJson(result);
-    }
-    return result;
+    return baseEditFn({ relativePath, content, platforms: PLATFORMS["next"] });
   },
   filterFn: (relativePath) => {
     if (relativePath.startsWith("src/generated")) {
@@ -182,17 +188,6 @@ generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "react"),
   editFn: (relativePath, content) => {
-    const result = processMacros(content, PLATFORMS["react"]);
-    if (relativePath === 'package-template.json') {
-      return processPackageJson(result);
-    }
-    return result;
-  },
-  filterFn: (relativePath) => {
-    if (relativePath.startsWith("src/generated")) {
-      return false;
-    } else {
-      return true;
-    }
+    return baseEditFn({ relativePath, content, platforms: PLATFORMS["react"] });
   },
 });
