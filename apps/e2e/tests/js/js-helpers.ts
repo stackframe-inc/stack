@@ -17,7 +17,7 @@ export async function scaffoldProject(body?: AdminProjectUpdateOptions) {
   await internalApp.signUpWithCredential({
     email: fakeEmail,
     password: "password",
-    noRedirect: true,
+    verificationCallbackUrl: "https://stack-js-test.example.com/verify",
   });
   await wait(2000);
   const user = await internalApp.getUser({
