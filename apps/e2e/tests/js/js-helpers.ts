@@ -1,8 +1,8 @@
-import { StackAdminApp } from '@stackframe/js';
+import { AdminProjectUpdateOptions, StackAdminApp } from '@stackframe/js';
 import { wait } from '@stackframe/stack-shared/dist/utils/promises';
 import { STACK_BACKEND_BASE_URL, STACK_INTERNAL_PROJECT_ADMIN_KEY, STACK_INTERNAL_PROJECT_CLIENT_KEY, STACK_INTERNAL_PROJECT_SERVER_KEY } from '../helpers';
 
-export async function scaffoldProject() {
+export async function scaffoldProject(body?: AdminProjectUpdateOptions) {
   const internalApp = new StackAdminApp({
     projectId: 'internal',
     baseUrl: STACK_BACKEND_BASE_URL,
@@ -25,13 +25,8 @@ export async function scaffoldProject() {
   });
 
   const project = await user.createProject({
-    displayName: "Test Project",
-    config: {
-      signUpEnabled: true,
-      credentialEnabled: true,
-      magicLinkEnabled: true,
-      passkeyEnabled: true,
-    },
+    displayName: body?.displayName || 'New Project',
+    ...body,
   });
 
   return {
