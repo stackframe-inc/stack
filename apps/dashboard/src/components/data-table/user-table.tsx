@@ -1,6 +1,26 @@
 'use client';
 import { useAdminApp } from '@/app/(main)/(protected)/projects/[projectId]/use-admin-app';
-import { ServerUser } from '@stackframe/stack';
+// Using a type declaration to avoid import issues
+declare type ServerUser = {
+  id: string;
+  displayName: string | null;
+  primaryEmail: string | null;
+  primaryEmailVerified: boolean;
+  profileImageUrl: string | null;
+  signedUpAt: Date;
+  lastActiveAt: Date;
+  hasPassword: boolean;
+  otpAuthEnabled: boolean;
+  passkeyAuthEnabled: boolean;
+  oauthProviders: { id: string }[];
+  isMultiFactorRequired: boolean;
+  clientMetadata: any;
+  clientReadOnlyMetadata: any;
+  serverMetadata: any;
+  delete: () => Promise<void>;
+  update: (options: any) => Promise<void>;
+  createSession: (options: any) => Promise<any>;
+};
 import { deepPlainEquals } from '@stackframe/stack-shared/dist/utils/objects';
 import { deindent } from '@stackframe/stack-shared/dist/utils/strings';
 import { ActionCell, ActionDialog, AvatarCell, BadgeCell, CopyField, DataTableColumnHeader, DataTableManualPagination, DateCell, SearchToolbarItem, SimpleTooltip, TextCell, Typography } from "@stackframe/stack-ui";
@@ -200,7 +220,8 @@ export function extendUsers(users: ServerUser[] & { nextCursor?: string | null }
     authTypes: [
       ...user.otpAuthEnabled ? ["otp"] : [],
       ...user.hasPassword ? ["password"] : [],
-      ...user.oauthProviders.map(p => p.id),
+      ...user.passkeyAuthEnabled ? ["passkey"] : [],
+      ...user.oauthProviders.map((p: { id: string }) => p.id),
     ],
     emailVerified: user.primaryEmailVerified ? "verified" : "unverified",
   } satisfies ExtendedServerUser)).sort((a, b) => a.signedUpAt > b.signedUpAt ? -1 : 1);

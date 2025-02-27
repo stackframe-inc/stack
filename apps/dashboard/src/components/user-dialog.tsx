@@ -1,5 +1,25 @@
 import { useAdminApp } from "@/app/(main)/(protected)/projects/[projectId]/use-admin-app";
-import { ServerUser } from "@stackframe/stack";
+// Using a type declaration to avoid import issues
+declare type ServerUser = {
+  id: string;
+  displayName: string | null;
+  primaryEmail: string | null;
+  primaryEmailVerified: boolean;
+  profileImageUrl: string | null;
+  signedUpAt: Date;
+  lastActiveAt: Date;
+  hasPassword: boolean;
+  otpAuthEnabled: boolean;
+  passkeyAuthEnabled: boolean;
+  oauthProviders: { id: string }[];
+  isMultiFactorRequired: boolean;
+  clientMetadata: any;
+  clientReadOnlyMetadata: any;
+  serverMetadata: any;
+  delete: () => Promise<void>;
+  update: (options: any) => Promise<void>;
+  createSession: (options: any) => Promise<any>;
+};
 import { KnownErrors } from "@stackframe/stack-shared";
 import { emailSchema, jsonStringOrEmptySchema, passwordSchema } from "@stackframe/stack-shared/dist/schema-fields";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Button, Typography, useToast } from "@stackframe/stack-ui";
