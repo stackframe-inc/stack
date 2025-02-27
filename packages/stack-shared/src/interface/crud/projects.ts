@@ -107,7 +107,7 @@ export const projectsCrudClientReadSchema = yupObject({
 
 export const projectsCrudAdminUpdateSchema = yupObject({
   display_name: schemaFields.projectDisplayNameSchema.optional(),
-  description: schemaFields.projectDescriptionSchema.nonNullable().optional(),
+  description: schemaFields.projectDescriptionSchema.optional(),
   is_production_mode: schemaFields.projectIsProductionModeSchema.optional(),
   config: yupObject({
     sign_up_enabled: schemaFields.projectSignUpEnabledSchema.optional(),
