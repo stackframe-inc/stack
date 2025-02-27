@@ -11,6 +11,7 @@ export const COMMENT_BLOCK = `\n
 export const PLATFORMS = {
   "next": ['next', 'react-like'],
   "js": ['js'],
+  "react": ['react', 'react-like'],
   "template": ['template', 'react-like', 'next', 'js']
 }
 

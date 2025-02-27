@@ -123,7 +123,6 @@ writeFileSyncIfChanged(
   processPackageJson(processedPackageJson)
 );
 
-// Generate the JS SDK version.
 generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "js"),
@@ -160,12 +159,30 @@ generateFromTemplate({
   },
 });
 
-// Generate the stack version.
 generateFromTemplate({
   src: srcDir,
   dest: path.resolve(baseDir, "stack"),
   editFn: (relativePath, content) => {
     const result = processMacros(content, PLATFORMS["next"]);
+    if (relativePath === 'package-template.json') {
+      return processPackageJson(result);
+    }
+    return result;
+  },
+  filterFn: (relativePath) => {
+    if (relativePath.startsWith("src/generated")) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+});
+
+generateFromTemplate({
+  src: srcDir,
+  dest: path.resolve(baseDir, "react"),
+  editFn: (relativePath, content) => {
+    const result = processMacros(content, PLATFORMS["react"]);
     if (relativePath === 'package-template.json') {
       return processPackageJson(result);
     }

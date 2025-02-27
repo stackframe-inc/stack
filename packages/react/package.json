@@ -1,6 +1,6 @@
 {
   "//": "THIS FILE IS AUTO-GENERATED FROM TEMPLATE. DO NOT EDIT IT DIRECTLY",
-  "name": "@stackframe/stack",
+  "name": "@stackframe/react",
   "version": "2.7.19",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -41,7 +41,6 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@simplewebauthn/browser": "^11.0.0",
-    "@stackframe/stack-sc": "workspace:*",
     "@stackframe/stack-shared": "workspace:*",
     "@stackframe/stack-ui": "workspace:*",
     "browser-image-compression": "^2.0.2",
@@ -63,7 +62,6 @@
   "peerDependencies": {
     "@types/react": ">=18.2 || >=19.0.0-rc.0",
     "@types/react-dom": ">=18.2 || >=19.0.0-rc.0",
-    "next": ">=14.1 || >=15.0.0-canary.0 || >=15.0.0-rc.0",
     "react": ">=18.2 || >=19.0.0-rc.0",
     "react-dom": ">=18.2 || >=19.0.0-rc.0"
   },
@@ -87,7 +85,6 @@
     "esbuild": "^0.20.2",
     "i18next": "^23.14.0",
     "i18next-parser": "^9.0.2",
-    "next": "^14.1.0",
     "postcss": "^8.4.38",
     "postcss-nested": "^6.0.1",
     "react": "^18.2.0",
