@@ -19,21 +19,27 @@ import.meta.vitest?.test("forwardRefIfNeeded", ({ expect }) => {
   const originalVersion = React.version;
   const originalForwardRef = React.forwardRef;
 
-  // Test with React version < 19
-  Object.defineProperty(React, 'version', { value: '18.2.0', writable: true });
-  // We can't easily mock React.forwardRef with the correct type
-  // Just test that the function doesn't throw with the original implementation
-
   try {
+    // Test with React version < 19
+    Object.defineProperty(React, 'version', { value: '18.2.0', writable: true });
+    
     // Create a render function
     const renderFn = (props: any, ref: any) => null;
-
+    
     // Call forwardRefIfNeeded
-    forwardRefIfNeeded(renderFn);
-
-    // Since we can't fully test the implementation without proper mocking,
-    // we'll just verify the function doesn't throw
-    expect(true).toBe(true);
+    const result = forwardRefIfNeeded(renderFn);
+    
+    // Verify the function returns something
+    expect(result).toBeDefined();
+    
+    // Test with React version >= 19
+    Object.defineProperty(React, 'version', { value: '19.0.0', writable: true });
+    
+    // Call forwardRefIfNeeded again with React 19
+    const result19 = forwardRefIfNeeded(renderFn);
+    
+    // Verify the function returns something
+    expect(result19).toBeDefined();
   } finally {
     // Restore original values
     Object.defineProperty(React, 'version', { value: originalVersion });
