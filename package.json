@@ -52,7 +52,7 @@
     "generate-sdks": "npx --package=ts-node ts-node ./scripts/generate-sdks.ts",
     "generate-sdks:watch": "chokidar --silent -c 'pnpm run generate-sdks' './packages/template' --ignore './packages/template/package.json' --ignore '**/node_modules/**' --ignore '**/dist/**' --ignore '**/.turbo/**' --throttle 2000",
     "generate-docs": "tsx ./scripts/generate-docs.ts",
-    "generate-docs:watch": "chokidar --silent -c 'pnpm run generate-docs' './docs/fern/docs/pages-template' './docs/fern/docs/docs-template.yml' --throttle 2000"
+    "generate-docs:watch": "chokidar --silent -c 'pnpm run generate-docs' './docs/fern/docs/pages-template' './docs/fern/docs-template.yml' --throttle 2000"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",

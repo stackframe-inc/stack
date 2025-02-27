@@ -49,10 +49,10 @@ function processDocObject(obj: any, platforms: string[]): { result: any, validPa
     if (processed !== null) {
       if (typeof processed === 'string') {
         if (key === 'path') {
-          validPaths.push(processed.replace(/\.\/\{base\}\//g, ""));
+          validPaths.push(processed.split('/').slice(3).join('/'));
         }
 
-        result[key] = processed.replace(/{base}/g, `docs/pages-${platforms[0]}`);
+        result[key] = processed.replace(/{platform}/g, platforms[0]);
       } else {
         result[key] = processed;
       }
@@ -76,6 +76,7 @@ for (const platform of ["next", "js"]) {
   const macroProcessed = processMacros(mainYmlContent, PLATFORMS[platform]);
   const template = yaml.parse(macroProcessed);
   const { result: processed, validPaths: processedValidPaths } = processDocObject(template, PLATFORMS[platform]);
+  console.log(processedValidPaths);
   const output = yaml.stringify(processed);
   writeFileSyncIfChanged(path.join(docsDir, `${platform}.yml`), output);
 
