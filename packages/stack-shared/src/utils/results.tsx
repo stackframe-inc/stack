@@ -107,11 +107,15 @@ export const AsyncResult = {
   pending,
   map: mapResult,
   or: <T, E, P, U>(result: AsyncResult<T, E, P>, fallback: U): T | U => {
-    if (result.status === "pending") return fallback;
+    if (result.status === "pending") {
+      return fallback;
+    }
     return Result.or(result, fallback);
   },
   orThrow: <T, E, P>(result: AsyncResult<T, E, P>): T => {
-    if (result.status === "pending") throw new Error("Result still pending");
+    if (result.status === "pending") {
+      throw new Error("Result still pending");
+    }
     return Result.orThrow(result);
   },
   retry,
