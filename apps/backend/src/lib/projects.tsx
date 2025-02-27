@@ -504,7 +504,7 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
       data: {
         id: generateUuid(),
         displayName: data.display_name,
-        description: data.description,
+        description: data.description ?? "",
         isProductionMode: data.is_production_mode ?? false,
         config: {
           create: {

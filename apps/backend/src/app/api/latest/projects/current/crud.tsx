@@ -449,7 +449,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
         where: { id: auth.project.id },
         data: {
           displayName: data.display_name,
-          description: data.description,
+          description: data.description ?? "",
           isProductionMode: data.is_production_mode,
           config: {
             update: {
