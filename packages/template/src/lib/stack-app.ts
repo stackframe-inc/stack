@@ -36,7 +36,7 @@ import * as NextNavigationUnscrambled from "next/navigation"; // import the enti
 import React, { useCallback, useMemo } from "react";
 import { constructRedirectUrl } from "../utils/url";
 import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "./auth";
-import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmptyCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "./cookie";
+import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "./cookie";
 
 let isReactServer = false;
 // IF_PLATFORM next
@@ -426,7 +426,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     if (this._tokenStoreInit === 'nextjs-cookie' || this._tokenStoreInit === 'cookie') {
       return await createCookieHelper();
     } else {
-      return await createEmptyCookieHelper();
+      return await createPlaceholderCookieHelper();
     }
   }
 
@@ -571,6 +571,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
   }
 
   protected _memoryTokenStore = createEmptyTokenStore();
+  protected _nextServerCookiesTokenStores = new WeakMap<object, Store<TokenObject>>();
   protected _requestTokenStores = new WeakMap<RequestLike, Store<TokenObject>>();
   protected _storedBrowserCookieTokenStore: Store<TokenObject> | null = null;
   protected get _refreshTokenCookieName() {
@@ -1558,10 +1559,11 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     email: string,
     password: string,
     noRedirect?: boolean,
+    verificationCallbackUrl?: string,
   }): Promise<Result<undefined, KnownErrors["UserEmailAlreadyExists"] | KnownErrors['PasswordRequirementsNotMet']>> {
     this._ensurePersistentTokenStore();
     const session = await this._getSession();
-    const emailVerificationRedirectUrl = constructRedirectUrl(this.urls.emailVerification);
+    const emailVerificationRedirectUrl = options.verificationCallbackUrl ?? constructRedirectUrl(this.urls.emailVerification);
     const result = await this._interface.signUpWithCredential(
       options.email,
       options.password,
