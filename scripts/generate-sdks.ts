@@ -176,13 +176,6 @@ generateFromTemplate({
   editFn: (relativePath, content) => {
     return baseEditFn({ relativePath, content, platforms: PLATFORMS["next"] });
   },
-  filterFn: (relativePath) => {
-    if (relativePath.startsWith("src/generated")) {
-      return false;
-    } else {
-      return true;
-    }
-  },
 });
 
 generateFromTemplate({
