@@ -94,4 +94,3 @@ for (const platform of ["next", "js"]) {
     }
   });
 }
-
