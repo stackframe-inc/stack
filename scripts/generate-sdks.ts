@@ -115,10 +115,11 @@ function baseEditFn(options: {
   if (options.relativePath.startsWith("src/generated")) {
     return options.content;
   }
+  const result = processMacros(options.content, options.platforms);
   if (options.relativePath === 'package-template.json') {
-    return processPackageJson(options.content);
+    return processPackageJson(result);
   }
-  return processMacros(options.content, options.platforms);
+  return result;
 }
 
 

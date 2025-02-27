@@ -32,8 +32,10 @@ type StackClientApp = {
   new(options): StackClientApp;  //$stack-link-to:#constructor
 
   getUser([options]): Promise<User>;  //$stack-link-to:#stackclientappgetuseroptions
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useUser([options]): User;  //$stack-link-to:#stackclientappuseuseroptions
   getProject(): Promise<Project>;  //$stack-link-to:#stackclientappgetproject
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useProject(): Project;  //$stack-link-to:#stackclientappuseproject
 
   signInWithOAuth(provider): void;  //$stack-link-to:#stackclientappsigninwithoauthprovider
@@ -106,7 +108,7 @@ declare new(options: {
     },
   });
   ```
-
+  {/* IF_PLATFORM react-like */}
   ```typescript Retrieving an app with useStackApp
   "use client";
 
@@ -114,6 +116,7 @@ declare new(options: {
     const stackClientApp = useStackApp();
   }
   ```
+  {/* END_PLATFORM */}
 <Markdown src="../../snippets/always-tab-codeblock.mdx" /></CodeBlocks></div>
 </div></div><div className="stack-content">
 
@@ -169,6 +172,7 @@ console.log(user); // always defined; redirects to sign-in page if not signed in
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackClientApp.useUser([options])`
 </div><div className="stack-content">
 
@@ -260,6 +264,7 @@ function MyProtectedComponent() {
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+{/* END_PLATFORM */}
 
 ## `stackClientApp.getProject()`
 </div><div className="stack-content">
@@ -296,6 +301,7 @@ const project = await stackClientApp.getProject();
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackClientApp.useProject()`
 </div><div className="stack-content">
 
@@ -332,6 +338,7 @@ function MyReactComponent() {
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+{/* IF_PLATFORM react-like */}
 
 ## `stackClientApp.signInWithOAuth(provider)`
 </div><div className="stack-content">
@@ -613,14 +620,18 @@ type StackServerApp =
     new(options): StackServerApp; //$stack-link-to:#constructor-1
 
     getUser([id][, options]): Promise<ServerUser | null>; //$stack-link-to:#stackserverappgetuserid-options
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useUser([id][, options]): ServerUser; //$stack-link-to:#stackserverappuseuserid-options
     listUsers([options]): Promise<ServerUser[]>; //$stack-link-to:#stackserverapplistusersoptions
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useUsers([options]): ServerUser[]; //$stack-link-to:#stackserverappuseusersoptions
     createUser([options]): Promise<ServerUser>; //$stack-link-to:#stackserverappcreateuseroptions
 
     getTeam(id): Promise<ServerTeam | null>; //$stack-link-to:#stackserverappgetteamid
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useTeam(id): ServerTeam; //$stack-link-to:#stackserverappuseteamid
     listTeams(): Promise<ServerTeam[]>; //$stack-link-to:#stackserverapplistteams
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useTeams(): ServerTeam[]; //$stack-link-to:#stackserverappuseteams
     createTeam([options]): Promise<ServerTeam>; //$stack-link-to:#stackserverappcreateteamoptions
   }
@@ -743,6 +754,7 @@ console.log(user); // ServerUser
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackServerApp.useUser([id][, options])`
 </div><div className="stack-content">
 
@@ -753,6 +765,7 @@ Functionally equivalent to [`getUser()`](#stackserverappgetuserid-options), but 
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+{/* END_PLATFORM */}
 
 ## `stackServerApp.listUsers([options])`
 </div><div className="stack-content">
@@ -825,6 +838,7 @@ if (users.nextCursor) {
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackServerApp.useUsers([options])`
 </div><div className="stack-content">
 
@@ -835,7 +849,7 @@ Functionally equivalent to [`listUsers()`](#stackserverapplistusersoptions), but
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" /> 
-
+{/* END_PLATFORM */}
 ## `stackServerApp.createUser([options])`
 </div><div className="stack-content">
 
@@ -964,8 +978,8 @@ console.log(team); // null if not found
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackServerApp.useTeam(id)`
-
 </div><div className="stack-content">
 
 <Markdown src="../../snippets/use-on-server-callout.mdx" />
@@ -975,6 +989,7 @@ Functionally equivalent to [`getTeam(id)`](#stackserverappgetteamid), but as a R
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+{/* END_PLATFORM */}
 
 ## `stackServerApp.listTeams()`
 </div><div className="stack-content">
@@ -1012,6 +1027,7 @@ console.log(teams);
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM react-like */}
 ## `stackServerApp.useTeams()`
 
 </div><div className="stack-content">
@@ -1023,6 +1039,7 @@ Functionally equivalent to [`listTeams()`](#stackserverapplistteams), but as a R
 </div><div className="stack-full-size">
 
 <Markdown src="../../snippets/divider.mdx" />
+{/* END_PLATFORM */}
 
 ## `stackServerApp.createTeam([options])`
 </div><div className="stack-content">
