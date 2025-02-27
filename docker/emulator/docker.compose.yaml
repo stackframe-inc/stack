@@ -19,8 +19,8 @@ services:
     environment:
       NEXT_PUBLIC_STACK_API_URL: http://localhost:32102
       NEXT_PUBLIC_STACK_DASHBOARD_URL: http://localhost:32101
-      STACK_DATABASE_CONNECTION_STRING: postgres://postgres:PASSWORD-PLACEHOLDER--uqfEC1hmmv@db:5432/stackframe
-      STACK_DIRECT_DATABASE_CONNECTION_STRING: postgres://postgres:PASSWORD-PLACEHOLDER--uqfEC1hmmv@db:5432/stackframe
+      DATABASE_URL: postgres://postgres:PASSWORD-PLACEHOLDER--uqfEC1hmmv@db:5432/stackframe
+      DATABASE_URL_UNPOOLED: postgres://postgres:PASSWORD-PLACEHOLDER--uqfEC1hmmv@db:5432/stackframe
       STACK_SERVER_SECRET: 23-wuNpik0gIW4mruTz25rbIvhuuvZFrLOLtL7J4tyo
       STACK_SEED_INTERNAL_PROJECT_ALLOW_LOCALHOST: true
       STACK_RUN_MIGRATIONS: true
@@ -92,7 +92,7 @@ services:
       POSTGRES_DB: svix
     volumes:
       - svix-postgres-data:/var/lib/postgresql/data
-    
+
   svix-redis:
     image: docker.io/redis:7-alpine
     command: --save 60 500 --appendonly yes --appendfsync everysec --requirepass PASSWORD-PLACEHOLDER--oVn8GSD6b9
@@ -122,4 +122,3 @@ volumes:
   inbucket-data:
   svix-redis-data:
   svix-postgres-data:
-

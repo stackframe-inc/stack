@@ -12,7 +12,7 @@
     "docker-build": "next build --experimental-build-mode compile",
     "analyze-bundle": "ANALYZE_BUNDLE=1 pnpm run build",
     "start": "next start --port 8101",
-    "psql": "pnpm run with-env bash -c 'psql $STACK_DATABASE_CONNECTION_STRING'",
+    "psql": "pnpm run with-env bash -c 'psql $DATABASE_URL'",
     "lint": "next lint"
   },
   "dependencies": {
