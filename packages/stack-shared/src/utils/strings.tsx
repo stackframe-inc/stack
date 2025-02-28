@@ -223,8 +223,8 @@ export function deindent(strings: string | readonly string[], ...values: any[]):
   if (values.length !== strings.length - 1) throw new StackAssertionError("Invalid number of values; must be one less than strings", { strings, values });
 
   const trimmedStrings = [...strings];
-  trimmedStrings[0] = trimEmptyLinesStart(trimmedStrings[0]);
-  trimmedStrings[trimmedStrings.length - 1] = trimEmptyLinesEnd(trimmedStrings[trimmedStrings.length - 1]);
+  trimmedStrings[0] = trimEmptyLinesStart(trimmedStrings[0] + "+").slice(0, -1);
+  trimmedStrings[trimmedStrings.length - 1] = trimEmptyLinesEnd("+" + trimmedStrings[trimmedStrings.length - 1]).slice(1);
 
   const indentation = trimmedStrings
     .join("${SOME_VALUE}")
@@ -278,11 +278,25 @@ import.meta.vitest?.test("deindent", ({ expect }) => {
   `).toBe(`hello ${value}\nworld`);
 
   // Test with multiline values
-  const multilineValue = "line1\nline2";
   expect(deindent`
-    hello ${multilineValue}
+    hello
+      to ${"line1\n  line2"}
     world
-  `).toBe(`hello ${multilineValue}\nworld`);
+  `).toBe(`hello\n  to line1\n    line2\nworld`);
+
+  // Leading whitespace values
+  expect(deindent`
+    ${"  "}A
+    ${"  "}B
+    ${"  "}C
+  `).toBe(`  A\n  B\n  C`);
+
+  // Trailing whitespaces (note: there are two whitespaces each after A and after C)
+  expect(deindent`
+    A  
+    B  ${"  "}
+    C  
+  `).toBe(`A  \nB    \nC  `);
 
   // Test with mixed indentation
   expect(deindent`
