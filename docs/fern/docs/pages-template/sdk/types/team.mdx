@@ -20,7 +20,10 @@ On this page:
 
 A `Team` object contains basic information and functions about a team, to the extent of which a member of the team would have access to it.
 
-You can get `Team` objects with the `currentUser.useTeam(...)` or `currentUser.useTeams()` functions. The created team will then inherit the permissions of that user; for example, the `team.update(...)` function can only succeed if the user is allowed to make updates to the team.
+You can get `Team` objects with the 
+{/* NEXT_LINE_PLATFORM react-like */}
+`user.useTeams()` or 
+`user.listTeams()` functions. The created team will then inherit the permissions of that user; for example, the `team.update(...)` function can only succeed if the user is allowed to make updates to the team.
 
 ### Table of Contents
 
@@ -35,8 +38,10 @@ type Team = {
   update(data): Promise<void>;  //$stack-link-to:#teamupdatedata
   inviteUser(options): Promise<void>;  //$stack-link-to:#teaminviteuseroptions
   listUsers(): Promise<TeamUser[]>;  //$stack-link-to:#teamlistusers
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useUsers(): TeamUser[];  //$stack-link-to:#teamuseusers
   listInvitations(): Promise<{ ... }[]>;  //$stack-link-to:#teamlistinvitations
+  // NEXT_LINE_PLATFORM react-like
    ⤷ useInvitations(): { ... }[];  //$stack-link-to:#teamuseinvitations
 };
 ```
@@ -294,6 +299,7 @@ users.forEach(user => {
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM next */}
 
 ## `team.useUsers()`
 </div><div className="stack-content">
@@ -334,6 +340,7 @@ users.forEach(user => {
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `team.listInvitations()`
 </div><div className="stack-content">
@@ -376,6 +383,7 @@ invitations.forEach(invitation => {
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM next */}
 
 ## `team.useInvitations()`
 </div><div className="stack-content">
@@ -416,6 +424,7 @@ invitations.forEach(invitation => {
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/big-divider.mdx" />
 
+{/* END_PLATFORM */}
 
 # `ServerTeam`
 </div><div className="stack-content">
@@ -437,6 +446,7 @@ type ServerTeam =
     serverMetadata: Json;  //$stack-link-to:#serverteamservermetadata
 
     listUsers(): Promise<ServerTeamUser[]>;  //$stack-link-to:#serverteamlistusers
+    // NEXT_LINE_PLATFORM react-like
      ⤷ useUsers(): ServerTeamUser[];  //$stack-link-to:#serverteamuseusers
     addUser(userId): Promise<void>;  //$stack-link-to:#serverteamadduseruserid
     removeUser(userId): Promise<void>;  //$stack-link-to:#serverteamremoveuseruserid
@@ -520,6 +530,7 @@ users.forEach(user => {
 </div><div className="stack-full-size">
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* IF_PLATFORM next */}
 
 ## `serverTeam.useUsers()`
 </div><div className="stack-content">
@@ -532,6 +543,7 @@ Functionally equivalent to [`listUsers()`](#stackteamlistusers), but as a React 
 
 <Markdown src="../../snippets/divider.mdx" />
 
+{/* END_PLATFORM */}
 
 ## `serverTeam.addUser(userId)`
 </div><div className="stack-content">

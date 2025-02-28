@@ -8,7 +8,7 @@
   "//": "ELSE_IF_PLATFORM react",
   "name": "@stackframe/react",
   "//": "END_PLATFORM",
-
+  
   "//": "NEXT_LINE_PLATFORM template",
   "private": true,
   "version": "2.7.20",
