@@ -27,6 +27,11 @@
       "require": {
         "default": "./dist/index.js"
       }
+    },
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "require": "./dist/*.js"
     }
   },
   "peerDependencies": {
