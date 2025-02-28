@@ -124,6 +124,7 @@ function createKnownErrorConstructor<ErrorCode extends string, Super extends Abs
     public readonly constructorArgs: Args;
 
     constructor(...args: Args) {
+      // @ts-expect-error Type 'Readonly<ConstructorParameters<Super>>' must have a '[Symbol.iterator]()' method that returns an iterator.
       super(...createFn(...args));
       this.constructorArgs = args;
     }
