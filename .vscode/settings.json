@@ -91,10 +91,7 @@
     "wolfgunblood",
     "zustand"
   ],
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  },
+  "editor.codeActionsOnSave": {},
   "terminal.integrated.wordSeparators": " (){}',\"`─‘’“”|",
   "editor.formatOnSave": false,
   "[prisma]": {
