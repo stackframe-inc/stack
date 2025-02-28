@@ -1,5 +1,18 @@
 # @stackframe/e2e-tests
 
+## 2.7.20
+
+### Patch Changes
+
+- Updated dependencies
+  - @stackframe/stack-shared@2.7.20
+
+## 2.7.19
+
+### Patch Changes
+
+- @stackframe/stack-shared@2.7.19
+
 ## 2.7.18
 
 ### Patch Changes
