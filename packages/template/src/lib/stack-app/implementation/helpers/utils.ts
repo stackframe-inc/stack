@@ -12,7 +12,7 @@ export function getUrls(partial: Partial<HandlerUrls>): HandlerUrls {
   return {
     handler,
     signIn: `${handler}/sign-in`,
-    afterSignIn: home,
+    afterSignIn: afterSignIn, // Fix: use afterSignIn variable instead of home
     signUp: `${handler}/sign-up`,
     afterSignUp: afterSignIn,
     signOut: `${handler}/sign-out`,
@@ -66,7 +66,7 @@ export function getDefaultSuperSecretAdminKey() {
 export function getBaseUrl(userSpecifiedBaseUrl: string | { browser: string, server: string } | undefined) {
   const defaultBaseUrl = "https://api.stack-auth.com";
   
-  let url;
+  let url = defaultBaseUrl;
   if (userSpecifiedBaseUrl) {
     if (typeof userSpecifiedBaseUrl === "string") {
       url = userSpecifiedBaseUrl;
@@ -79,9 +79,9 @@ export function getBaseUrl(userSpecifiedBaseUrl: string | { browser: string, ser
     }
   } else {
     if (isBrowserLike()) {
-      url = process.env.NEXT_PUBLIC_BROWSER_STACK_API_URL;
+      url = process.env.NEXT_PUBLIC_BROWSER_STACK_API_URL || "";
     } else {
-      url = process.env.NEXT_PUBLIC_SERVER_STACK_API_URL;
+      url = process.env.NEXT_PUBLIC_SERVER_STACK_API_URL || "";
     }
     url = url || process.env.NEXT_PUBLIC_STACK_API_URL || process.env.NEXT_PUBLIC_STACK_URL || defaultBaseUrl;
   }
