@@ -26,7 +26,7 @@ import * as cookie from "cookie";
 // NEXT_LINE_PLATFORM next
 import * as NextNavigationUnscrambled from "next/navigation"; // import the entire module to get around some static compiler warnings emitted by Next.js in some cases
 // NEXT_LINE_PLATFORM react-like
-import React, { useCallback, useMemo } from "react";
+import React, { use, useCallback, useMemo } from "react";
 import { constructRedirectUrl } from "../../../../utils/url";
 import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "../../../auth";
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../../cookie";
@@ -38,7 +38,7 @@ import { AdminOwnedProject, AdminProjectUpdateOptions, Project, adminProjectCrea
 import { EditableTeamMemberProfile, Team, TeamCreateOptions, TeamInvitation, TeamUpdateOptions, TeamUser, teamCreateOptionsToCrud, teamUpdateOptionsToCrud } from "../../teams";
 import { Auth, BaseUser, CurrentUser, InternalUserExtra, ProjectCurrentUser, UserExtra, UserUpdateOptions, userUpdateOptionsToCrud } from "../../users";
 import { StackClientApp, StackClientAppConstructorOptions, StackClientAppJson } from "../interfaces/client-app";
-import { _StackAdminAppImpl } from "./admin-app-impl";
+import type { _StackAdminAppImpl } from "./admin-app-impl";
 import { TokenObject, clientVersion, createCache, createCacheBySession, createEmptyTokenStore, getBaseUrl, getDefaultProjectId, getDefaultPublishableClientKey, getUrls } from "./common";
 // NEXT_LINE_PLATFORM react-like
 import { useAsyncCache } from "./common";
@@ -60,6 +60,9 @@ const process = (globalThis as any).process ?? { env: {} };
 
 let numberOfAppsCreated = 0;
 const allClientApps = new Map<string, [checkString: string, app: StackClientApp<any, any>]>();
+
+
+const AdminAppImplModulePromise = import("./admin-app-impl");
 
 export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends string = string> {
   protected _uniqueIdentifier: string | undefined = undefined;
@@ -959,9 +962,9 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
     return currentUser as ProjectCurrentUser<ProjectId>;
   }
 
-  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession): _StackAdminAppImpl<false, string> {
+  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession, AdminAppImplModule: Awaited<typeof AdminAppImplModulePromise>): _StackAdminAppImpl<false, string> {
     if (!this._ownedAdminApps.has([session, forProjectId])) {
-      this._ownedAdminApps.set([session, forProjectId], new _StackAdminAppImpl({
+      this._ownedAdminApps.set([session, forProjectId], new AdminAppImplModule._StackAdminAppImpl({
         baseUrl: this._interface.options.getBaseUrl(),
         projectId: forProjectId,
         tokenStore: null,
@@ -1457,7 +1460,8 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected async _listOwnedProjects(session: InternalSession): Promise<AdminOwnedProject[]> {
     this._ensureInternalProject();
     const crud = Result.orThrow(await this._ownedProjectsCache.getOrWait([session], "write-only"));
-    return crud.map((j) => this._getOwnedAdminApp(j.id, session)._adminOwnedProjectFromCrud(
+    const AdminAppImplModule = await AdminAppImplModulePromise;
+    return crud.map((j) => this._getOwnedAdminApp(j.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
       j,
       () => this._refreshOwnedProjects(session),
     ));
@@ -1467,7 +1471,8 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected _useOwnedProjects(session: InternalSession): AdminOwnedProject[] {
     this._ensureInternalProject();
     const projects = useAsyncCache(this._ownedProjectsCache, [session], "useOwnedProjects()");
-    return useMemo(() => projects.map((j) => this._getOwnedAdminApp(j.id, session)._adminOwnedProjectFromCrud(
+    const AdminAppImplModule = use(AdminAppImplModulePromise);
+    return useMemo(() => projects.map((j) => this._getOwnedAdminApp(j.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
       j,
       () => this._refreshOwnedProjects(session),
     )), [projects]);
@@ -1476,7 +1481,8 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected async _createProject(session: InternalSession, newProject: AdminProjectUpdateOptions & { displayName: string }): Promise<AdminOwnedProject> {
     this._ensureInternalProject();
     const crud = await this._interface.createProject(adminProjectCreateOptionsToCrud(newProject), session);
-    const res = this._getOwnedAdminApp(crud.id, session)._adminOwnedProjectFromCrud(
+    const AdminAppImplModule = await AdminAppImplModulePromise;
+    const res = this._getOwnedAdminApp(crud.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
       crud,
       () => this._refreshOwnedProjects(session),
     );
