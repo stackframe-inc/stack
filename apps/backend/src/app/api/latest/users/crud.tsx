@@ -741,28 +741,6 @@ export const usersCrudHandlers = createLazyProxy(() => createCrudHandlers(usersC
     }));
 
     return result;
-
-    if (auth.tenancy.config.create_team_on_sign_up) {
-      await teamsCrudHandlers.adminCreate({
-        data: {
-          display_name: data.display_name ?
-            `${data.display_name}'s Team` :
-            data.primary_email ?
-              `${data.primary_email}'s Team` :
-              "Personal Team",
-          creator_user_id: 'me',
-        },
-        tenancy: auth.tenancy,
-        user: result,
-      });
-    }
-
-    runAsynchronouslyAndWaitUntil(sendUserCreatedWebhook({
-      projectId: auth.project.id,
-      data: result,
-    }));
-
-    return result;
   },
   onUpdate: async ({ auth, data, params }) => {
     const passwordHash = await getPasswordHashFromData(data);
