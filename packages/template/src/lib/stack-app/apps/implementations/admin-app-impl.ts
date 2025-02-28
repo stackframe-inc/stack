@@ -18,10 +18,10 @@ import { StackAdminApp, StackAdminAppConstructorOptions } from "../interfaces/ad
 import { clientVersion, createCache, getBaseUrl, getDefaultProjectId, getDefaultPublishableClientKey, getDefaultSecretServerKey, getDefaultSuperSecretAdminKey } from "./common";
 // NEXT_LINE_PLATFORM react-like
 import { useAsyncCache } from "./common";
-import { _StackServerAppImpl } from "./server-app-impl";
+import { _StackServerAppImplIncomplete } from "./server-app-impl";
 
 
-export class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string> extends _StackServerAppImpl<HasTokenStore, ProjectId>
+export class _StackAdminAppImplIncomplete<HasTokenStore extends boolean, ProjectId extends string> extends _StackServerAppImplIncomplete<HasTokenStore, ProjectId>
 {
   declare protected _interface: StackAdminInterface;
 

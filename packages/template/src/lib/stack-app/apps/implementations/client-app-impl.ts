@@ -38,7 +38,7 @@ import { AdminOwnedProject, AdminProjectUpdateOptions, Project, adminProjectCrea
 import { EditableTeamMemberProfile, Team, TeamCreateOptions, TeamInvitation, TeamUpdateOptions, TeamUser, teamCreateOptionsToCrud, teamUpdateOptionsToCrud } from "../../teams";
 import { Auth, BaseUser, CurrentUser, InternalUserExtra, ProjectCurrentUser, UserExtra, UserUpdateOptions, userUpdateOptionsToCrud } from "../../users";
 import { StackClientApp, StackClientAppConstructorOptions, StackClientAppJson } from "../interfaces/client-app";
-import type { _StackAdminAppImpl } from "./admin-app-impl";
+import { _StackAdminAppImplIncomplete } from "./admin-app-impl";
 import { TokenObject, clientVersion, createCache, createCacheBySession, createEmptyTokenStore, getBaseUrl, getDefaultProjectId, getDefaultPublishableClientKey, getUrls } from "./common";
 // NEXT_LINE_PLATFORM react-like
 import { useAsyncCache } from "./common";
@@ -61,16 +61,16 @@ const process = (globalThis as any).process ?? { env: {} };
 let numberOfAppsCreated = 0;
 const allClientApps = new Map<string, [checkString: string, app: StackClientApp<any, any>]>();
 
-/**
- * There is a circular dependency between the admin app and the client app, as the former inherits from the latter and
- * the latter needs to use the former when creating a new instance of an internal project.
- *
- * To break it, we set the admin app here lazily instead of importing it directly. This variable is set by ./index.ts,
- * which imports both this file and ./admin-app-impl.ts.
- */
-export let _LazyStackAdminAppImpl: { value: typeof import("./admin-app-impl")._StackAdminAppImpl | undefined } = { value: undefined };
+export class _StackClientAppImplIncomplete<HasTokenStore extends boolean, ProjectId extends string = string> {
+  /**
+   * There is a circular dependency between the admin app and the client app, as the former inherits from the latter and
+   * the latter needs to use the former when creating a new instance of an internal project.
+   *
+   * To break it, we set the admin app here lazily instead of importing it directly. This variable is set by ./index.ts,
+   * which imports both this file and ./admin-app-impl.ts.
+   */
+  static readonly LazyStackAdminAppImpl: { value: typeof import("./admin-app-impl")._StackAdminAppImplIncomplete | undefined } = { value: undefined };
 
-export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends string = string> {
   protected _uniqueIdentifier: string | undefined = undefined;
   protected _interface: StackClientInterface;
   protected readonly _tokenStoreInit: TokenStoreInit<HasTokenStore>;
@@ -79,7 +79,7 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected readonly _oauthScopesOnSignIn: Partial<OAuthScopesOnSignIn>;
 
   private __DEMO_ENABLE_SLIGHT_FETCH_DELAY = false;
-  private readonly _ownedAdminApps = new DependenciesMap<[InternalSession, string], _StackAdminAppImpl<false, string>>();
+  private readonly _ownedAdminApps = new DependenciesMap<[InternalSession, string], _StackAdminAppImplIncomplete<false, string>>();
 
   private readonly _currentUserCache = createCacheBySession(async (session) => {
     if (this.__DEMO_ENABLE_SLIGHT_FETCH_DELAY) {
@@ -251,8 +251,8 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
       }
     )
   ) {
-    if (!_LazyStackAdminAppImpl.value) {
-      throw new StackAssertionError("Admin app implementation not initialized. Did you import the _StackClientApp from stack-app/apps/implementations/index.ts? You can't import it directly from ./apps/implementations/client-app-impl.ts as that causes a circular dependency (see the comment of _LazyStackAdminAppImpl for more details).");
+    if (!_StackClientAppImplIncomplete.LazyStackAdminAppImpl.value) {
+      throw new StackAssertionError("Admin app implementation not initialized. Did you import the _StackClientApp from stack-app/apps/implementations/index.ts? You can't import it directly from ./apps/implementations/client-app-impl.ts as that causes a circular dependency (see the comment at _LazyStackAdminAppImpl for more details).");
     }
 
     if ("interface" in _options) {
@@ -972,9 +972,9 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
     return currentUser as ProjectCurrentUser<ProjectId>;
   }
 
-  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession): _StackAdminAppImpl<false, string> {
+  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession): _StackAdminAppImplIncomplete<false, string> {
     if (!this._ownedAdminApps.has([session, forProjectId])) {
-      this._ownedAdminApps.set([session, forProjectId], new (_LazyStackAdminAppImpl.value!)({
+      this._ownedAdminApps.set([session, forProjectId], new (_StackClientAppImplIncomplete.LazyStackAdminAppImpl.value!)({
         baseUrl: this._interface.options.getBaseUrl(),
         projectId: forProjectId,
         tokenStore: null,
@@ -1533,7 +1533,7 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
           return clientApp as any;
         }
 
-        return new _StackClientAppImpl<HasTokenStore, ProjectId>({
+        return new _StackClientAppImplIncomplete<HasTokenStore, ProjectId>({
           ...json,
           checkString: providedCheckString,
         });
