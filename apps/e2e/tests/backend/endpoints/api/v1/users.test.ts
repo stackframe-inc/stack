@@ -1263,7 +1263,7 @@ describe("with server access", () => {
     expect(response).toMatchInlineSnapshot(`
       NiceResponse {
         "status": 400,
-        "body": "primary_email_auth_enabled cannot be true without primary_email",
+        "body": "primary_email_auth_enabled requires primary_email to be set",
         "headers": Headers { <some fields may have been hidden> },
       }
     `);
