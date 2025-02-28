@@ -23,6 +23,15 @@ const config: Options = {
   outDir: 'dist',
   format: ['esm', 'cjs'],
   legacyOutput: true,
+  esbuildOptions(options) {
+    // Handle import.meta.vitest in CJS format
+    if (options.format === 'cjs') {
+      options.define = {
+        ...options.define,
+        'import.meta.vitest': 'undefined',
+      };
+    }
+  },
   esbuildPlugins: [
     {
       name: 'stackframe tsup plugin (private)',
