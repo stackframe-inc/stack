@@ -1,19 +1,22 @@
 export {
-  StackAdminApp,
+  StackAdminApp, StackClientApp,
+  StackServerApp
+} from "./apps";
+export type {
   StackAdminAppConstructor,
   StackAdminAppConstructorOptions,
-  StackClientApp,
+  StackClientAppConstructor,
   StackClientAppConstructorOptions,
   StackClientAppJson,
-  StackServerApp,
+  StackServerAppConstructor,
   StackServerAppConstructorOptions
 } from "./apps";
 
-export {
+export type {
   ProjectConfig
 } from "./project-configs";
 
-export {
+export type {
   ApiKey,
   ApiKeyBase,
   ApiKeyBaseCrudRead,
@@ -22,22 +25,24 @@ export {
 } from "./api-keys";
 
 export {
-  GetUserOptions,
-  HandlerUrls,
-  OAuthScopesOnSignIn,
   stackAppInternalsSymbol
 } from "./common";
+export type {
+  GetUserOptions,
+  HandlerUrls,
+  OAuthScopesOnSignIn
+} from "./common";
 
-export {
+export type {
   Connection,
   OAuthConnection
 } from "./connected-accounts";
 
-export {
+export type {
   ContactChannel
 } from "./contact-channels";
 
-export {
+export type {
   AdminTeamPermission,
   AdminTeamPermissionDefinition,
   AdminTeamPermissionDefinitionCreateOptions,
@@ -45,7 +50,7 @@ export {
   TeamPermission
 } from "./permissions";
 
-export {
+export type {
   AdminDomainConfig,
   AdminEmailConfig,
   AdminOAuthProviderConfig,
@@ -54,7 +59,7 @@ export {
   OAuthProviderConfig
 } from "./project-configs";
 
-export {
+export type {
   AdminOwnedProject,
   AdminProject,
   AdminProjectCreateOptions,
@@ -62,7 +67,7 @@ export {
   Project
 } from "./projects";
 
-export {
+export type {
   EditableTeamMemberProfile,
   ServerListUsersOptions,
   ServerTeam,
@@ -78,7 +83,7 @@ export {
   TeamUser
 } from "./teams";
 
-export {
+export type {
   Auth,
   CurrentInternalServerUser,
   CurrentInternalUser,

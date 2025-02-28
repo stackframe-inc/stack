@@ -1,13 +1,25 @@
 export {
-  StackAdminApp, StackAdminAppConstructor, StackAdminAppConstructorOptions
-} from "./interfaces/admin-app";
-
-export {
-  StackClientApp, StackClientAppConstructorOptions,
+  StackClientApp
+} from "./interfaces/client-app";
+export type {
+  StackClientAppConstructor,
+  StackClientAppConstructorOptions,
   StackClientAppJson
 } from "./interfaces/client-app";
 
 export {
-  StackServerApp, StackServerAppConstructorOptions
+  StackServerApp
 } from "./interfaces/server-app";
+export type {
+  StackServerAppConstructor,
+  StackServerAppConstructorOptions
+} from "./interfaces/server-app";
+
+export {
+  StackAdminApp
+} from "./interfaces/admin-app";
+export type {
+  StackAdminAppConstructor,
+  StackAdminAppConstructorOptions
+} from "./interfaces/admin-app";
 
