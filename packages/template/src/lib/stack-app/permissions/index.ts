@@ -36,11 +36,6 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../cookie";
 
 
-
-
-type _______________PERMISSION_______________ = never;  // this is a marker for VSCode's outline view
-
-
 export type TeamPermission = {
   id: string,
 };

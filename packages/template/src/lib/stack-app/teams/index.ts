@@ -37,8 +37,8 @@ import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlac
 import { ServerUser } from "../users";
 
 
-type _______________TEAM_______________ = never;  // this is a marker for VSCode's outline view
-type ___________client_team = never;  // this is a marker for VSCode's outline view
+
+
 
 export type TeamMemberProfile = {
   displayName: string | null,
@@ -108,7 +108,7 @@ export function teamCreateOptionsToCrud(options: TeamCreateOptions, creatorUserI
   };
 }
 
-type ___________server_team = never;  // this is a marker for VSCode's outline view
+
 
 export type ServerTeamMemberProfile = TeamMemberProfile;
 

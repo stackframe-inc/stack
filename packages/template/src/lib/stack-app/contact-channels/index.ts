@@ -36,10 +36,6 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../cookie";
 
 
-
-
-type _______________CONTACT_CHANNEL_______________ = never;  // this is a marker for VSCode's outline view
-
 export type ContactChannel = {
   id: string,
   value: string,

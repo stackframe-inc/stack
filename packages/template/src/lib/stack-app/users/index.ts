@@ -41,8 +41,8 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../cookie";
 
 
-type _______________USER_______________ = never;  // this is a marker for VSCode's outline view
-type ___________client_user = never;  // this is a marker for VSCode's outline view
+
+
 
 export type Session = {
   getTokens(): Promise<{ accessToken: string | null, refreshToken: string | null }>,
@@ -269,7 +269,7 @@ export function userUpdateOptionsToCrud(options: UserUpdateOptions): CurrentUser
 }
 
 
-type ___________server_user = never;  // this is a marker for VSCode's outline view
+
 
 export type ServerBaseUser = {
   setPrimaryEmail(email: string | null, options?: { verified?: boolean | undefined }): Promise<void>,

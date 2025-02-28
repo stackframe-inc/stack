@@ -36,8 +36,6 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../cookie";
 
 
-type _______________API_KEYS_______________ = never;  // this is a marker for VSCode's outline view
-
 export type ApiKeyBase = {
   id: string,
   description: string,

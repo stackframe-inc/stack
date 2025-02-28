@@ -37,7 +37,7 @@ import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlac
 import { AdminTeamPermission } from "../permissions";
 
 
-type _______________PROJECT_CONFIG_______________ = never;  // this is a marker for VSCode's outline view
+
 
 export type ProjectConfig = {
   readonly signUpEnabled: boolean,

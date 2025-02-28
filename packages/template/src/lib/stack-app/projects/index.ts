@@ -38,7 +38,7 @@ import { AdminProjectConfig, AdminProjectConfigUpdateOptions, ProjectConfig } fr
 import { StackAdminApp } from "../apps/interfaces/admin-app";
 
 
-type _______________PROJECT_______________ = never;  // this is a marker for VSCode's outline view
+
 
 export type Project = {
   readonly id: string,

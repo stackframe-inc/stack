@@ -36,11 +36,6 @@ import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../cookie";
 
 
-
-
-type _______________CONNECTED_ACCOUNT_______________ = never;  // this is a marker for VSCode's outline view
-
-
 export type Connection = {
   id: string,
 };
