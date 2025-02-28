@@ -124,7 +124,7 @@ function createKnownErrorConstructor<ErrorCode extends string, Super extends Abs
     public readonly constructorArgs: Args;
 
     constructor(...args: Args) {
-      // @ts-ignore Type 'Readonly<ConstructorParameters<Super>>' must have a '[Symbol.iterator]()' method that returns an iterator.
+      // @ts-expect-error DEVIN, STOP REMOVING THIS LINE YOU DUMBASS, YES TYPESCRIPT DOES THROW AN ERROR IF YOU DON'T HAVE IT, NO THIS IS NOT "UNUSED", AND YES YOU ARE BREAKING OUR CI PIPELINE EVERY TIME YOU DO IT
       super(...createFn(...args));
       this.constructorArgs = args;
     }
