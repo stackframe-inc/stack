@@ -98,14 +98,21 @@ it("should add and remove contact channels", async ({ expect }) => {
   const channels = contactChannels.filter(channel =>
     channel.type === 'email' && channel.value === newEmail
   );
+  
+  // Ensure we found a matching channel
+  expect(channels.length).toBeGreaterThan(0);
+  
   const newEmailChannel = channels[0];
 
   // Check verification status
   expect(Object.keys(newEmailChannel)).toContain('isVerified');
   expect(newEmailChannel.isVerified).toEqual(false);
 
+  // Ensure channel exists before trying to delete it
+  expect(newEmailChannel).toBeDefined();
+  
   // Remove the new contact channel
-  await newEmailChannel!.delete();
+  await newEmailChannel.delete();
 
   // List contact channels again to verify it was removed
   const updatedContactChannels = await user.listContactChannels();
@@ -157,9 +164,12 @@ it("should handle verification of contact channels", async ({ expect }) => {
   );
 
   expect(newEmailChannel).toBeDefined();
-  // Check verification status
-  expect(Object.keys(newEmailChannel!)).toContain('isVerified');
-  expect(newEmailChannel!.isVerified).toEqual(false);
+  
+  // Only check verification status if channel exists
+  if (newEmailChannel) {
+    expect(Object.keys(newEmailChannel)).toContain('isVerified');
+    expect(newEmailChannel.isVerified).toEqual(false);
+  }
 
   // In a real test, we would send a verification email and verify it
   // But in this E2E test environment, we can't do that because of URL whitelisting
