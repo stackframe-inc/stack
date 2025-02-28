@@ -142,7 +142,7 @@ async function checkAuthData(
   }
 ) {
   if (!data.primaryEmail && data.primaryEmailAuthEnabled) {
-    throw new StatusError(400, "primary_email_auth_enabled cannot be true without primary_email");
+    throw new StatusError(400, "primary_email_auth_enabled requires primary_email to be set");
   }
   if (!data.primaryEmail && data.primaryEmailVerified) {
     throw new StatusError(400, "primary_email_verified cannot be true without primary_email");
