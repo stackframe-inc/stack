@@ -231,7 +231,7 @@ export class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extend
         }
       },
       async delete() {
-        const res = await app._interface.deleteServerServerUser(crud.id);
+        const res = await app._interface.deleteServerUser(crud.id);
         await app._refreshUsers();
         return res;
       },

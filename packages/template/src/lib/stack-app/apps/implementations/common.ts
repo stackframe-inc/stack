@@ -11,6 +11,9 @@ import { HandlerUrls } from "../../common";
 // NEXT_LINE_PLATFORM react-like
 import React, { useCallback } from "react";
 
+// hack to make sure process is defined in non-node environments
+// NEXT_LINE_PLATFORM js react
+const process = (globalThis as any).process ?? { env: {} };
 
 export const clientVersion = "STACK_COMPILE_TIME_CLIENT_PACKAGE_VERSION_SENTINEL";
 if (clientVersion.startsWith("STACK_COMPILE_TIME")) {
@@ -71,7 +74,7 @@ export function getDefaultPublishableClientKey() {
 }
 
 export function getDefaultSecretServerKey() {
-  return process.env.STACK_SECRET_SERVER_KEY || throwErr(new Error("No secret server key provided. Please copy your key from the Stack dashboard and put your it in the STACK_SECRET_SERVER_KEY environment variable."));
+  return process.env.STACK_SECRET_SERVER_KEY || throwErr(new Error("No secret server key provided. Please copy your key from the Stack dashboard and put it in the STACK_SECRET_SERVER_KEY environment variable."));
 }
 
 export function getDefaultSuperSecretAdminKey() {

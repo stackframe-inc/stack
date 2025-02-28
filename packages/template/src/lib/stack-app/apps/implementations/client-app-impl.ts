@@ -725,7 +725,6 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
         let attResp;
         try {
           attResp = await startRegistration({ optionsJSON: options_json });
-          debugger;
         } catch (error: any) {
           if (error instanceof WebAuthnError) {
             return Result.error(new KnownErrors.PasskeyWebAuthnError(error.message, error.name));
