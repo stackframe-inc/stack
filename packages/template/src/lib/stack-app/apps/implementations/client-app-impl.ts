@@ -48,10 +48,7 @@ let isReactServer = false;
 import * as sc from "@stackframe/stack-sc";
 import { cookies } from '@stackframe/stack-sc';
 isReactServer = sc.isReactServer;
-// END_PLATFORM
 
-
-// IF_PLATFORM next
 // NextNavigation.useRouter does not exist in react-server environments and some bundlers try to be helpful and throw a warning. Ignore the warning.
 const NextNavigation = scrambleDuringCompileTime(NextNavigationUnscrambled);
 // END_PLATFORM
