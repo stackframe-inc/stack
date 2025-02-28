@@ -116,7 +116,7 @@ export function projectPrismaToCrud(
   return {
     id: prisma.id,
     display_name: prisma.displayName,
-    description: prisma.description ?? "",
+    description: prisma.description,
     created_at_millis: prisma.createdAt.getTime(),
     user_count: prisma._count.projectUsers,
     is_production_mode: prisma.isProductionMode,
@@ -504,7 +504,7 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
       data: {
         id: generateUuid(),
         displayName: data.display_name,
-        description: data.description,
+        description: data.description ?? "",
         isProductionMode: data.is_production_mode ?? false,
         config: {
           create: {
