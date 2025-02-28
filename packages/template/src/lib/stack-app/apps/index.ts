@@ -1,16 +1,13 @@
 export {
-  StackAdminAppConstructorOptions,
-  StackAdminAppConstructor,
-  StackAdminApp,
+  StackAdminApp, StackAdminAppConstructor, StackAdminAppConstructorOptions
 } from "./interfaces/admin-app";
 
 export {
-  StackClientAppConstructorOptions,
-  StackClientAppJson,
-  StackClientApp,
+  StackClientApp, StackClientAppConstructorOptions,
+  StackClientAppJson
 } from "./interfaces/client-app";
 
 export {
-  StackServerAppConstructorOptions,
-  StackServerApp,
+  StackServerApp, StackServerAppConstructorOptions
 } from "./interfaces/server-app";
+
