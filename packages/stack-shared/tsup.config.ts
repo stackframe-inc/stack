@@ -30,9 +30,10 @@ const config: Options = {
         build.onEnd(result => {
           const sourceFiles = result.outputFiles?.filter(file => !file.path.endsWith('.map')) ?? [];
           for (const file of sourceFiles) {
+            const fileText = new TextDecoder().decode(file.contents);
             const matchUseClient = /[\s\n\r]*(^|\n|\r|;)\s*['"]use\s+client['"]\s*(\n|\r|;)/im;
-            if (matchUseClient.test(file.text)) {
-              file.contents = new TextEncoder().encode(`"use client";\n${file.text}`);
+            if (matchUseClient.test(fileText)) {
+              file.contents = new TextEncoder().encode(`"use client";\n${fileText}`);
             }
           }
         });
