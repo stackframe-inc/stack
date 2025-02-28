@@ -134,9 +134,7 @@ import.meta.vitest?.test("rotateLeft", ({ expect }) => {
 });
 
 export function rotateRight(arr: readonly any[], n: number): any[] {
-  if (arr.length === 0) return [];
-  const index = remainder(n, arr.length);
-  return [...arr.slice(arr.length - index), ...arr.slice(0, arr.length - index)];
+  return rotateLeft(arr, -n);
 }
 import.meta.vitest?.test("rotateRight", ({ expect }) => {
   expect(rotateRight([], 1)).toEqual([]);
