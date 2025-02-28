@@ -1,6 +1,20 @@
 import { it } from "../../../../../helpers";
 import { Auth, Project, niceBackendFetch } from "../../../../backend-helpers";
 
+const emptyEmailTemplate = {
+  root: {
+    type: 'EmailLayout',
+    data: {
+      backdropColor: '#F5F5F5',
+      canvasColor: '#FFFFFF',
+      textColor: '#262626',
+      fontFamily: 'MODERN_SANS',
+      childrenIds: [],
+    },
+  },
+};
+
+
 it("should not allow updating email templates when using shared email config", async ({ expect }) => {
   // Create a project with shared email config (default)
   await Auth.Otp.signIn();
@@ -67,14 +81,30 @@ it("should allow adding and updating email templates with custom email config", 
     },
     body: {
       subject: "Custom Password Reset",
-      content: customEmailContent,
+      content: emptyEmailTemplate,
     },
   });
 
   expect(updateResponse).toMatchInlineSnapshot(`
     NiceResponse {
-      "status": 400,
-      "body": "Invalid email template content",
+      "status": 200,
+      "body": {
+        "content": {
+          "root": {
+            "data": {
+              "backdropColor": "#F5F5F5",
+              "canvasColor": "#FFFFFF",
+              "childrenIds": [],
+              "fontFamily": "MODERN_SANS",
+              "textColor": "#262626",
+            },
+            "type": "EmailLayout",
+          },
+        },
+        "is_default": false,
+        "subject": "Custom Password Reset",
+        "type": "password_reset",
+      },
       "headers": Headers { <some fields may have been hidden> },
     }
   `);
