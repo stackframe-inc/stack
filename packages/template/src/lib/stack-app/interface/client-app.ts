@@ -4,6 +4,21 @@ import { Result } from "@stackframe/stack-shared/dist/utils/results";
 import { ProviderType } from "@stackframe/stack-shared/dist/utils/oauth";
 import { InternalSession } from "@stackframe/stack-shared/dist/sessions";
 
+// Export types needed by other modules
+export interface TeamCreateOptions {
+  displayName: string;
+  clientMetadata?: Record<string, any> | null;
+  serverMetadata?: Record<string, any> | null;
+  clientReadOnlyMetadata?: Record<string, any> | null;
+}
+
+export interface TeamUpdateOptions {
+  displayName?: string;
+  clientMetadata?: Record<string, any> | null;
+  serverMetadata?: Record<string, any> | null;
+  clientReadOnlyMetadata?: Record<string, any> | null;
+}
+
 // We'll import this from the actual implementation later
 const stackAppInternalsSymbol = Symbol.for("StackAuth--DO-NOT-USE-OR-YOU-WILL-BE-FIRED--StackAppInternals");
 // Define AsyncStoreProperty here until we can import it properly

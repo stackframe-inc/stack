@@ -2,8 +2,8 @@ import { KnownErrors } from "@stackframe/stack-shared";
 import { Result } from "@stackframe/stack-shared/dist/utils/results";
 
 import { AsyncStoreProperty } from "./common";
-import { ServerUser, CurrentServerUser } from "./types";
-import { GetUserOptions, StackClientApp } from "./client-app";
+import { ServerUser, CurrentServerUser, ServerTeam } from "./types";
+import { GetUserOptions, StackClientApp, StackClientAppConstructorOptions } from "./client-app";
 
 // Server-specific types
 export type ServerUserCreateOptions = {
@@ -13,6 +13,8 @@ export type ServerUserCreateOptions = {
   emailVerified?: boolean,
   serverMetadata?: Record<string, unknown>,
   clientMetadata?: Record<string, unknown>,
+  clientReadOnlyMetadata?: Record<string, unknown>,
+  requiresMultiFactor?: boolean,
 };
 
 export type ServerTeamCreateOptions = {
@@ -97,5 +99,4 @@ export type StackServerAppConstructor = {
   new (options: StackServerAppConstructorOptions<boolean, string>): StackServerApp<boolean, string>,
 };
 
-// Import this from the implementation file
-import { StackClientAppConstructorOptions } from "./client-app";
+// No need to import this again as it's already imported above

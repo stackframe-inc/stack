@@ -1,4 +1,17 @@
-import { TeamCreateOptions, TeamUpdateOptions } from "../../interface/client-app";
+// Define the types locally to avoid circular dependencies
+interface TeamCreateOptions {
+  displayName: string;
+  clientMetadata?: Record<string, any> | null;
+  serverMetadata?: Record<string, any> | null;
+  clientReadOnlyMetadata?: Record<string, any> | null;
+}
+
+interface TeamUpdateOptions {
+  displayName?: string;
+  clientMetadata?: Record<string, any> | null;
+  serverMetadata?: Record<string, any> | null;
+  clientReadOnlyMetadata?: Record<string, any> | null;
+}
 
 export function teamCreateOptionsToCrud(options: TeamCreateOptions, userId?: string) {
   return {
