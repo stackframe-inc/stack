@@ -2,6 +2,7 @@ import { KnownError } from "..";
 import { StackAssertionError, captureError, concatStacktraces } from "./errors";
 import { Result } from "./results";
 import { generateUuid } from "./uuids";
+import { DependenciesMap } from "./maps";
 
 export type ReactPromise<T> = Promise<T> & (
   | { status: "rejected", reason: unknown }
@@ -78,22 +79,21 @@ import.meta.vitest?.test("createPromise", async ({ expect }) => {
   expect(await multiResolvePromise).toBe(1);
 });
 
-// Use a simple Map for caching instead of DependenciesMap to avoid test issues
-const resolvedCache = new Map<unknown, ReactPromise<unknown>>();
+const resolvedCache = new DependenciesMap<[unknown], ReactPromise<unknown>>();
 /**
  * Like Promise.resolve(...), but also adds the status and value properties for use with React's `use` hook, and caches
  * the value so that invoking `resolved` twice returns the same promise.
  */
 export function resolved<T>(value: T): ReactPromise<T> {
-  if (resolvedCache.has(value)) {
-    return resolvedCache.get(value) as ReactPromise<T>;
+  if (resolvedCache.has([value])) {
+    return resolvedCache.get([value]) as ReactPromise<T>;
   }
 
   const res = Object.assign(Promise.resolve(value), {
     status: "fulfilled",
     value,
   } as const);
-  resolvedCache.set(value, res);
+  resolvedCache.set([value], res);
   return res;
 }
 import.meta.vitest?.test("resolved", async ({ expect }) => {
@@ -120,22 +120,21 @@ import.meta.vitest?.test("resolved", async ({ expect }) => {
   expect(promise4).not.toBe(promise1);
 });
 
-// Use a simple Map for caching instead of DependenciesMap to avoid test issues
-const rejectedCache = new Map<unknown, ReactPromise<unknown>>();
+const rejectedCache = new DependenciesMap<[unknown], ReactPromise<unknown>>();
 /**
  * Like Promise.reject(...), but also adds the status and value properties for use with React's `use` hook, and caches
  * the value so that invoking `rejected` twice returns the same promise.
  */
 export function rejected<T>(reason: unknown): ReactPromise<T> {
-  if (rejectedCache.has(reason)) {
-    return rejectedCache.get(reason) as ReactPromise<T>;
+  if (rejectedCache.has([reason])) {
+    return rejectedCache.get([reason]) as ReactPromise<T>;
   }
 
-  const res = Object.assign(Promise.reject(reason), {
+  const res = Object.assign(ignoreUnhandledRejection(Promise.reject(reason)), {
     status: "rejected",
     reason: reason,
   } as const);
-  rejectedCache.set(reason, res);
+  rejectedCache.set([reason], res);
   return res;
 }
 import.meta.vitest?.test("rejected", ({ expect }) => {
