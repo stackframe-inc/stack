@@ -124,7 +124,7 @@ it("adds two different domains", async ({ expect }) => {
         "is_paginated": false,
         "items": [
           { "domain": "https://first-domain.example.com" },
-          { "domain": "https://second-domain.example.com" }
+          { "domain": "https://second-domain.example.com" },
         ],
       },
       "headers": Headers { <some fields may have been hidden> },
@@ -171,8 +171,8 @@ it("adds two domains and deletes one", async ({ expect }) => {
 
   expect(deleteResponse).toMatchInlineSnapshot(`
     NiceResponse {
-      "status": 204,
-      "body": "",
+      "status": 200,
+      "body": { "success": true },
       "headers": Headers { <some fields may have been hidden> },
     }
   `);
@@ -190,9 +190,7 @@ it("adds two domains and deletes one", async ({ expect }) => {
       "status": 200,
       "body": {
         "is_paginated": false,
-        "items": [
-          { "domain": "https://domain-to-keep.example.com" }
-        ],
+        "items": [{ "domain": "https://domain-to-keep.example.com" }],
       },
       "headers": Headers { <some fields may have been hidden> },
     }
