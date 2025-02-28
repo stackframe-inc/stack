@@ -32,6 +32,26 @@
       "types": "./dist/*.d.ts",
       "import": "./dist/esm/*.js",
       "require": "./dist/*.js"
+    },
+    "./dist/helpers/*": {
+      "types": "./dist/helpers/*.d.ts",
+      "import": "./dist/esm/helpers/*.js",
+      "require": "./dist/helpers/*.js"
+    },
+    "./dist/hooks/*": {
+      "types": "./dist/hooks/*.d.ts",
+      "import": "./dist/esm/hooks/*.js",
+      "require": "./dist/hooks/*.js"
+    },
+    "./dist/schema-fields": {
+      "types": "./dist/schema-fields.d.ts",
+      "import": "./dist/esm/schema-fields.js",
+      "require": "./dist/schema-fields.js"
+    },
+    "./dist/utils/*": {
+      "types": "./dist/utils/*.d.ts",
+      "import": "./dist/esm/utils/*.js",
+      "require": "./dist/utils/*.js"
     }
   },
   "peerDependencies": {
