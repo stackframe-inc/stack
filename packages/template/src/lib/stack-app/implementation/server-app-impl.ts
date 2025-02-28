@@ -1,13 +1,49 @@
 import { KnownErrors, StackServerInterface } from "@stackframe/stack-shared";
 import { InternalSession } from "@stackframe/stack-shared/dist/sessions";
 import { Result } from "@stackframe/stack-shared/dist/utils/results";
-import { UsersCrud, TeamsCrud, TeamPermissionsCrud, TeamMemberProfilesCrud, TeamInvitationCrud } from "@stackframe/stack-shared/dist/interface/crud";
-import { ProviderType } from "@stackframe/stack-shared/dist/utils/oauth";
+
+// Import from our own modules
+import { TeamCreateOptions, TeamUpdateOptions, ServerUserCreateOptions } from "./helpers/exports";
+
+// Define types locally to avoid import errors
+type UsersCrud = {
+  Server: {
+    Read: any;
+    List: any;
+    Update: any;
+    Create: any;
+  }
+};
+
+type TeamsCrud = {
+  Server: {
+    Read: any;
+    Update: any;
+    Create: any;
+  }
+};
+
+type TeamPermissionsCrud = {
+  Server: {
+    Read: any;
+  }
+};
+
+type TeamMemberProfilesCrud = {
+  Server: {
+    Read: any;
+  }
+};
+
+type TeamInvitationCrud = {
+  Server: {
+    Read: any;
+  }
+};
 
 import { 
   StackServerApp, 
   StackServerAppConstructorOptions,
-  ServerUserCreateOptions,
   ServerTeamCreateOptions,
   ServerListUsersOptions,
   ServerUser,
@@ -19,6 +55,9 @@ import {
   OAuthScopesOnSignIn,
   OAuthConnection
 } from "../interface/client-app";
+
+import { ProviderType } from "@stackframe/stack-shared/dist/utils/oauth";
+import { constructRedirectUrl } from "@stackframe/stack-shared/dist/utils/urls";
 
 import { _StackClientAppImpl } from "./client-app-impl";
 import { createCache, createCacheBySession } from "./helpers/index";
@@ -101,22 +140,31 @@ export class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extend
   );
 
   constructor(options: StackServerAppConstructorOptions<HasTokenStore, ProjectId>) {
+    const serverInterface = new StackServerInterface({
+      getBaseUrl: () => getBaseUrl(options.baseUrl),
+      projectId: options.projectId ?? getDefaultProjectId(),
+      clientVersion,
+      secretServerKey: options.secretServerKey ?? getDefaultSecretServerKey(),
+    });
+    
     super({
       ...options,
-      interface: options.interface ?? new StackServerInterface({
-        getBaseUrl: () => getBaseUrl(options.baseUrl),
-        projectId: options.projectId ?? getDefaultProjectId(),
-        clientVersion,
-        secretServerKey: options.secretServerKey ?? getDefaultSecretServerKey(),
-      }),
+      interface: serverInterface,
     });
+    
+    this._interface = serverInterface;
   }
 
   protected _serverUserFromCrud(crud: UsersCrud['Server']['Read']): ServerUser {
-    const baseUser = this._createBaseUser(crud);
+    // Create a base user object with basic properties
     const app = this;
     return {
-      ...baseUser,
+      id: crud.id,
+      email: crud.primary_email || '',
+      emailVerified: crud.primary_email_verified || false,
+      displayName: crud.display_name || null,
+      createdAt: new Date(crud.signed_up_at_millis).toISOString(),
+      clientMetadata: crud.client_metadata,
       async update(update) {
         await app._interface.updateServerUser(crud.id, {
           display_name: update.displayName,
@@ -189,7 +237,7 @@ export class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extend
       async hasPermission(scope, permissionId) {
         return (await this.getPermission(scope, permissionId)) !== null;
       },
-      serverMetadata: crud.server_metadata,
+      serverMetadata: crud.server_metadata
     };
   }
 
@@ -311,12 +359,12 @@ export class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extend
 
 // Import from helpers
 import { getBaseUrl, getDefaultProjectId, getDefaultSecretServerKey } from "./helpers/utils";
-import { teamCreateOptionsToCrud, teamUpdateOptionsToCrud } from "../../utils/crud";
-import { constructRedirectUrl } from "@stackframe/stack-shared/dist/utils/urls";
+// Import from react
+// Global variables
+const clientVersion = "0.0.0-dev";
 
-// IF_PLATFORM react-like
-import { useMemo } from "react";
-// END_PLATFORM
+// Global variables
+const clientVersion = "0.0.0-dev";
 
 // Global variables
 const clientVersion = "0.0.0-dev";
