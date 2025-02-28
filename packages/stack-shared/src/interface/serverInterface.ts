@@ -5,8 +5,8 @@ import { filterUndefined } from "../utils/objects";
 import { Result } from "../utils/results";
 import { urlString } from "../utils/urls";
 import {
-    ClientInterfaceOptions,
-    StackClientInterface
+  ClientInterfaceOptions,
+  StackClientInterface
 } from "./clientInterface";
 import { ContactChannelsCrud } from "./crud/contact-channels";
 import { CurrentUserCrud } from "./crud/current-user";

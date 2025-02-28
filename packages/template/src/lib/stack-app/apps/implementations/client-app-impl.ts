@@ -1016,10 +1016,10 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
     if (typeof this._redirectMethod === "object") {
       return this._redirectMethod.useNavigate();
     } else if (this._redirectMethod === "window") {
-      return () => window.location.assign;
+      return (to: string) => window.location.assign(to);
     // IF_PLATFORM next
     } else if (this._redirectMethod === "nextjs") {
-      return NextNavigation.useRouter().push;
+      return (to: string) => NextNavigation.useRouter().push(to);
     // END_PLATFORM
     } else {
       return (to: string) => {};
