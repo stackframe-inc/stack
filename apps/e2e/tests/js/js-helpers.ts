@@ -1,4 +1,4 @@
-import { AdminProjectUpdateOptions, StackAdminApp } from '@stackframe/js';
+import { AdminProjectUpdateOptions, StackAdminApp, StackClientApp, StackServerApp } from '@stackframe/js';
 import { wait } from '@stackframe/stack-shared/dist/utils/promises';
 import { STACK_BACKEND_BASE_URL, STACK_INTERNAL_PROJECT_ADMIN_KEY, STACK_INTERNAL_PROJECT_CLIENT_KEY, STACK_INTERNAL_PROJECT_SERVER_KEY } from '../helpers';
 import { ApiKey, Project, niceBackendFetch } from '../backend/backend-helpers';
@@ -60,8 +60,8 @@ export async function scaffoldProject(body?: AdminProjectUpdateOptions & { teams
     superSecretAdminKey: superSecretAdminKey,
   };
 
-  // Create a user for the project
-  const internalApp = new StackAdminApp({
+  // Create app instances for the project
+  const adminApp = new StackAdminApp({
     projectId: projectId,
     baseUrl: STACK_BACKEND_BASE_URL,
     publishableClientKey: publishableClientKey,
@@ -73,9 +73,30 @@ export async function scaffoldProject(body?: AdminProjectUpdateOptions & { teams
     }
   });
 
+  const clientApp = new StackClientApp({
+    projectId: projectId,
+    baseUrl: STACK_BACKEND_BASE_URL,
+    publishableClientKey: publishableClientKey,
+    tokenStore: "memory",
+    urls: {
+      emailVerification: "https://stack-js-test.example.com/verify"
+    }
+  });
+
+  const serverApp = new StackServerApp({
+    projectId: projectId,
+    baseUrl: STACK_BACKEND_BASE_URL,
+    publishableClientKey: publishableClientKey,
+    secretServerKey: secretServerKey,
+    tokenStore: "memory",
+  });
+
   return {
     project,
     adminAccessToken,
-    app: internalApp,
+    adminApp,
+    clientApp,
+    serverApp,
+    app: adminApp, // Keep for backward compatibility
   };
 }

@@ -1,6 +1,8 @@
 import { it } from "../helpers";
+import { scaffoldProject } from "./js-helpers";
 import { StackAdminApp } from '@stackframe/js';
 import { STACK_BACKEND_BASE_URL, STACK_INTERNAL_PROJECT_ADMIN_KEY, STACK_INTERNAL_PROJECT_CLIENT_KEY, STACK_INTERNAL_PROJECT_SERVER_KEY } from '../helpers';
+import { randomUUID } from "crypto";
 
 it("should create and list projects", async ({ expect }) => {
   // For project management tests, we need to use the internal app directly
@@ -17,7 +19,7 @@ it("should create and list projects", async ({ expect }) => {
     }
   });
 
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
 
   await internalApp.signUpWithCredential({
     email,
@@ -62,7 +64,7 @@ it("should create project with custom configuration", async ({ expect }) => {
     }
   });
 
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
 
   await internalApp.signUpWithCredential({
     email,

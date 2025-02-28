@@ -3,21 +3,12 @@ import { scaffoldProject } from "./js-helpers";
 import { StackClientApp } from '@stackframe/js';
 import { STACK_BACKEND_BASE_URL } from '../helpers';
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
+import { randomUUID } from "crypto";
 
 it("should create and manage teams", async ({ expect }) => {
-  const { project, app } = await scaffoldProject({ teamsEnabled: true });
+  const { project, clientApp } = await scaffoldProject({ teamsEnabled: true });
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -64,19 +55,9 @@ it("should create and manage teams", async ({ expect }) => {
 });
 
 it("should handle team permissions", async ({ expect }) => {
-  const { project, app } = await scaffoldProject({ teamsEnabled: true });
+  const { project, clientApp } = await scaffoldProject({ teamsEnabled: true });
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({

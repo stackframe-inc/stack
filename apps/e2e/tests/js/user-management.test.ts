@@ -3,21 +3,12 @@ import { scaffoldProject } from "./js-helpers";
 import { StackClientApp } from '@stackframe/js';
 import { STACK_BACKEND_BASE_URL } from '../helpers';
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
+import { randomUUID } from "crypto";
 
 it("should get current user", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -35,19 +26,9 @@ it("should get current user", async ({ expect }) => {
 });
 
 it("should update user profile", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -72,19 +53,9 @@ it("should update user profile", async ({ expect }) => {
 });
 
 it("should update client metadata", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -109,14 +80,7 @@ it("should update client metadata", async ({ expect }) => {
 });
 
 it("should handle user not found gracefully", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
-
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-  });
+  const { project, clientApp } = await scaffoldProject();
 
   // Try to get user without signing in
   const user = await clientApp.getUser();

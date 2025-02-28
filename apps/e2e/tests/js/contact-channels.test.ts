@@ -4,21 +4,12 @@ import { scaffoldProject } from "./js-helpers";
 import { StackClientApp } from '@stackframe/js';
 import { STACK_BACKEND_BASE_URL } from '../helpers';
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
+import { randomUUID } from "crypto";
 
 it("should list contact channels", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -52,19 +43,9 @@ it("should list contact channels", async ({ expect }) => {
 });
 
 it("should add and remove contact channels", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -77,7 +58,7 @@ it("should add and remove contact channels", async ({ expect }) => {
   });
 
   // Add a new email contact channel
-  const newEmail = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const newEmail = `${randomUUID()}@stack-js-test.example.com`;
   await user.createContactChannel({
     type: 'email',
     value: newEmail,
@@ -98,10 +79,8 @@ it("should add and remove contact channels", async ({ expect }) => {
   const channels = contactChannels.filter(channel =>
     channel.type === 'email' && channel.value === newEmail
   );
-  
   // Ensure we found a matching channel
   expect(channels.length).toBeGreaterThan(0);
-  
   const newEmailChannel = channels[0];
 
   // Check verification status
@@ -110,7 +89,7 @@ it("should add and remove contact channels", async ({ expect }) => {
 
   // Ensure channel exists before trying to delete it
   expect(newEmailChannel).toBeDefined();
-  
+
   // Remove the new contact channel
   await newEmailChannel.delete();
 
@@ -125,19 +104,9 @@ it("should add and remove contact channels", async ({ expect }) => {
 });
 
 it("should handle verification of contact channels", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   await clientApp.signUpWithCredential({
@@ -150,7 +119,7 @@ it("should handle verification of contact channels", async ({ expect }) => {
   });
 
   // Add a new email contact channel
-  const newEmail = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const newEmail = `${randomUUID()}@stack-js-test.example.com`;
   await user.createContactChannel({
     type: 'email',
     value: newEmail,
@@ -164,7 +133,7 @@ it("should handle verification of contact channels", async ({ expect }) => {
   );
 
   expect(newEmailChannel).toBeDefined();
-  
+
   // Only check verification status if channel exists
   if (newEmailChannel) {
     expect(Object.keys(newEmailChannel)).toContain('isVerified');

@@ -3,21 +3,12 @@ import { scaffoldProject } from "./js-helpers";
 import { StackClientApp } from '@stackframe/js';
 import { STACK_BACKEND_BASE_URL } from '../helpers';
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
+import { randomUUID } from "crypto";
 
 it("should sign up with password", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   const result = await clientApp.signUpWithCredential({
@@ -36,19 +27,9 @@ it("should sign up with password", async ({ expect }) => {
 });
 
 it("should sign in with password", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   // Sign up first
@@ -78,19 +59,9 @@ it("should sign in with password", async ({ expect }) => {
 });
 
 it("should sign out successfully", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
 
   // Sign up first
@@ -114,19 +85,9 @@ it("should sign out successfully", async ({ expect }) => {
 });
 
 it("should handle invalid credentials when signing in", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password = generateSecureRandomString();
   const wrongPassword = generateSecureRandomString();
 
@@ -154,19 +115,9 @@ it("should handle invalid credentials when signing in", async ({ expect }) => {
 });
 
 it("should handle sign up with existing email", async ({ expect }) => {
-  const { project, app } = await scaffoldProject();
+  const { project, clientApp } = await scaffoldProject();
 
-  const clientApp = new StackClientApp({
-    projectId: project.id,
-    baseUrl: STACK_BACKEND_BASE_URL,
-    publishableClientKey: project.publishableClientKey,
-    tokenStore: "memory",
-    urls: {
-      emailVerification: "https://stack-js-test.example.com/verify"
-    }
-  });
-
-  const email = `${crypto.randomUUID()}@stack-js-test.example.com`;
+  const email = `${randomUUID()}@stack-js-test.example.com`;
   const password1 = generateSecureRandomString();
   const password2 = generateSecureRandomString();
 
