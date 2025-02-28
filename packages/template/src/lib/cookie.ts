@@ -21,15 +21,13 @@ export type CookieHelper = {
   delete: (name: string, options: DeleteCookieOptions) => void,
 };
 
-export async function createEmptyCookieHelper(): Promise<CookieHelper> {
-  function throwError() {
-    throw new StackAssertionError("Empty cookie helper is just a placeholder. This should never be called");
+const placeholderCookieHelperIdentity = { "placeholder cookie helper identity": true };
+export async function createPlaceholderCookieHelper(): Promise<CookieHelper> {
+  function throwError(): never {
+    throw new StackAssertionError("Throwing cookie helper is just a placeholder. This should never be called");
   }
   return {
-    get: () => {
-      throwError();
-      return null;
-    },
+    get: throwError,
     set: throwError,
     setOrDelete: throwError,
     delete: throwError,
@@ -46,7 +44,7 @@ export async function createCookieHelper(): Promise<CookieHelper> {
       await rscHeaders(),
     );
     // ELSE_PLATFORM
-    return await createEmptyCookieHelper();
+    return await createPlaceholderCookieHelper();
     // END_PLATFORM
   }
 }
@@ -76,7 +74,7 @@ function handleCookieError(e: unknown, options: DeleteCookieOptions | SetCookieO
 function createNextCookieHelper(
   rscCookiesAwaited: Awaited<ReturnType<typeof rscCookies>>,
   rscHeadersAwaited: Awaited<ReturnType<typeof rscHeaders>>,
-) {
+): CookieHelper {
   const cookieHelper = {
     get: (name: string) => {
       // set a helper cookie, see comment in `NextCookieHelper.set` below

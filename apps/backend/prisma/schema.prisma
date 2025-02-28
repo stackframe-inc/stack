@@ -17,7 +17,7 @@ model Project {
   updatedAt DateTime @updatedAt
 
   displayName      String
-  description      String?       @default("")
+  description      String        @default("")
   configId         String        @db.Uuid
   config           ProjectConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
   isProductionMode Boolean

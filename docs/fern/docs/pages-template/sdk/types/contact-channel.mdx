@@ -19,7 +19,10 @@ On this page:
 
 Basic information about a contact channel, as seen by a user themselves.
 
-Usually obtained by calling `user.[list|use]ContactChannels()`.
+Usually obtained by calling [`user.listContactChannels()`](../types/user.mdx#currentuserlistcontactchannels)
+{/* NEXT_LINE_PLATFORM react-like */}
+or [`user.useContactChannels()`](../types/user.mdx#currentuserusecontactchannels)
+.
 
 ### Table of Contents
 
@@ -275,7 +278,10 @@ await contactChannel.delete();
 
 Like `ContactChannel`, but includes additional methods and properties that require the `SECRET_SERVER_KEY`.
 
-Usually obtained by calling `serverUser.[list|use]ContactChannels()`.
+Usually obtained by calling [`serverUser.listContactChannels()`](../types/user.mdx#serveruserlistcontactchannels)
+{/* NEXT_LINE_PLATFORM react-like */}
+or [`serverUser.useContactChannels()`](../types/user.mdx#serveruserusecontactchannels)
+.
 
 ### Table of Contents
 
