@@ -1,8 +1,8 @@
 import { KnownError } from "..";
 import { StackAssertionError, captureError, concatStacktraces } from "./errors";
+import { DependenciesMap } from "./maps";
 import { Result } from "./results";
 import { generateUuid } from "./uuids";
-import { DependenciesMap } from "./maps";
 
 export type ReactPromise<T> = Promise<T> & (
   | { status: "rejected", reason: unknown }
