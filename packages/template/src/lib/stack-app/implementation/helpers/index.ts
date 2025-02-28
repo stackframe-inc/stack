@@ -11,7 +11,7 @@ export const createCache = <D extends any[], T>(fetcher: (dependencies: D) => Pr
 
 export const createCacheBySession = <D extends any[], T>(fetcher: (session: InternalSession, extraDependencies: D) => Promise<T> ) => {
   return new AsyncCache<[InternalSession, ...D], Result<T>>(
-    async ([session, ...extraDependencies]) => await Result.fromThrowingAsync(async () => await fetcher(session, extraDependencies)),
+    async ([session, ...extraDependencies]) => await Result.fromThrowingAsync(async () => await fetcher(session, extraDependencies as D)),
     {
       onSubscribe: ([session], refresh) => {
         const handler = session.onInvalidate(() => refresh());

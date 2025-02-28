@@ -28,7 +28,11 @@ export function useAsyncCache<D extends any[], T>(cache: AsyncCache<D, Result<T>
     if (!cachePromiseByComponentId.has(id)) {
       cachePromiseByComponentId.set(id, cache.getOrWait(dependencies, "read-write"));
     }
-    return cachePromiseByComponentId.get(id) as ReactPromise<Result<T>>;
+    const promise = cachePromiseByComponentId.get(id);
+    if (!promise) {
+      throw new Error("Promise should exist in cache after setting it");
+    }
+    return promise as ReactPromise<Result<T>>;
   }, [cache, ...dependencies]);
 
   // note: we must use React.useSyncExternalStore instead of importing the function directly, as it will otherwise
