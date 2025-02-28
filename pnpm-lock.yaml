@@ -419,6 +419,9 @@ importers:
 
   apps/e2e:
     dependencies:
+      '@stackframe/js':
+        specifier: workspace:*
+        version: link:../../packages/js
       '@stackframe/stack-shared':
         specifier: workspace:*
         version: link:../../packages/stack-shared

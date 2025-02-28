@@ -68,15 +68,12 @@ Stack Auth provides two methods for authenticating users on your server endpoint
       'x-stack-access-token': 'access token from the headers',
     };
 
-    fetch(url, { headers })
-      .then(response => response.json())
-      .then(data => {
-        if (data.id) {
-          console.log('User is authenticated');
-        } else {
-          console.log('User is not authenticated');
-        }
-      });
+    const response = await fetch(url, { headers });
+    if (response.status === 200) {
+      console.log('User is authenticated', await response.json());
+    } else {
+      console.log('User is not authenticated', response.status, await response.text());
+    }
     ```
   </Tab>
 
@@ -93,10 +90,10 @@ Stack Auth provides two methods for authenticating users on your server endpoint
     }
 
     response = requests.get(url, headers=headers)
-    if ('id' in response.json()):
-      print('User is authenticated')
+    if response.status_code == 200:
+      print('User is authenticated', response.json())
     else:
-      print('User is not authenticated')
+      print('User is not authenticated', response.status_code, response.text)
     ```
   </Tab>
 </Tabs>
