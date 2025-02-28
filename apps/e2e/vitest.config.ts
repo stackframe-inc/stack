@@ -1,19 +1,18 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig, mergeConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import sharedConfig from '../../vitest.shared'
 
-export default mergeConfig(
-  sharedConfig,
-  defineConfig({
-    plugins: [react()],
-    test: {
-      environment: 'node',
-      testTimeout: 20_000,
-      globalSetup: './tests/global-setup.ts',
-      setupFiles: [
-        "./tests/setup.ts",
-      ],
-      snapshotSerializers: ["./tests/snapshot-serializer.ts"],
-    },
-  }),
-)
+export default defineConfig({
+  ...sharedConfig,
+  plugins: [react()],
+  test: {
+    environment: 'node',
+    testTimeout: 20_000,
+    globalSetup: './tests/global-setup.ts',
+    setupFiles: [
+      "./tests/setup.ts",
+      "./tests/js/setup.ts",
+    ],
+    snapshotSerializers: ["./tests/snapshot-serializer.ts"],
+  },
+})
