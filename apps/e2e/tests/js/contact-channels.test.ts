@@ -31,7 +31,7 @@ it("should list contact channels", async ({ expect }) => {
   expect(contactChannels.length).toBeGreaterThan(0);
 
   // Verify we have at least one email channel matching our email
-  const hasEmailChannel = contactChannels.some(channel =>
+  const hasEmailChannel = contactChannels.some((channel: any) =>
     channel.type === 'email' && channel.value === email
   );
 
@@ -69,14 +69,14 @@ it("should add and remove contact channels", async ({ expect }) => {
   const contactChannels = await user.listContactChannels();
 
   // Verify we have the new email channel
-  const hasNewEmailChannel = contactChannels.some(channel =>
+  const hasNewEmailChannel = contactChannels.some((channel: any) =>
     channel.type === 'email' && channel.value === newEmail
   );
 
   expect(hasNewEmailChannel).toBe(true);
 
   // Get the channel for verification
-  const channels = contactChannels.filter(channel =>
+  const channels = contactChannels.filter((channel: any) =>
     channel.type === 'email' && channel.value === newEmail
   );
   // Ensure we found a matching channel
@@ -97,7 +97,7 @@ it("should add and remove contact channels", async ({ expect }) => {
   const updatedContactChannels = await user.listContactChannels();
 
   // Should not find the removed contact channel
-  const hasRemovedChannel = updatedContactChannels.some(channel =>
+  const hasRemovedChannel = updatedContactChannels.some((channel: any) =>
     channel.type === 'email' && channel.value === newEmail
   );
   expect(hasRemovedChannel).toBe(false);
@@ -128,7 +128,7 @@ it("should handle verification of contact channels", async ({ expect }) => {
 
   // List contact channels to get the new one
   const contactChannels = await user.listContactChannels();
-  const newEmailChannel = contactChannels.find(channel =>
+  const newEmailChannel = contactChannels.find((channel: any) =>
     channel.type === 'email' && channel.value === newEmail
   );
 
