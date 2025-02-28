@@ -256,21 +256,14 @@ import.meta.vitest?.test("fromThrowingAsync", async ({ expect }) => {
 function mapResult<T, U, E = unknown, P = unknown>(result: Result<T, E>, fn: (data: T) => U): Result<U, E>;
 function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>, fn: (data: T) => U): AsyncResult<U, E, P>;
 function mapResult<T, U, E = unknown, P = unknown>(result: AsyncResult<T, E, P>, fn: (data: T) => U): AsyncResult<U, E, P> {
-  if (result.status === "error") {
-    return {
-      status: "error",
-      error: result.error,
-    };
-  }
-  if (result.status === "pending") {
-    const pendingResult: any = {
-      status: "pending",
-    };
-    if ("progress" in result) {
-      pendingResult.progress = result.progress;
-    }
-    return pendingResult;
-  }
+  if (result.status === "error") return {
+    status: "error",
+    error: result.error,
+  };
+  if (result.status === "pending") return {
+    status: "pending",
+    ..."progress" in result ? { progress: result.progress } : {},
+  } as any;
 
   return Result.ok(fn(result.data));
 }
