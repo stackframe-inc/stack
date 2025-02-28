@@ -9,7 +9,7 @@ const customNoExternal = new Set([
 const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
 
 const config: Options = {
-  entryPoints: ['src/**/*.(ts|tsx|js|jsx)'],
+  entryPoints: ['src/**/*.{ts,tsx,js,jsx}'],
   sourcemap: true,
   clean: false,
   noExternal: [...customNoExternal],
