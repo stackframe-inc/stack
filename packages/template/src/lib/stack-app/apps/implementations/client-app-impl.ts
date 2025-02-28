@@ -11,7 +11,7 @@ import { UsersCrud } from "@stackframe/stack-shared/dist/interface/crud/users";
 import { InternalSession } from "@stackframe/stack-shared/dist/sessions";
 import { scrambleDuringCompileTime } from "@stackframe/stack-shared/dist/utils/compile-time";
 import { isBrowserLike } from "@stackframe/stack-shared/dist/utils/env";
-import { StackAssertionError, throwErr } from "@stackframe/stack-shared/dist/utils/errors";
+import { StackAssertionError, captureError, throwErr } from "@stackframe/stack-shared/dist/utils/errors";
 import { DependenciesMap } from "@stackframe/stack-shared/dist/utils/maps";
 import { ProviderType } from "@stackframe/stack-shared/dist/utils/oauth";
 import { deepPlainEquals, omit } from "@stackframe/stack-shared/dist/utils/objects";
@@ -730,7 +730,8 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
             return Result.error(new KnownErrors.PasskeyWebAuthnError(error.message, error.name));
           } else {
             // This should never happen
-            return Result.error(new KnownErrors.PasskeyRegistrationFailed("Failed to start passkey registration"));
+            captureError("passkey-registration-failed", error);
+            return Result.error(new KnownErrors.PasskeyRegistrationFailed("Failed to start passkey registration due to unknown error"));
           }
         }
 
