@@ -26,7 +26,7 @@ import * as cookie from "cookie";
 // NEXT_LINE_PLATFORM next
 import * as NextNavigationUnscrambled from "next/navigation"; // import the entire module to get around some static compiler warnings emitted by Next.js in some cases
 // NEXT_LINE_PLATFORM react-like
-import React, { use, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { constructRedirectUrl } from "../../../../utils/url";
 import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "../../../auth";
 import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createPlaceholderCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "../../../cookie";
@@ -61,8 +61,14 @@ const process = (globalThis as any).process ?? { env: {} };
 let numberOfAppsCreated = 0;
 const allClientApps = new Map<string, [checkString: string, app: StackClientApp<any, any>]>();
 
-
-const AdminAppImplModulePromise = import("./admin-app-impl");
+/**
+ * There is a circular dependency between the admin app and the client app, as the former inherits from the latter and
+ * the latter needs to use the former when creating a new instance of an internal project.
+ *
+ * To break it, we set the admin app here lazily instead of importing it directly. This variable is set by ./index.ts,
+ * which imports both this file and ./admin-app-impl.ts.
+ */
+export let _LazyStackAdminAppImpl: { value: typeof import("./admin-app-impl")._StackAdminAppImpl | undefined } = { value: undefined };
 
 export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends string = string> {
   protected _uniqueIdentifier: string | undefined = undefined;
@@ -245,6 +251,10 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
       }
     )
   ) {
+    if (!_LazyStackAdminAppImpl.value) {
+      throw new StackAssertionError("Admin app implementation not initialized. Did you import the _StackClientApp from stack-app/apps/implementations/index.ts? You can't import it directly from ./apps/implementations/client-app-impl.ts as that causes a circular dependency (see the comment of _LazyStackAdminAppImpl for more details).");
+    }
+
     if ("interface" in _options) {
       this._interface = _options.interface;
     } else {
@@ -962,9 +972,9 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
     return currentUser as ProjectCurrentUser<ProjectId>;
   }
 
-  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession, AdminAppImplModule: Awaited<typeof AdminAppImplModulePromise>): _StackAdminAppImpl<false, string> {
+  protected _getOwnedAdminApp(forProjectId: string, session: InternalSession): _StackAdminAppImpl<false, string> {
     if (!this._ownedAdminApps.has([session, forProjectId])) {
-      this._ownedAdminApps.set([session, forProjectId], new AdminAppImplModule._StackAdminAppImpl({
+      this._ownedAdminApps.set([session, forProjectId], new (_LazyStackAdminAppImpl.value!)({
         baseUrl: this._interface.options.getBaseUrl(),
         projectId: forProjectId,
         tokenStore: null,
@@ -1460,8 +1470,7 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected async _listOwnedProjects(session: InternalSession): Promise<AdminOwnedProject[]> {
     this._ensureInternalProject();
     const crud = Result.orThrow(await this._ownedProjectsCache.getOrWait([session], "write-only"));
-    const AdminAppImplModule = await AdminAppImplModulePromise;
-    return crud.map((j) => this._getOwnedAdminApp(j.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
+    return crud.map((j) => this._getOwnedAdminApp(j.id, session)._adminOwnedProjectFromCrud(
       j,
       () => this._refreshOwnedProjects(session),
     ));
@@ -1471,8 +1480,7 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected _useOwnedProjects(session: InternalSession): AdminOwnedProject[] {
     this._ensureInternalProject();
     const projects = useAsyncCache(this._ownedProjectsCache, [session], "useOwnedProjects()");
-    const AdminAppImplModule = use(AdminAppImplModulePromise);
-    return useMemo(() => projects.map((j) => this._getOwnedAdminApp(j.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
+    return useMemo(() => projects.map((j) => this._getOwnedAdminApp(j.id, session)._adminOwnedProjectFromCrud(
       j,
       () => this._refreshOwnedProjects(session),
     )), [projects]);
@@ -1481,8 +1489,7 @@ export class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extend
   protected async _createProject(session: InternalSession, newProject: AdminProjectUpdateOptions & { displayName: string }): Promise<AdminOwnedProject> {
     this._ensureInternalProject();
     const crud = await this._interface.createProject(adminProjectCreateOptionsToCrud(newProject), session);
-    const AdminAppImplModule = await AdminAppImplModulePromise;
-    const res = this._getOwnedAdminApp(crud.id, session, AdminAppImplModule)._adminOwnedProjectFromCrud(
+    const res = this._getOwnedAdminApp(crud.id, session)._adminOwnedProjectFromCrud(
       crud,
       () => this._refreshOwnedProjects(session),
     );

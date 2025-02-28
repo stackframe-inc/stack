@@ -6,7 +6,7 @@ import { AsyncStoreProperty, EmailConfig } from "../../common";
 import { AdminEmailTemplate, AdminEmailTemplateUpdateOptions } from "../../email-templates";
 import { AdminTeamPermission, AdminTeamPermissionDefinition, AdminTeamPermissionDefinitionCreateOptions, AdminTeamPermissionDefinitionUpdateOptions } from "../../permissions";
 import { AdminProject } from "../../projects";
-import { _StackAdminAppImpl } from "../implementations/admin-app-impl";
+import { _StackAdminAppImpl } from "../implementations";
 import { StackServerApp, StackServerAppConstructorOptions } from "./server-app";
 
 
