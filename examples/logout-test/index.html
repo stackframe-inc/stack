@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logout Test</title>
+</head>
+<body>
+  <h1>Logout Test</h1>
+  <div id="status"></div>
+  <button id="signOut">Sign Out</button>
+  <button id="signOutCustom">Sign Out (Custom Redirect)</button>
+  
+  <script type="module">
+    import { createStackClientApp } from '../../packages/template/src/index.js';
+    
+    const app = createStackClientApp({
+      tokenStore: 'memory',
+      urls: {
+        // Configure a custom afterSignOut URL
+        afterSignOut: '/examples/logout-test/signed-out.html'
+      }
+    });
+    
+    async function updateStatus() {
+      const user = await app.getUser();
+      const statusEl = document.getElementById('status');
+      if (user) {
+        statusEl.textContent = `Signed in as: ${user.primaryEmail}`;
+      } else {
+        statusEl.textContent = 'Not signed in';
+      }
+    }
+    
+    updateStatus();
+    
+    document.getElementById('signOut').addEventListener('click', async () => {
+      await app.signOut();
+    });
+    
+    document.getElementById('signOutCustom').addEventListener('click', async () => {
+      await app.signOut({ redirectUrl: '/examples/logout-test/custom-signed-out.html' });
+    });
+  </script>
+</body>
+</html>
