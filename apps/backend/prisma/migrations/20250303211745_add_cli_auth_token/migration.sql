@@ -15,3 +15,9 @@ CREATE TABLE "CliAuthToken" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CliAuthToken_pollingToken_key" ON "CliAuthToken"("pollingToken");
+
+-- AddForeignKey
+ALTER TABLE "CliAuthToken" ADD CONSTRAINT "CliAuthToken_tenancyId_fkey" FOREIGN KEY ("tenancyId") REFERENCES "Tenancy"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CliAuthToken" ADD CONSTRAINT "CliAuthToken_tenancyId_projectUserId_fkey" FOREIGN KEY ("tenancyId", "projectUserId") REFERENCES "ProjectUser"("tenancyId", "projectUserId") ON DELETE CASCADE ON UPDATE CASCADE;
