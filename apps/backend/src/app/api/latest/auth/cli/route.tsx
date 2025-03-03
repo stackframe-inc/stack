@@ -32,6 +32,7 @@ export const POST = createSmartRouteHandler({
     const loginCode = generateSecureRandomString();
     const expiresAt = new Date(Date.now() + expires_in_millis);
 
+    // Force regenerate Prisma client to recognize the new model
     const cliAuth = await prismaClient.cliAuthAttempt.create({
       data: {
         tenancyId: tenancy.id,

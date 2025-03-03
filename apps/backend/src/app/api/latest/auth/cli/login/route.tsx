@@ -24,6 +24,7 @@ export const POST = createSmartRouteHandler({
     bodyType: yupString().oneOf(["success"]).defined(),
   }),
   async handler({ auth: { tenancy }, body: { login_code, refresh_token } }) {
+    // Find the CLI auth attempt
     const cliAuth = await prismaClient.cliAuthAttempt.findFirst({
       where: {
         tenancyId: tenancy.id,
@@ -39,6 +40,7 @@ export const POST = createSmartRouteHandler({
       throw new KnownErrors.SchemaError("Invalid login code or the code has expired");
     }
 
+    // Update with refresh token
     await prismaClient.cliAuthAttempt.update({
       where: {
         tenancyId_id: {
