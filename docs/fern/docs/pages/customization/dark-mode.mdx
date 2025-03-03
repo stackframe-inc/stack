@@ -59,23 +59,3 @@ Here is an example of how to set up next-themes with Stack (find more details in
   ```
 
 Now if you put the `ColorModeSwitcher` component in your app, you should be able to switch between light and dark mode. There should be no flickering or re-rendering of the page after reloading.
-
-## Setting a Default Theme
-
-You can configure the default theme behavior by passing options to the `ThemeProvider`:
-
-```jsx
-<ThemeProvider 
-  defaultTheme="system"  // Options: 'light', 'dark', or 'system'
-  attribute="class"      // How the theme is applied (class or data-theme)
-  enableSystem={true}    // Enable system theme detection
-  disableTransitionOnChange={false} // Disable transitions when changing themes
->
-  {children}
-</ThemeProvider>
-```
-
-The `defaultTheme` option determines which theme is used when a user visits your site for the first time:
-- `'light'`: Always use light mode by default
-- `'dark'`: Always use dark mode by default
-- `'system'`: Use the user's system preference (recommended)

@@ -51,35 +51,3 @@ const theme = {
   {/* children */}
 </StackTheme>
 ```
-
-## Using CSS Variables in Custom Components
-
-The theme variables are available as CSS variables in your application, which you can use in your own custom components:
-
-```css
-.my-custom-button {
-  background-color: var(--stack-primary);
-  color: var(--stack-primary-foreground);
-  border-radius: var(--stack-radius);
-}
-```
-
-This ensures your custom components maintain visual consistency with Stack's built-in components.
-
-## Overriding Specific Component Styles
-
-For more targeted styling, you can override specific Stack components using CSS selectors:
-
-```css
-/* Target all Stack buttons */
-.stack-btn {
-  font-weight: bold;
-}
-
-/* Target specific Stack components */
-.stack-sign-in-form input {
-  border-width: 2px;
-}
-```
-
-When applying these customizations, you'll see immediate visual changes in your authentication components, creating a seamless integration with your application's design system.
