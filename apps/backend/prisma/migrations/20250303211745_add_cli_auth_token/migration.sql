@@ -1,12 +1,12 @@
 -- CreateTable
 CREATE TABLE "CliAuthToken" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "pollingToken" TEXT NOT NULL,
     "internalToken" TEXT,
     "refreshToken" TEXT,
     "expiresAt" TIMESTAMP(3) NOT NULL,
-    "tenancyId" TEXT,
-    "projectUserId" TEXT,
+    "tenancyId" UUID,
+    "projectUserId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
