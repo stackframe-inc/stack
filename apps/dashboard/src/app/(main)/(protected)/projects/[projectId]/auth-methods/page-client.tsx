@@ -1,9 +1,9 @@
 "use client";
 
-import { SettingCard, SettingSwitch } from "@/components/settings";
+import { SettingCard, SettingSelect, SettingSwitch } from "@/components/settings";
 import { AdminOAuthProviderConfig, AuthPage, OAuthProviderConfig } from "@stackframe/stack";
 import { allProviders } from "@stackframe/stack-shared/dist/utils/oauth";
-import { ActionDialog, Badge, BrandIcons, BrowserFrame, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, SimpleTooltip, Typography } from "@stackframe/stack-ui";
+import { ActionDialog, Badge, BrandIcons, BrowserFrame, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, SelectItem, SimpleTooltip, Typography } from "@stackframe/stack-ui";
 import { AsteriskSquare, CirclePlus, Key, Link2, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { CardSubtitle } from "../../../../../../../../../packages/stack-ui/dist/components/ui/card";
@@ -332,6 +332,13 @@ export default function PageClient() {
           }}
           hint="Existing users can still sign in when sign-up is disabled. You can always create new accounts manually via the dashboard."
         />
+        <SettingSelect
+          label="Sign-up mode when logging in with same email on multiple providers"
+        >
+          <SelectItem value="block">Block</SelectItem>
+          <SelectItem value="allow">Allow</SelectItem>
+          <SelectItem value="link">Link</SelectItem>
+        </SettingSelect>
       </SettingCard>
 
       <SettingCard title="User deletion">
