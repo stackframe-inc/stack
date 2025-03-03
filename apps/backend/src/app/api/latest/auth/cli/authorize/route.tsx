@@ -75,10 +75,10 @@ export const GET = createSmartRouteHandler({
       });
 
       // Redirect to a success page
-      redirect(`/api/latest/auth/cli/success?polling_token=${polling_token}`);
+      return redirect(`/api/latest/auth/cli/success?polling_token=${polling_token}`);
     }
 
     // If the user is not authenticated, redirect to the login page
-    redirect(`/login?redirect_uri=/api/latest/auth/cli/callback?polling_token=${polling_token}&client_id=${client_id}`);
+    return redirect(`/login?redirect_uri=/api/latest/auth/cli/callback?polling_token=${polling_token}&client_id=${client_id}`);
   },
 });

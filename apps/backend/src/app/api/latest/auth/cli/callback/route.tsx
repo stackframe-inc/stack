@@ -68,6 +68,6 @@ export const GET = createSmartRouteHandler({
     });
 
     // Redirect to a success page
-    redirect(`/api/latest/auth/cli/success?polling_token=${polling_token}`);
+    return redirect(`/api/latest/auth/cli/success?polling_token=${polling_token}`);
   },
 });
