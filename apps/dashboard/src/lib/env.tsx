@@ -1,9 +1,5 @@
 /* eslint-disable no-restricted-syntax */
 
-// hack to make sure process is defined in non-node environments
-// NEXT_LINE_PLATFORM js
-const process = (globalThis as any).process ?? { env: {} };
-
 const _inlineEnvVars = {
   NEXT_PUBLIC_STACK_API_URL: process.env.NEXT_PUBLIC_STACK_API_URL,
   NEXT_PUBLIC_BROWSER_STACK_API_URL: process.env.NEXT_PUBLIC_BROWSER_STACK_API_URL,

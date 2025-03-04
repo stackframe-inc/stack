@@ -1,4 +1,4 @@
-// NEXT_LINE_PLATFORM react-like
+// NEXT_LINE_PLATFORM next
 import { cookies as rscCookies, headers as rscHeaders } from '@stackframe/stack-sc/force-react-server';
 import { isBrowserLike } from '@stackframe/stack-shared/dist/utils/env';
 import { StackAssertionError } from '@stackframe/stack-shared/dist/utils/errors';
@@ -21,15 +21,13 @@ export type CookieHelper = {
   delete: (name: string, options: DeleteCookieOptions) => void,
 };
 
-export async function createEmptyCookieHelper(): Promise<CookieHelper> {
-  function throwError() {
-    throw new StackAssertionError("Empty cookie helper is just a placeholder. This should never be called");
+const placeholderCookieHelperIdentity = { "placeholder cookie helper identity": true };
+export async function createPlaceholderCookieHelper(): Promise<CookieHelper> {
+  function throwError(): never {
+    throw new StackAssertionError("Throwing cookie helper is just a placeholder. This should never be called");
   }
   return {
-    get: () => {
-      throwError();
-      return null;
-    },
+    get: throwError,
     set: throwError,
     setOrDelete: throwError,
     delete: throwError,
@@ -40,13 +38,13 @@ export async function createCookieHelper(): Promise<CookieHelper> {
   if (isBrowserLike()) {
     return createBrowserCookieHelper();
   } else {
-    // IF_PLATFORM react-like
+    // IF_PLATFORM next
     return createNextCookieHelper(
       await rscCookies(),
       await rscHeaders(),
     );
     // ELSE_PLATFORM
-    return await createEmptyCookieHelper();
+    return await createPlaceholderCookieHelper();
     // END_PLATFORM
   }
 }
@@ -72,11 +70,11 @@ function handleCookieError(e: unknown, options: DeleteCookieOptions | SetCookieO
   }
 }
 
-// IF_PLATFORM react-like
+// IF_PLATFORM next
 function createNextCookieHelper(
   rscCookiesAwaited: Awaited<ReturnType<typeof rscCookies>>,
   rscHeadersAwaited: Awaited<ReturnType<typeof rscHeaders>>,
-) {
+): CookieHelper {
   const cookieHelper = {
     get: (name: string) => {
       // set a helper cookie, see comment in `NextCookieHelper.set` below

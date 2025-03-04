@@ -1,5 +1,5 @@
 "use client";
-import { InputField, SwitchField } from "@/components/form-fields";
+import { InputField } from "@/components/form-fields";
 import { StyledLink } from "@/components/link";
 import { FormSettingCard, SettingCard, SettingSwitch, SettingText } from "@/components/settings";
 import { getPublicEnvVar } from '@/lib/env';
