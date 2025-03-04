@@ -972,11 +972,11 @@ const OAuthAccessTokenNotAvailableWithSharedOAuthKeys = createKnownErrorConstruc
 const InvalidOAuthClientIdOrSecret = createKnownErrorConstructor(
   KnownError,
   "INVALID_OAUTH_CLIENT_ID_OR_SECRET",
-  (clientId?: string | undefined) => [
+  () => [
     400,
     "The OAuth client ID or secret is invalid. The client ID must be equal to the project ID, and the client secret must be a publishable client key.",
     {
-      client_id: clientId ?? null,
+      client_id: null,
     },
   ] as const,
   () => [] as const,
