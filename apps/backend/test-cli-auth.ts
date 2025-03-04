@@ -13,7 +13,7 @@ async function testCliAuth() {
     const loginCode = generateSecureRandomString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
-    const cliAuth = await prisma.cliAuthAttempt.create({
+    const cliAuth = await (prisma as any).cliAuthAttempt.create({
       data: {
         tenancyId: '7eef59fd-72a0-47d7-a87d-eaec5ec5bb05', // Using a valid tenancy ID
         pollingCode,
@@ -31,7 +31,7 @@ async function testCliAuth() {
     
     // Test 2: Poll for status (simulating the polling endpoint) - should return "waiting"
     console.log('\n--- Test 2: Poll for status (waiting) ---');
-    const pollResult1 = await prisma.cliAuthAttempt.findFirst({
+    const pollResult1 = await (prisma as any).cliAuthAttempt.findFirst({
       where: {
         pollingCode: cliAuth.pollingCode,
       },
@@ -49,7 +49,7 @@ async function testCliAuth() {
     console.log('\n--- Test 3: Set refresh token ---');
     const refreshToken = 'test-refresh-token-' + Date.now();
     
-    const updatedCliAuth = await prisma.cliAuthAttempt.update({
+    const updatedCliAuth = await (prisma as any).cliAuthAttempt.update({
       where: {
         tenancyId_id: {
           tenancyId: cliAuth.tenancyId,
@@ -68,7 +68,7 @@ async function testCliAuth() {
     
     // Test 4: Poll for status again (simulating the polling endpoint) - should return "success" and set usedAt
     console.log('\n--- Test 4: Poll for status (success) ---');
-    const pollResult2 = await prisma.cliAuthAttempt.findFirst({
+    const pollResult2 = await (prisma as any).cliAuthAttempt.findFirst({
       where: {
         pollingCode: cliAuth.pollingCode,
       },
@@ -76,7 +76,7 @@ async function testCliAuth() {
     
     // In the real endpoint, we would set usedAt here
     if (pollResult2 && pollResult2.refreshToken && !pollResult2.usedAt) {
-      await prisma.cliAuthAttempt.update({
+      await (prisma as any).cliAuthAttempt.update({
         where: {
           tenancyId_id: {
             tenancyId: pollResult2.tenancyId,
@@ -99,7 +99,7 @@ async function testCliAuth() {
     
     // Test 5: Poll for status one more time (simulating the polling endpoint) - should return "used"
     console.log('\n--- Test 5: Poll for status (used) ---');
-    const pollResult3 = await prisma.cliAuthAttempt.findFirst({
+    const pollResult3 = await (prisma as any).cliAuthAttempt.findFirst({
       where: {
         pollingCode: cliAuth.pollingCode,
       },
@@ -119,7 +119,7 @@ async function testCliAuth() {
       const newRefreshToken = 'new-refresh-token-' + Date.now();
       
       // In the real endpoint, we would check if refreshToken is already set
-      const cliAuthToUpdate = await prisma.cliAuthAttempt.findFirst({
+      const cliAuthToUpdate = await (prisma as any).cliAuthAttempt.findFirst({
         where: {
           loginCode: cliAuth.loginCode,
           refreshToken: null,
@@ -129,7 +129,7 @@ async function testCliAuth() {
       if (!cliAuthToUpdate) {
         console.log('Cannot update refresh token: already set or not found');
       } else {
-        await prisma.cliAuthAttempt.update({
+        await (prisma as any).cliAuthAttempt.update({
           where: {
             tenancyId_id: {
               tenancyId: cliAuthToUpdate.tenancyId,
@@ -152,7 +152,7 @@ async function testCliAuth() {
     const expiredLoginCode = generateSecureRandomString();
     const expiredAt = new Date(Date.now() - 1000); // 1 second ago
     
-    const expiredCliAuth = await prisma.cliAuthAttempt.create({
+    const expiredCliAuth = await (prisma as any).cliAuthAttempt.create({
       data: {
         tenancyId: '7eef59fd-72a0-47d7-a87d-eaec5ec5bb05', // Using a valid tenancy ID
         pollingCode: expiredPollingCode,
@@ -170,7 +170,7 @@ async function testCliAuth() {
     
     // Test 8: Poll for status of expired CLI auth attempt
     console.log('\n--- Test 8: Poll for status of expired CLI auth attempt ---');
-    const pollResult4 = await prisma.cliAuthAttempt.findFirst({
+    const pollResult4 = await (prisma as any).cliAuthAttempt.findFirst({
       where: {
         pollingCode: expiredCliAuth.pollingCode,
       },
