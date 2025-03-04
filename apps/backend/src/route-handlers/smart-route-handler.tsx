@@ -228,7 +228,9 @@ export function createSmartRouteHandler<
     const reqsErrors: unknown[] = [];
     for (const [overloadParam, overload] of overloads.entries()) {
       try {
-        const parsedReq = await validateSmartRequest(nextRequest, smartRequest, overload.request);
+        const parsedReq = await traceSpan("validating smart request", async () => {
+          return await validateSmartRequest(nextRequest, smartRequest, overload.request);
+        });
         reqsParsed.push([[parsedReq, smartRequest], overload]);
       } catch (e) {
         reqsErrors.push(e);
@@ -279,9 +281,7 @@ export function createSmartRouteHandler<
 
     const smartRes = await invoke(req, requestId, smartRequest, true);
 
-    return await traceSpan('transforming smart response into HTTP response', async () => {
-      return await createResponse(req, requestId, smartRes);
-    });
+    return await createResponse(req, requestId, smartRes);
   }), {
     [getSmartRouteHandlerSymbol()]: true,
     invoke: (smartRequest: SmartRequest) => invoke(null, "custom-endpoint-invocation", smartRequest),
