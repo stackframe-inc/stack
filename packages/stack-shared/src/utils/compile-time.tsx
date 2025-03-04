@@ -6,6 +6,7 @@
 export function scrambleDuringCompileTime<T>(t: T): T {
   return t;
 }
+
 import.meta.vitest?.test("scrambleDuringCompileTime", ({ expect }) => {
   // Test with primitive values
   expect(scrambleDuringCompileTime(42)).toBe(42);

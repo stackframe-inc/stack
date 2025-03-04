@@ -70,8 +70,8 @@ export abstract class KnownError extends StatusError {
     for (const [_, KnownErrorType] of Object.entries(KnownErrors)) {
       if (json.code === KnownErrorType.prototype.errorCode) {
         const constructorArgs = KnownErrorType.constructorArgsFromJson(json);
-        // @ts-ignore
         return new KnownErrorType(
+          // @ts-ignore
           ...constructorArgs,
         );
       }

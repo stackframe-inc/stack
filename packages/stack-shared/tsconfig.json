@@ -12,7 +12,6 @@
     "noErrorTruncation": true,
     "strict": true,
     "skipLibCheck": true,
-    "ignoreDeprecations": "5.0",
     "types": [
       "vitest/importMeta"
     ]
