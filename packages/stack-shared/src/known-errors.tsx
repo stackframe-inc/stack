@@ -979,7 +979,7 @@ const InvalidOAuthClientIdOrSecret = createKnownErrorConstructor(
       client_id: clientId ?? null,
     },
   ] as const,
-  (json: any) => [json.client_id ?? undefined] as const,
+  (json: any) => [json?.client_id] as const,
 );
 
 const InvalidScope = createKnownErrorConstructor(
