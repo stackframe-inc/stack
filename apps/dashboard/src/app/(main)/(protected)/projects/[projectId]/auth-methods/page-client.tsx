@@ -11,6 +11,8 @@ import { PageLayout } from "../page-layout";
 import { useAdminApp } from "../use-admin-app";
 import { ProviderSettingDialog, ProviderSettingSwitch, TurnOffProviderDialog } from "./providers";
 
+type MergeOauthMethods = 'link_method' | 'raise_error' | 'allow_duplicates';
+
 function ConfirmSignUpEnabledDialog(props: {
   open?: boolean,
   onOpenChange?: (open: boolean) => void,
@@ -334,10 +336,19 @@ export default function PageClient() {
         />
         <SettingSelect
           label="Sign-up mode when logging in with same email on multiple providers"
+          value={(project.config as any).mergeOauthMethods as MergeOauthMethods}
+          onValueChange={async (value) => {
+            await project.update({
+              config: {
+                mergeOauthMethods: value as MergeOauthMethods,
+              } as any,
+            });
+          }}
+          hint="Determines what happens when a user tries to sign in with a different OAuth provider using the same email address"
         >
-          <SelectItem value="block">Block</SelectItem>
-          <SelectItem value="allow">Allow</SelectItem>
-          <SelectItem value="link">Link</SelectItem>
+          <SelectItem value="link_method">Link - Connect multiple providers to the same account</SelectItem>
+          <SelectItem value="allow_duplicates">Allow - Create separate accounts for each provider</SelectItem>
+          <SelectItem value="raise_error">Block - Show an error and prevent sign-in with multiple providers</SelectItem>
         </SettingSelect>
       </SettingCard>
 
