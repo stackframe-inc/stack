@@ -32,6 +32,7 @@ module.exports = {
         ],
       },
     ],
+    "react/jsx-indent": ["warn", 2],
     "keyword-spacing": "warn",
     "block-spacing": "warn",
     "max-statements-per-line": "warn",
