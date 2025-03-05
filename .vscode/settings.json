@@ -8,6 +8,7 @@
   "editor.tabSize": 2,
   "cSpell.words": [
     "backlinks",
+    "Cancelation",
     "Cdfc",
     "cjsx",
     "clsx",
@@ -93,7 +94,7 @@
   ],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+    "source.organizeImports": "explicit"    
   },
   "terminal.integrated.wordSeparators": " (){}',\"`─‘’“”|",
   "editor.formatOnSave": false,
