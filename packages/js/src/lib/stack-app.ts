@@ -2094,7 +2094,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
     return await this._interface.getMetrics();
   });
   private readonly _sentEmailsCache = createCache(async () => {
-    return (this._interface as any).listSentEmails();
+    return await (this._interface as any).listSentEmails();
   });
 
   constructor(options: StackAdminAppConstructorOptions<HasTokenStore, ProjectId>) {
@@ -2346,7 +2346,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
   }
 
   async listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]> {
-    return (this._interface as any).listSentEmails();
+    return await (this._interface as any).listSentEmails();
   }
 }
 
