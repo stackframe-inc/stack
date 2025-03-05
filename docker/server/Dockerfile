@@ -15,12 +15,15 @@ ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
 RUN corepack prepare pnpm@10.0.0 --activate
 RUN pnpm add -g turbo
+RUN pnpm add -g tsx
 
 
 # Prune stage
 FROM base AS pruner
 
 COPY . .
+
+RUN tsx ./scripts/generate-sdks.ts
 
 # https://turbo.build/repo/docs/guides/tools/docker
 RUN turbo prune --scope=@stackframe/stack-backend --scope=@stackframe/stack-dashboard --docker
@@ -36,7 +39,7 @@ COPY .gitignore .
 COPY pnpm-workspace.yaml .
 COPY turbo.json .
 RUN cat ./pnpm-lock.yaml
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store STACK_SKIP_TEMPLATE_GENERATION=true pnpm install --frozen-lockfile
 
 # copy over the rest of the code for the build
 COPY --from=pruner /app/out/full/ .
@@ -61,7 +64,7 @@ WORKDIR /app
 # Install packages needed for deployment
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y openssl && \
+    apt-get install -y openssl socat && \
     rm -rf /var/lib/apt/lists
 
 # Install Prisma CLI globally so we can run migrations on startup

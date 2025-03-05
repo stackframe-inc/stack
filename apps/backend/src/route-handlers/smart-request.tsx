@@ -3,9 +3,10 @@ import "../polyfills";
 import { getUser, getUserQuery } from "@/app/api/latest/users/crud";
 import { checkApiKeySet, checkApiKeySetQuery } from "@/lib/api-keys";
 import { getProjectQuery, listManagedProjectIds } from "@/lib/projects";
+import { Tenancy, getSoleTenancyFromProject } from "@/lib/tenancies";
 import { decodeAccessToken } from "@/lib/tokens";
 import { rawQueryAll } from "@/prisma-client";
-import { withTraceSpan } from "@/utils/telemetry";
+import { traceSpan, withTraceSpan } from "@/utils/telemetry";
 import { KnownErrors } from "@stackframe/stack-shared";
 import { ProjectsCrud } from "@stackframe/stack-shared/dist/interface/crud/projects";
 import { UsersCrud } from "@stackframe/stack-shared/dist/interface/crud/users";
@@ -21,6 +22,8 @@ const allowedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] as c
 
 export type SmartRequestAuth = {
   project: ProjectsCrud["Admin"]["Read"],
+  branchId: string,
+  tenancy: Tenancy,
   user?: UsersCrud["Admin"]["Read"] | undefined,
   type: "client" | "server" | "admin",
 };
@@ -45,9 +48,24 @@ export type SmartRequest = {
 };
 
 export type MergeSmartRequest<T, MSQ = SmartRequest> =
-  StackAdaptSentinel extends T ? NonNullable<MSQ> | (MSQ & Exclude<T, StackAdaptSentinel>) : (
-    T extends object ? (MSQ extends object ? { [K in keyof T & keyof MSQ]: MergeSmartRequest<T[K], MSQ[K]> } : (T & MSQ))
-    : (T & MSQ)
+  StackAdaptSentinel extends T
+  ? NonNullable<MSQ> | (MSQ & Exclude<T, StackAdaptSentinel>)
+  : (
+    T extends (infer U)[]
+    ? (
+      MSQ extends (infer V)[]
+      ? (T & MSQ) & { [K in keyof T & keyof MSQ]: MergeSmartRequest<T[K], MSQ[K]> }
+      : (T & MSQ)
+    )
+    : (
+      T extends object
+      ? (
+        MSQ extends object
+        ? { [K in keyof T & keyof MSQ]: MergeSmartRequest<T[K], MSQ[K]> }
+        : (T & MSQ)
+      )
+      : (T & MSQ)
+    )
   );
 
 async function validate<T>(obj: SmartRequest, schema: yup.Schema<T>, req: NextRequest | null): Promise<T> {
@@ -176,7 +194,7 @@ const parseAuth = withTraceSpan('smart request parseAuth', async (req: NextReque
       throw new KnownErrors.AdminAccessTokenIsNotAdmin();
     }
 
-    const user = await getUser({ projectId: 'internal', userId: result.data.userId });
+    const user = await getUser({ projectId: 'internal', branchId: 'main', userId: result.data.userId });
     if (!user) {
       // this is the case when access token is still valid, but the user is deleted from the database
       // this should be very rare, let's log it on Sentry when it happens
@@ -197,7 +215,7 @@ const parseAuth = withTraceSpan('smart request parseAuth', async (req: NextReque
   // Because smart route handlers are always called, we instead send over a single raw query that fetches all the
   // data at the same time, saving us a lot of requests
   const bundledQueries = {
-    user: projectId && accessToken ? getUserQuery(projectId, await extractUserIdFromAccessToken({ token: accessToken, projectId })) : undefined,
+    user: projectId && accessToken ? getUserQuery(projectId, null, await extractUserIdFromAccessToken({ token: accessToken, projectId })) : undefined,
     isClientKeyValid: projectId && publishableClientKey && requestType === "client" ? checkApiKeySetQuery(projectId, { publishableClientKey }) : undefined,
     isServerKeyValid: projectId && secretServerKey && requestType === "server" ? checkApiKeySetQuery(projectId, { secretServerKey }) : undefined,
     isAdminKeyValid: projectId && superSecretAdminKey && requestType === "admin" ? checkApiKeySetQuery(projectId, { superSecretAdminKey }) : undefined,
@@ -258,32 +276,36 @@ const parseAuth = withTraceSpan('smart request parseAuth', async (req: NextReque
 
   return {
     project,
+    branchId: "main",
+    tenancy: await getSoleTenancyFromProject(project),
     user: queriesResults.user ?? undefined,
     type: requestType,
   };
 });
 
 export async function createSmartRequest(req: NextRequest, bodyBuffer: ArrayBuffer, options?: { params: Promise<Record<string, string>> }): Promise<SmartRequest> {
-  const urlObject = new URL(req.url);
-  const clientVersionMatch = req.headers.get("x-stack-client-version")?.match(/^(\w+)\s+(@[\w\/]+)@([\d.]+)$/);
+  return await traceSpan("creating smart request", async () => {
+    const urlObject = new URL(req.url);
+    const clientVersionMatch = req.headers.get("x-stack-client-version")?.match(/^(\w+)\s+(@[\w\/]+)@([\d.]+)$/);
 
-  return {
-    url: req.url,
-    method: typedIncludes(allowedMethods, req.method) ? req.method : throwErr(new StatusError(405, "Method not allowed")),
-    body: await parseBody(req, bodyBuffer),
-    headers: Object.fromEntries(
-      [...groupBy(req.headers.entries(), ([key, _]) => key.toLowerCase())]
-        .map(([key, values]) => [key, values.map(([_, value]) => value)]),
-    ),
-    query: Object.fromEntries(urlObject.searchParams.entries()),
-    params: await options?.params ?? {},
-    auth: await parseAuth(req),
-    clientVersion: clientVersionMatch ? {
-      platform: clientVersionMatch[1],
-      sdk: clientVersionMatch[2],
-      version: clientVersionMatch[3],
-    } : undefined,
-  } satisfies SmartRequest;
+    return {
+      url: req.url,
+      method: typedIncludes(allowedMethods, req.method) ? req.method : throwErr(new StatusError(405, "Method not allowed")),
+      body: await parseBody(req, bodyBuffer),
+      headers: Object.fromEntries(
+        [...groupBy(req.headers.entries(), ([key, _]) => key.toLowerCase())]
+          .map(([key, values]) => [key, values.map(([_, value]) => value)]),
+      ),
+      query: Object.fromEntries(urlObject.searchParams.entries()),
+      params: await options?.params ?? {},
+      auth: await parseAuth(req),
+      clientVersion: clientVersionMatch ? {
+        platform: clientVersionMatch[1],
+        sdk: clientVersionMatch[2],
+        version: clientVersionMatch[3],
+      } : undefined,
+    } satisfies SmartRequest;
+  });
 }
 
 export async function validateSmartRequest<T extends DeepPartialSmartRequestWithSentinel>(nextReq: NextRequest | null, smartReq: SmartRequest, schema: yup.Schema<T>): Promise<T> {

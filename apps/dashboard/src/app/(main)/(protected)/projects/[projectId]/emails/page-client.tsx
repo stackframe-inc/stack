@@ -4,6 +4,7 @@ import { FormDialog } from "@/components/form-dialog";
 import { InputField, SelectField } from "@/components/form-fields";
 import { useRouter } from "@/components/router";
 import { SettingCard, SettingText } from "@/components/settings";
+import { getPublicEnvVar } from "@/lib/env";
 import { AdminEmailConfig, AdminProject } from "@stackframe/stack";
 import { Reader } from "@stackframe/stack-emails/dist/editor/email-builder/index";
 import { EMAIL_TEMPLATES_METADATA, convertEmailSubjectVariables, convertEmailTemplateMetadataExampleValues, convertEmailTemplateVariables, validateEmailTemplateContent } from "@stackframe/stack-emails/dist/utils";
@@ -11,7 +12,8 @@ import { EmailTemplateType } from "@stackframe/stack-shared/dist/interface/crud/
 import { strictEmailSchema } from "@stackframe/stack-shared/dist/schema-fields";
 import { throwErr } from "@stackframe/stack-shared/dist/utils/errors";
 import { deepPlainEquals } from "@stackframe/stack-shared/dist/utils/objects";
-import { ActionCell, ActionDialog, Alert, Button, Card, SimpleTooltip, Typography, useToast } from "@stackframe/stack-ui";
+import { ActionCell, ActionDialog, Alert, AlertDescription, AlertTitle, Button, Card, SimpleTooltip, Typography, useToast } from "@stackframe/stack-ui";
+import { AlertCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import * as yup from "yup";
 import { PageLayout } from "../page-layout";
@@ -25,33 +27,54 @@ export default function PageClient() {
   const router = useRouter();
   const [resetTemplateType, setResetTemplateType] = useState<EmailTemplateType>("email_verification");
   const [resetTemplateDialogOpen, setResetTemplateDialogOpen] = useState(false);
+  const [sharedSmtpWarningDialogOpen, setSharedSmtpWarningDialogOpen] = useState<EmailTemplateType|null>(null);
 
   return (
     <PageLayout title="Emails" description="Configure email settings for your project">
-      <SettingCard
-        title="Email Server"
-        description="Configure the email server and sender address for outgoing emails"
-        actions={
-          <div className="flex items-center gap-2">
-            {emailConfig?.type === 'standard' && <TestSendingDialog trigger={<Button variant='secondary' className="w-full">Send Test Email</Button>} />}
-            <EditEmailServerDialog trigger={<Button variant='secondary' className="w-full">Configure</Button>} />
-          </div>
-        }
-      >
-        <SettingText label="Server">
-          <div className="flex items-center gap-2">
-            { emailConfig?.type === 'standard' ?
-              'Custom SMTP server' :
-              <>Shared <SimpleTooltip tooltip="When you use the shared email server, all the emails are sent from Stack's email address" type='info' /></>
-            }
-          </div>
-        </SettingText>
-        <SettingText label="Sender Email">
-          {emailConfig?.type === 'standard' ? emailConfig.senderEmail : 'noreply@stackframe.co'}
-        </SettingText>
-      </SettingCard>
+      {getPublicEnvVar('NEXT_PUBLIC_STACK_EMULATOR_ENABLED') === 'true' ? (
+        <SettingCard
+          title="Mock Emails"
+          description="View all emails sent through the emulator in Inbucket"
+        >
+          <Button variant='secondary' onClick={() => {
+            window.open(getPublicEnvVar('NEXT_PUBLIC_STACK_INBUCKET_WEB_URL') + '/monitor', '_blank');
+          }}>
+            Open Inbox
+          </Button>
+        </SettingCard>
+      ) : (
+        <SettingCard
+          title="Email Server"
+          description="Configure the email server and sender address for outgoing emails"
+          actions={
+            <div className="flex items-center gap-2">
+              {emailConfig?.type === 'standard' && <TestSendingDialog trigger={<Button variant='secondary' className="w-full">Send Test Email</Button>} />}
+              <EditEmailServerDialog trigger={<Button variant='secondary' className="w-full">Configure</Button>} />
+            </div>
+          }
+        >
+          <SettingText label="Server">
+            <div className="flex items-center gap-2">
+              { emailConfig?.type === 'standard' ?
+                'Custom SMTP server' :
+                <>Shared <SimpleTooltip tooltip="When you use the shared email server, all the emails are sent from Stack's email address" type='info' /></>
+              }
+            </div>
+          </SettingText>
+          <SettingText label="Sender Email">
+            {emailConfig?.type === 'standard' ? emailConfig.senderEmail : 'noreply@stackframe.co'}
+          </SettingText>
+        </SettingCard>
+      )}
 
       <SettingCard title="Email Templates" description="Customize the emails sent">
+        {emailConfig?.type === 'shared' && <Alert variant="default">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Warning</AlertTitle>
+          <AlertDescription>
+            You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
+          </AlertDescription>
+        </Alert>}
         {emailTemplates.map((template) => (
           <Card key={template.type} className="p-4 flex justify-between flex-col sm:flex-row gap-4">
             <div className="flex flex-col gap-2">
@@ -64,7 +87,13 @@ export default function PageClient() {
                 </Typography>
               </div>
               <div className="flex-grow flex justify-start items-end gap-2">
-                <Button variant='secondary' onClick={() => router.push('emails/templates/' + template.type)}>Edit Template</Button>
+                <Button variant='secondary' onClick={() => {
+                  if (emailConfig?.type === 'shared') {
+                    setSharedSmtpWarningDialogOpen(template.type);
+                  } else {
+                    router.push(`emails/templates/${template.type}`);
+                  }
+                }}>Edit Template</Button>
                 {!template.isDefault && <ActionCell
                   items={[{
                     item: 'Reset to Default',
@@ -82,11 +111,24 @@ export default function PageClient() {
         ))}
       </SettingCard>
 
-      <ResetEmailTemplateDialog
-        templateType={resetTemplateType}
-        open={resetTemplateDialogOpen}
-        onClose={() => setResetTemplateDialogOpen(false)}
-      />
+      <ActionDialog
+        open={sharedSmtpWarningDialogOpen !== null}
+        onClose={() => setSharedSmtpWarningDialogOpen(null)}
+        title="Shared Email Server"
+        okButton={{ label: "Edit Templates Anyway", onClick: async () => {
+          router.push(`emails/templates/${sharedSmtpWarningDialogOpen}`);
+        } }}
+        cancelButton={{ label: "Cancel" }}
+      >
+        <Alert variant="default">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Warning</AlertTitle>
+          <AlertDescription>
+            You are using a shared email server. If you want to customize the email templates, you need to configure a custom SMTP server.
+            You can edit the templates anyway, but you will not be able to save them.
+          </AlertDescription>
+        </Alert>
+      </ActionDialog>
     </PageLayout>
   );
 }
@@ -159,7 +201,7 @@ const getDefaultValues = (emailConfig: AdminEmailConfig | undefined, project: Ad
 const emailServerSchema = yup.object({
   type: yup.string().oneOf(['shared', 'standard']).defined(),
   host: definedWhenNotShared(yup.string(), "Host is required"),
-  port: definedWhenNotShared(yup.number(), "Port is required"),
+  port: definedWhenNotShared(yup.number().min(0, "Port must be a number between 0 and 65535").max(65535, "Port must be a number between 0 and 65535"), "Port is required"),
   username: definedWhenNotShared(yup.string(), "Username is required"),
   password: definedWhenNotShared(yup.string(), "Password is required"),
   senderEmail: definedWhenNotShared(strictEmailSchema("Sender email must be a valid email"), "Sender email is required"),

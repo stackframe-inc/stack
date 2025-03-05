@@ -1,7 +1,9 @@
 /* eslint-disable no-restricted-syntax */
+import { getSoleTenancyFromProject } from '@/lib/tenancies';
 import { PrismaClient } from '@prisma/client';
 import { throwErr } from '@stackframe/stack-shared/dist/utils/errors';
 import { hashPassword } from "@stackframe/stack-shared/dist/utils/hashes";
+import { generateUuid } from '@stackframe/stack-shared/dist/utils/uuids';
 
 const prisma = new PrismaClient();
 
@@ -22,8 +24,12 @@ async function seed() {
   const allowLocalhost = process.env.STACK_SEED_INTERNAL_PROJECT_ALLOW_LOCALHOST === 'true';
   const clientTeamCreation = process.env.STACK_SEED_INTERNAL_PROJECT_CLIENT_TEAM_CREATION === 'true';
 
+  const emulatorEnabled = process.env.STACK_EMULATOR_ENABLED === 'true';
+  const emulatorProjectId = process.env.STACK_EMULATOR_PROJECT_ID;
+
   const apiKeyId = '3142e763-b230-44b5-8636-aa62f7489c26';
   const defaultUserId = '33e7c043-d2d1-4187-acd3-f91b5ed64b46';
+  const emulatorAdminUserId = '63abbc96-5329-454a-ba56-e0460173c6c1';
 
   let internalProject = await prisma.project.findUnique({
     where: {
@@ -35,84 +41,100 @@ async function seed() {
   });
 
   if (!internalProject) {
-    internalProject = await prisma.project.create({
-      data: {
-        id: 'internal',
-        displayName: 'Stack Dashboard',
-        description: 'Stack\'s admin dashboard',
-        isProductionMode: false,
-        config: {
-          create: {
-            allowLocalhost: true,
-            emailServiceConfig: {
-              create: {
-                proxiedEmailServiceConfig: {
-                  create: {}
-                }
-              }
-            },
-            createTeamOnSignUp: false,
-            clientTeamCreationEnabled: clientTeamCreation,
-            authMethodConfigs: {
-              create: [
-                {
-                  passwordConfig: {
-                    create: {},
+    await prisma.$transaction(async (tx) => {
+      internalProject = await tx.project.create({
+        data: {
+          id: 'internal',
+          displayName: 'Stack Dashboard',
+          description: 'Stack\'s admin dashboard',
+          isProductionMode: false,
+          tenancies: {
+            create: {
+              id: generateUuid(),
+              branchId: 'main',
+              hasNoOrganization: "TRUE",
+              organizationId: null,
+            }
+          },
+          config: {
+            create: {
+              allowLocalhost: true,
+              emailServiceConfig: {
+                create: {
+                  proxiedEmailServiceConfig: {
+                    create: {}
                   }
-                },
-                ...(otpEnabled ? [{
-                  otpConfig: {
+                }
+              },
+              createTeamOnSignUp: false,
+              clientTeamCreationEnabled: clientTeamCreation,
+              authMethodConfigs: {
+                create: [
+                  {
+                    passwordConfig: {
+                      create: {},
+                    }
+                  },
+                  ...(otpEnabled ? [{
+                    otpConfig: {
+                      create: {
+                        contactChannelType: 'EMAIL'
+                      },
+                    }
+                  }]: []),
+                ],
+              },
+              oauthProviderConfigs: {
+                create: oauthProviderIds.map((id) => ({
+                  id,
+                  proxiedOAuthConfig: {
                     create: {
-                      contactChannelType: 'EMAIL'
-                    },
+                      type: id.toUpperCase() as any,
+                    }
+                  },
+                  projectUserOAuthAccounts: {
+                    create: []
                   }
-                }]: []),
-              ],
-            },
-            oauthProviderConfigs: {
-              create: oauthProviderIds.map((id) => ({
-                id,
-                proxiedOAuthConfig: {
-                  create: {
-                    type: id.toUpperCase() as any,
-                  }
-                },
-                projectUserOAuthAccounts: {
-                  create: []
-                }
-              })),
-            },
+                })),
+              },
+            }
           }
+        },
+        include: {
+          config: true,
         }
-      },
-      include: {
-        config: true,
-      }
-    });
+      });
 
-    await prisma.projectConfig.update({
-      where: {
-        id: internalProject.configId,
-      },
-      data: {
-        authMethodConfigs: {
-          create: [
-            ...oauthProviderIds.map((id) => ({
-              oauthProviderConfig: {
-                connect: {
-                  projectConfigId_id: {
-                    id,
-                    projectConfigId: (internalProject as any).configId,
+      await tx.projectConfig.update({
+        where: {
+          id: internalProject.configId,
+        },
+        data: {
+          authMethodConfigs: {
+            create: [
+              ...oauthProviderIds.map((id) => ({
+                oauthProviderConfig: {
+                  connect: {
+                    projectConfigId_id: {
+                      id,
+                      projectConfigId: (internalProject as any).configId,
+                    }
                   }
                 }
-              }
-            }))
-          ],
-        },
-      }
+              }))
+            ],
+          },
+        }
+      });
     });
 
     console.log('Internal project created');
+  }
+
+  const internalTenancy = await getSoleTenancyFromProject("internal");
+
+  if (!internalProject) {
+    throw new Error('Internal project not found');
   }
 
   if (internalProject.config.signUpEnabled !== signUpEnabled) {
@@ -157,7 +179,8 @@ async function seed() {
     await prisma.$transaction(async (tx) => {
       const oldAdminUser = await tx.projectUser.findFirst({
         where: {
-          projectId: 'internal',
+          mirroredProjectId: 'internal',
+          mirroredBranchId: 'main',
           projectUserId: defaultUserId
         }
       });
@@ -169,7 +192,9 @@ async function seed() {
           data: {
             displayName: 'Administrator (created by seed script)',
             projectUserId: defaultUserId,
-            projectId: 'internal',
+            tenancyId: internalTenancy.id,
+            mirroredProjectId: 'internal',
+            mirroredBranchId: 'main',
             serverMetadata: adminInternalAccess
               ? { managedProjectIds: ['internal'] }
               : undefined,
@@ -180,7 +205,7 @@ async function seed() {
           await tx.contactChannel.create({
             data: {
               projectUserId: newUser.projectUserId,
-              projectId: 'internal',
+              tenancyId: internalTenancy.id,
               type: 'EMAIL' as const,
               value: adminEmail as string,
               isVerified: false,
@@ -200,7 +225,7 @@ async function seed() {
 
           await tx.authMethod.create({
             data: {
-              projectId: 'internal',
+              tenancyId: internalTenancy.id,
               projectConfigId: (internalProject as any).configId,
               projectUserId: newUser.projectUserId,
               authMethodConfigId: passwordConfig.authMethodConfigId,
@@ -232,7 +257,7 @@ async function seed() {
 
           const githubAccount = await tx.projectUserOAuthAccount.findFirst({
             where: {
-              projectId: 'internal',
+              tenancyId: internalTenancy.id,
               projectConfigId: (internalProject as any).configId,
               oauthProviderConfigId: 'github',
               providerAccountId: adminGithubId,
@@ -244,7 +269,7 @@ async function seed() {
           } else {
             await tx.projectUserOAuthAccount.create({
               data: {
-                projectId: 'internal',
+                tenancyId: internalTenancy.id,
                 projectConfigId: (internalProject as any).configId,
                 projectUserId: newUser.projectUserId,
                 oauthProviderConfigId: 'github',
@@ -257,7 +282,7 @@ async function seed() {
 
           await tx.authMethod.create({
             data: {
-              projectId: 'internal',
+              tenancyId: internalTenancy.id,
               projectConfigId: (internalProject as any).configId,
               projectUserId: newUser.projectUserId,
               authMethodConfigId: githubConfig.authMethodConfigId || throwErr('GitHub OAuth provider config not found'),
@@ -315,6 +340,172 @@ async function seed() {
       });
     } else if (!allowLocalhost) {
       throw new Error('Cannot use localhost as a trusted domain if STACK_SEED_INTERNAL_PROJECT_ALLOW_LOCALHOST is not set to true');
+    }
+  }
+
+  if (emulatorEnabled) {
+    if (!emulatorProjectId) {
+      throw new Error('STACK_EMULATOR_PROJECT_ID is not set');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const existingUser = await tx.projectUser.findFirst({
+        where: {
+          mirroredProjectId: 'internal',
+          mirroredBranchId: 'main',
+          projectUserId: emulatorAdminUserId,
+        }
+      });
+
+      if (existingUser) {
+        console.log('Emulator user already exists, skipping creation');
+      } else {
+        const passwordConfig = await tx.authMethodConfig.findFirst({
+          where: {
+            projectConfigId: (internalProject as any).configId,
+            passwordConfig: {
+              isNot: null
+            }
+          },
+        });
+
+        if (!passwordConfig) {
+          throw new Error('Password auth method config not found');
+        }
+
+        const newEmulatorUser = await tx.projectUser.create({
+          data: {
+            displayName: 'Local Emulator User',
+            projectUserId: emulatorAdminUserId,
+            tenancyId: internalTenancy.id,
+            mirroredProjectId: 'internal',
+            mirroredBranchId: 'main',
+            serverMetadata: {
+              managedProjectIds: [emulatorProjectId],
+            },
+          }
+        });
+
+        await tx.contactChannel.create({
+          data: {
+            projectUserId: newEmulatorUser.projectUserId,
+            tenancyId: internalTenancy.id,
+            type: 'EMAIL' as const,
+            value: 'local-emulator@stack-auth.com',
+            isVerified: false,
+            isPrimary: 'TRUE',
+            usedForAuth: 'TRUE',
+          }
+        });
+
+        await tx.authMethod.create({
+          data: {
+            tenancyId: internalTenancy.id,
+            projectConfigId: (internalProject as any).configId,
+            projectUserId: newEmulatorUser.projectUserId,
+            authMethodConfigId: passwordConfig.id,
+            passwordAuthMethod: {
+              create: {
+                passwordHash: await hashPassword('LocalEmulatorPassword'),
+                projectUserId: newEmulatorUser.projectUserId,
+              }
+            }
+          }
+        });
+
+        console.log('Created emulator user');
+      }
+    });
+
+    console.log('Created emulator user');
+
+    const existingProject = await prisma.project.findUnique({
+      where: {
+        id: emulatorProjectId,
+      },
+    });
+
+    if (existingProject) {
+      console.log('Emulator project already exists, skipping creation');
+    } else {
+      await prisma.$transaction(async (tx) => {
+        const emulatorProject = await tx.project.create({
+          data: {
+            id: emulatorProjectId,
+            displayName: 'Local Emulator Project',
+            description: 'Project for local development with emulator',
+            isProductionMode: false,
+            config: {
+              create: {
+                allowLocalhost: true,
+                emailServiceConfig: {
+                  create: {
+                    proxiedEmailServiceConfig: {
+                      create: {}
+                    }
+                  }
+                },
+                createTeamOnSignUp: false,
+                clientTeamCreationEnabled: false,
+                authMethodConfigs: {
+                  create: [
+                    {
+                      passwordConfig: {
+                        create: {},
+                      }
+                    }
+                  ],
+                },
+                oauthProviderConfigs: {
+                  create: ['github', 'google'].map((id) => ({
+                    id,
+                    proxiedOAuthConfig: {
+                      create: {
+                        type: id.toUpperCase() as any,
+                      }
+                    },
+                    projectUserOAuthAccounts: {
+                      create: []
+                    }
+                  })),
+                },
+              },
+            },
+            tenancies: {
+              create: {
+                id: generateUuid(),
+                branchId: 'main',
+                hasNoOrganization: "TRUE",
+                organizationId: null,
+              }
+            }
+          }
+        });
+
+        await tx.projectConfig.update({
+          where: {
+            id: emulatorProject.configId,
+          },
+          data: {
+            authMethodConfigs: {
+              create: [
+                ...['github', 'google'].map((id) => ({
+                  oauthProviderConfig: {
+                    connect: {
+                      projectConfigId_id: {
+                        id,
+                        projectConfigId: emulatorProject.configId,
+                      }
+                    }
+                  }
+                }))
+              ],
+            },
+          }
+        });
+      });
+
+      console.log('Created emulator project');
     }
   }
 

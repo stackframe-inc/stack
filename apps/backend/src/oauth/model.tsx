@@ -1,7 +1,8 @@
 import { createMfaRequiredError } from "@/app/api/latest/auth/mfa/sign-in/verification-code-handler";
 import { checkApiKeySet } from "@/lib/api-keys";
-import { fullProjectInclude, getProject, projectPrismaToCrud } from "@/lib/projects";
+import { fullProjectInclude, getProject } from "@/lib/projects";
 import { validateRedirectUrl } from "@/lib/redirect-urls";
+import { getSoleTenancyFromProject } from "@/lib/tenancies";
 import { decodeAccessToken, generateAccessToken } from "@/lib/tokens";
 import { prismaClient } from "@/prisma-client";
 import { AuthorizationCode, AuthorizationCodeModel, Client, Falsey, RefreshToken, Token, User } from "@node-oauth/oauth2-server";
@@ -9,6 +10,11 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { KnownErrors } from "@stackframe/stack-shared";
 import { generateSecureRandomString } from "@stackframe/stack-shared/dist/utils/crypto";
 import { StackAssertionError, captureError } from "@stackframe/stack-shared/dist/utils/errors";
+
+declare module "@node-oauth/oauth2-server" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface Client {}
+}
 
 const enabledScopes = ["legacy"];
 
@@ -64,7 +70,6 @@ export class OAuthModel implements AuthorizationCodeModel {
 
     return {
       id: project.id,
-      useLegacyGlobalJWT: project.config.legacy_global_jwt_signing,
       grants: ["authorization_code", "refresh_token"],
       redirectUris: redirectUris,
     };
@@ -84,10 +89,10 @@ export class OAuthModel implements AuthorizationCodeModel {
 
   async generateAccessToken(client: Client, user: User, scope: string[]): Promise<string> {
     assertScopeIsValid(scope);
+    const tenancy = await getSoleTenancyFromProject(client.id);
     return await generateAccessToken({
-      projectId: client.id,
+      tenancy,
       userId: user.id,
-      useLegacyGlobalJWT: client.useLegacyGlobalJWT,
     });
   }
 
@@ -99,10 +104,11 @@ export class OAuthModel implements AuthorizationCodeModel {
 
   async saveToken(token: Token, client: Client, user: User): Promise<Token | Falsey> {
     if (token.refreshToken) {
+      const tenancy = await getSoleTenancyFromProject(client.id);
       const projectUser = await prismaClient.projectUser.findUniqueOrThrow({
         where: {
-          projectId_projectUserId: {
-            projectId: client.id,
+          tenancyId_projectUserId: {
+            tenancyId: tenancy.id,
             projectUserId: user.id,
           },
         },
@@ -114,7 +120,8 @@ export class OAuthModel implements AuthorizationCodeModel {
       });
       if (projectUser.requiresTotpMfa) {
         throw await createMfaRequiredError({
-          project: projectPrismaToCrud(projectUser.project),
+          project: tenancy.project,
+          branchId: tenancy.branchId,
           userId: projectUser.projectUserId,
           isNewUser: false,
         });
@@ -126,8 +133,8 @@ export class OAuthModel implements AuthorizationCodeModel {
           expiresAt: token.refreshTokenExpiresAt,
           projectUser: {
             connect: {
-              projectId_projectUserId: {
-                projectId: client.id,
+              tenancyId_projectUserId: {
+                tenancyId: tenancy.id,
                 projectUserId: user.id,
               },
             },
@@ -182,6 +189,17 @@ export class OAuthModel implements AuthorizationCodeModel {
       where: {
         refreshToken,
       },
+      include: {
+        projectUser: {
+          include: {
+            tenancy: {
+              include: {
+                project: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!token) {
@@ -195,7 +213,7 @@ export class OAuthModel implements AuthorizationCodeModel {
         id: token.projectUserId,
       },
       client: {
-        id: token.projectId,
+        id: token.projectUser.tenancy.project.id,
         grants: ["authorization_code", "refresh_token"],
       },
       scope: enabledScopes,
@@ -220,6 +238,7 @@ export class OAuthModel implements AuthorizationCodeModel {
       throw new KnownErrors.InvalidScope("<empty string>");
     }
     assertScopeIsValid(code.scope);
+    const tenancy = await getSoleTenancyFromProject(client.id);
     await prismaClient.projectUserAuthorizationCode.create({
       data: {
         authorizationCode: code.authorizationCode,
@@ -230,7 +249,7 @@ export class OAuthModel implements AuthorizationCodeModel {
         projectUserId: user.id,
         newUser: user.newUser,
         afterCallbackRedirectUrl: user.afterCallbackRedirectUrl,
-        projectId: client.id,
+        tenancyId: tenancy.id,
       },
     });
 
@@ -252,6 +271,17 @@ export class OAuthModel implements AuthorizationCodeModel {
       where: {
         authorizationCode,
       },
+      include: {
+        projectUser: {
+          include: {
+            tenancy: {
+              include: {
+                project: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!code) {
       return false;
@@ -264,7 +294,7 @@ export class OAuthModel implements AuthorizationCodeModel {
       codeChallenge: code.codeChallenge,
       codeChallengeMethod: code.codeChallengeMethod,
       client: {
-        id: code.projectId,
+        id: code.projectUser.tenancy.project.id,
         grants: ["authorization_code", "refresh_token"],
       },
       user: {

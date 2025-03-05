@@ -1,9 +1,9 @@
 import { createAuthTokens } from "@/lib/tokens";
 import { createSmartRouteHandler } from "@/route-handlers/smart-route-handler";
+import { runAsynchronouslyAndWaitUntil } from "@/utils/vercel";
 import { KnownErrors } from "@stackframe/stack-shared";
 import { getPasswordError } from "@stackframe/stack-shared/dist/helpers/password";
 import { adaptSchema, clientOrHigherAuthTypeSchema, emailVerificationCallbackUrlSchema, passwordSchema, signInEmailSchema, yupNumber, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
-import { captureError } from "@stackframe/stack-shared/dist/utils/errors";
 import { contactChannelVerificationCodeHandler } from "../../../contact-channels/verify/verification-code-handler";
 import { usersCrudHandlers } from "../../../users/crud";
 import { createMfaRequiredError } from "../../mfa/sign-in/verification-code-handler";
@@ -17,7 +17,7 @@ export const POST = createSmartRouteHandler({
   request: yupObject({
     auth: yupObject({
       type: clientOrHigherAuthTypeSchema,
-      project: adaptSchema,
+      tenancy: adaptSchema,
     }).defined(),
     body: yupObject({
       email: signInEmailSchema.defined(),
@@ -34,8 +34,8 @@ export const POST = createSmartRouteHandler({
       user_id: yupString().defined(),
     }).defined(),
   }),
-  async handler({ auth: { project }, body: { email, password, verification_callback_url: verificationCallbackUrl } }, fullReq) {
-    if (!project.config.credential_enabled) {
+  async handler({ auth: { tenancy }, body: { email, password, verification_callback_url: verificationCallbackUrl } }, fullReq) {
+    if (!tenancy.config.credential_enabled) {
       throw new KnownErrors.PasswordAuthenticationNotEnabled();
     }
 
@@ -44,12 +44,12 @@ export const POST = createSmartRouteHandler({
       throw passwordError;
     }
 
-    if (!project.config.sign_up_enabled) {
+    if (!tenancy.config.sign_up_enabled) {
       throw new KnownErrors.SignUpNotEnabled();
     }
 
     const createdUser = await usersCrudHandlers.adminCreate({
-      project,
+      tenancy,
       data: {
         primary_email: email,
         primary_email_verified: false,
@@ -59,9 +59,9 @@ export const POST = createSmartRouteHandler({
       allowedErrorTypes: [KnownErrors.UserEmailAlreadyExists],
     });
 
-    try {
+    runAsynchronouslyAndWaitUntil((async () => {
       await contactChannelVerificationCodeHandler.sendCode({
-        project,
+        tenancy,
         data: {
           user_id: createdUser.id,
         },
@@ -72,29 +72,20 @@ export const POST = createSmartRouteHandler({
       }, {
         user: createdUser,
       });
-    } catch (error) {
-      if (error instanceof KnownErrors.RedirectUrlNotWhitelisted) {
-        throw error;
-      } else {
-        // we can ignore it because it's not critical, but we should log it
-        // a common error is that the developer's specified email service is down
-        // later, we should let the user know instead of logging this to Sentry
-        captureError("send-sign-up-verification-code", error);
-      }
-    }
+    })());
 
     if (createdUser.requires_totp_mfa) {
       throw await createMfaRequiredError({
-        project,
+        project: tenancy.project,
+        branchId: tenancy.branchId,
         isNewUser: true,
         userId: createdUser.id,
       });
     }
 
     const { refreshToken, accessToken } = await createAuthTokens({
-      projectId: project.id,
+      tenancy,
       projectUserId: createdUser.id,
-      useLegacyGlobalJWT: project.config.legacy_global_jwt_signing,
     });
 
     return {

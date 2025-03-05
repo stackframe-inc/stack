@@ -54,10 +54,9 @@ export const fullProjectInclude = {
       domains: true,
     },
   },
-  configOverride: true,
   _count: {
     select: {
-      users: true, // Count the users related to the project
+      projectUsers: true,
     },
   },
 } as const satisfies Prisma.ProjectInclude;
@@ -117,9 +116,9 @@ export function projectPrismaToCrud(
   return {
     id: prisma.id,
     display_name: prisma.displayName,
-    description: prisma.description ?? "",
+    description: prisma.description,
     created_at_millis: prisma.createdAt.getTime(),
-    user_count: prisma._count.users,
+    user_count: prisma._count.projectUsers,
     is_production_mode: prisma.isProductionMode,
     config: {
       id: prisma.config.id,
@@ -131,7 +130,6 @@ export function projectPrismaToCrud(
       create_team_on_sign_up: prisma.config.createTeamOnSignUp,
       client_team_creation_enabled: prisma.config.clientTeamCreationEnabled,
       client_user_deletion_enabled: prisma.config.clientUserDeletionEnabled,
-      legacy_global_jwt_signing: prisma.config.legacyGlobalJwtSigning,
       domains: prisma.config.domains
         .sort((a: any, b: any) => a.createdAt.getTime() - b.createdAt.getTime())
         .map((domain) => ({
@@ -357,7 +355,7 @@ export function getProjectQuery(projectId: string): RawQuery<ProjectsCrud["Admin
               'userCount', (
                 SELECT count(*)
                 FROM "ProjectUser"
-                WHERE "ProjectUser"."projectId" = "Project"."id"
+                WHERE "ProjectUser"."mirroredProjectId" = "Project"."id"
               )
             )
           )
@@ -426,7 +424,6 @@ export function getProjectQuery(projectId: string): RawQuery<ProjectsCrud["Admin
           create_team_on_sign_up: row.ProjectConfig.createTeamOnSignUp,
           client_team_creation_enabled: row.ProjectConfig.clientTeamCreationEnabled,
           client_user_deletion_enabled: row.ProjectConfig.clientUserDeletionEnabled,
-          legacy_global_jwt_signing: row.ProjectConfig.legacyGlobalJwtSigning,
           domains: row.ProjectConfig.Domains
             .sort((a: any, b: any) => new Date(a.createdAt + "Z").getTime() - new Date(b.createdAt + "Z").getTime())
             .map((domain: any) => ({
@@ -475,7 +472,6 @@ export async function getProject(projectId: string): Promise<ProjectsCrud["Admin
   const result = await rawQuery(getProjectQuery(projectId));
 
   // In non-prod environments, let's also call the legacy function and ensure the result is the same
-  // TODO next-release: remove this
   if (!getNodeEnvironment().includes("prod")) {
     const legacyResult = await getProjectLegacy(projectId);
     if (!deepPlainEquals(omit(result ?? {}, ["user_count"] as any), omit(legacyResult ?? {}, ["user_count"] as any))) {
@@ -508,7 +504,7 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
       data: {
         id: generateUuid(),
         displayName: data.display_name,
-        description: data.description,
+        description: data.description ?? "",
         isProductionMode: data.is_production_mode ?? false,
         config: {
           create: {
@@ -569,6 +565,15 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
         }
       },
       include: fullProjectInclude,
+    });
+
+    const tenancy = await tx.tenancy.create({
+      data: {
+        projectId: project.id,
+        branchId: "main",
+        organizationId: null,
+        hasNoOrganization: "TRUE",
+      },
     });
 
     // all oauth providers are created as auth methods for backwards compatibility
@@ -639,7 +644,7 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
 
     await tx.permission.create({
       data: {
-        projectId: project.id,
+        tenancyId: tenancy.id,
         projectConfigId: project.config.id,
         queryableId: "member",
         description: "Default permission for team members",
@@ -655,7 +660,7 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
 
     await tx.permission.create({
       data: {
-        projectId: project.id,
+        tenancyId: tenancy.id,
         projectConfigId: project.config.id,
         queryableId: "admin",
         description: "Default permission for team creators",
@@ -673,8 +678,9 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
     for (const userId of ownerIds) {
       const projectUserTx = await tx.projectUser.findUnique({
         where: {
-          projectId_projectUserId: {
-            projectId: "internal",
+          mirroredProjectId_mirroredBranchId_projectUserId: {
+            mirroredProjectId: "internal",
+            mirroredBranchId: "main",
             projectUserId: userId,
           },
         },
@@ -688,8 +694,9 @@ export async function createProject(ownerIds: string[], data: InternalProjectsCr
 
       await tx.projectUser.update({
         where: {
-          projectId_projectUserId: {
-            projectId: "internal",
+          mirroredProjectId_mirroredBranchId_projectUserId: {
+            mirroredProjectId: "internal",
+            mirroredBranchId: "main",
             projectUserId: projectUserTx.projectUserId,
           },
         },

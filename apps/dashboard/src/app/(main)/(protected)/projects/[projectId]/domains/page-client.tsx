@@ -3,8 +3,9 @@ import { FormDialog } from "@/components/form-dialog";
 import { InputField, SwitchField } from "@/components/form-fields";
 import { SettingCard, SettingSwitch } from "@/components/settings";
 import { AdminDomainConfig, AdminProject } from "@stackframe/stack";
-import { urlSchema } from "@stackframe/stack-shared/dist/schema-fields";
-import { isValidUrl } from "@stackframe/stack-shared/dist/utils/urls";
+import { yupString } from "@stackframe/stack-shared/dist/schema-fields";
+import { StackAssertionError } from "@stackframe/stack-shared/dist/utils/errors";
+import { isValidHostname, isValidUrl } from "@stackframe/stack-shared/dist/utils/urls";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, ActionCell, ActionDialog, Alert, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Typography } from "@stackframe/stack-ui";
 import React from "react";
 import * as yup from "yup";
@@ -30,20 +31,45 @@ function EditDialog(props: {
   }
 )) {
   const domainFormSchema = yup.object({
-    domain: urlSchema
-      .url("Invalid URL")
-      .transform((value) => 'https://' + value)
-      .notOneOf(
-        props.domains
-          .filter((_, i) => (props.type === 'update' && i !== props.editIndex) || props.type === 'create')
-          .map(({ domain }) => domain),
-        "Domain already exists"
-      )
+    domain: yupString()
+      .test({
+        name: 'domain',
+        message: (params) => `Invalid domain`,
+        test: (value) => value == null || isValidHostname(value)
+      })
+      .test({
+        name: 'unique-domain',
+        message: "Domain already exists",
+        test: function(value) {
+          if (!value) return true;
+          const { addWww, insecureHttp } = this.parent;
+
+          // Get all existing domains except the one being edited
+          const existingDomains = props.domains
+            .filter((_, i) => (props.type === 'update' && i !== props.editIndex) || props.type === 'create')
+            .map(({ domain }) => domain);
+
+          // Generate all variations of the domain being tested
+          const variations = [];
+          const protocols = insecureHttp ? ['http://', 'https://'] : ['https://'];
+          const prefixes = addWww ? ['', 'www.'] : [''];
+
+          for (const protocol of protocols) {
+            for (const prefix of prefixes) {
+              variations.push(protocol + prefix + value);
+            }
+          }
+
+          // Check if any variation exists in existing domains
+          return !variations.some(variation => existingDomains.includes(variation));
+        }
+      })
       .defined(),
     handlerPath: yup.string()
       .matches(/^\//, "Handler path must start with /")
       .defined(),
     addWww: yup.boolean(),
+    insecureHttp: yup.boolean(),
   });
 
   const canAddWww = (domain: string | undefined) => {
@@ -61,7 +87,6 @@ function EditDialog(props: {
     }
 
     const wwwUrl = 'https://www.' + domain;
-    console.log(wwwUrl, isValidUrl(wwwUrl));
     return isValidUrl(wwwUrl);
   };
 
@@ -71,6 +96,7 @@ function EditDialog(props: {
       addWww: props.type === 'create',
       domain: props.type === 'update' ? props.defaultDomain.replace(/^https:\/\//, "") : undefined,
       handlerPath: props.type === 'update' ? props.defaultHandlerPath : "/handler",
+      insecureHttp: false,
     }}
     onOpenChange={props.onOpenChange}
     trigger={props.trigger}
@@ -78,36 +104,50 @@ function EditDialog(props: {
     formSchema={domainFormSchema}
     okButton={{ label: props.type === 'create' ? "Create" : "Save" }}
     onSubmit={async (values) => {
-      if (props.type === 'create') {
-        await props.project.update({
-          config: {
-            domains: [
-              ...props.domains,
-              {
-                domain: values.domain,
-                handlerPath: values.handlerPath,
-              },
-              ...(canAddWww(values.domain.slice(8)) && values.addWww ? [{
-                domain: 'https://www.' + values.domain.slice(8),
-                handlerPath: values.handlerPath,
-              }] : []),
-            ],
+      const newDomains = [
+        ...props.domains,
+        {
+          domain: (values.insecureHttp ? 'http' : 'https') + `://` + values.domain,
+          handlerPath: values.handlerPath,
+        },
+        ...(canAddWww(values.domain) && values.addWww ? [{
+          domain: `${values.insecureHttp ? 'http' : 'https'}://www.` + values.domain,
+          handlerPath: values.handlerPath,
+        }] : []),
+      ];
+      try {
+        if (props.type === 'create') {
+          await props.project.update({
+            config: {
+              domains: newDomains,
+            },
+          });
+        } else {
+          await props.project.update({
+            config: {
+              domains: [...props.domains].map((domain, i) => {
+                if (i === props.editIndex) {
+                  return {
+                    domain: values.domain,
+                    handlerPath: values.handlerPath,
+                  };
+                }
+                return domain;
+              })
+            },
+          });
+        }
+      } catch (error) {
+        // this piece of code fails a lot, so let's add some additional information to the error
+        // TODO: remove this error once we're confident this is no longer happening
+        throw new StackAssertionError(
+          `Failed to update domains: ${error}`,
+          {
+            cause: error,
+            props,
+            newDomains,
           },
-        });
-      } else {
-        await props.project.update({
-          config: {
-            domains: [...props.domains].map((domain, i) => {
-              if (i === props.editIndex) {
-                return {
-                  domain: values.domain,
-                  handlerPath: values.handlerPath,
-                };
-              }
-              return domain;
-            })
-          },
-        });
+        );
       }
     }}
     render={(form) => (
@@ -119,7 +159,7 @@ function EditDialog(props: {
           label="Domain"
           name="domain"
           control={form.control}
-          prefixItem='https://'
+          prefixItem={form.getValues('insecureHttp') ? 'http://' : 'https://'}
           placeholder='example.com'
         />
 
@@ -135,16 +175,30 @@ function EditDialog(props: {
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1">
             <AccordionTrigger>Advanced</AccordionTrigger>
-            <AccordionContent>
-              <InputField
-                label="Handler path"
-                name="handlerPath"
-                control={form.control}
-                placeholder='/handler'
-              />
-              <Typography variant="secondary" type="footnote">
-                only modify this if you changed the default handler path in your app
-              </Typography>
+            <AccordionContent className="flex flex-col gap-8">
+              <div className="flex flex-col gap-4">
+                <SwitchField
+                  label="Use HTTP instead of HTTPS"
+                  name="insecureHttp"
+                  control={form.control}
+                />
+                {form.watch('insecureHttp') && (
+                  <Alert variant="destructive">
+                    HTTP should only be allowed during development use. For production use, please use HTTPS.
+                  </Alert>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <InputField
+                  label="Handler path"
+                  name="handlerPath"
+                  control={form.control}
+                  placeholder='/handler'
+                />
+                <Typography variant="secondary" type="footnote">
+                  only modify this if you changed the default handler path in your app
+                </Typography>
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

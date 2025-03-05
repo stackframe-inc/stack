@@ -7,7 +7,7 @@ import { nicify } from "@stackframe/stack-shared/dist/utils/strings";
 import * as jose from "jose";
 import { randomUUID } from "node:crypto";
 import { expect } from "vitest";
-import { Context, Mailbox, NiceRequestInit, NiceResponse, STACK_BACKEND_BASE_URL, STACK_INTERNAL_PROJECT_ADMIN_KEY, STACK_INTERNAL_PROJECT_CLIENT_KEY, STACK_INTERNAL_PROJECT_ID, STACK_INTERNAL_PROJECT_SERVER_KEY, generatedEmailSuffix, localRedirectUrl, niceFetch, updateCookiesFromResponse } from "../helpers";
+import { Context, Mailbox, NiceRequestInit, NiceResponse, STACK_BACKEND_BASE_URL, STACK_INTERNAL_PROJECT_ADMIN_KEY, STACK_INTERNAL_PROJECT_CLIENT_KEY, STACK_INTERNAL_PROJECT_ID, STACK_INTERNAL_PROJECT_SERVER_KEY, STACK_SVIX_SERVER_URL, generatedEmailSuffix, localRedirectUrl, niceFetch, updateCookiesFromResponse } from "../helpers";
 
 type BackendContext = {
   readonly projectKeys: ProjectKeys,
@@ -93,6 +93,9 @@ function expectSnakeCase(obj: unknown, path: string): void {
         throw new StackAssertionError(`Object has camelCase key (expected snake_case): ${path}.${key}`);
       }
       if (["client_metadata", "server_metadata", "options_json", "credential", "authentication_response"].includes(key)) continue;
+      // because email templates
+      if (path === "req.body.content.root") continue;
+      if (path === "res.body.content.root") continue;
       expectSnakeCase(value, `${path}.${key}`);
     }
   }
@@ -176,7 +179,10 @@ export namespace Auth {
     const accessToken = backendContext.value.userAuth?.accessToken;
     if (accessToken) {
       const aud = jose.decodeJwt(accessToken).aud;
-      const jwks = jose.createRemoteJWKSet(new URL(`api/v1/projects/${aud}/.well-known/jwks.json`, STACK_BACKEND_BASE_URL));
+      const jwks = jose.createRemoteJWKSet(
+        new URL(`api/v1/projects/${aud}/.well-known/jwks.json`, STACK_BACKEND_BASE_URL),
+        { timeoutDuration: 10_000 },
+      );
       const { payload } = await jose.jwtVerify(accessToken, jwks);
       expect(payload).toEqual({
         "exp": expect.any(Number),
@@ -184,6 +190,7 @@ export namespace Auth {
         "iss": "https://access-token.jwt-signature.stack-auth.com",
         "aud": expect.any(String),
         "sub": expect.any(String),
+        "branchId": "main",
       });
     }
   }
@@ -961,14 +968,14 @@ export namespace Project {
 }
 
 export namespace Team {
-  export async function create(options: { accessType?: "client" | "server", addCurrentUser?: boolean } = {}, body?: any) {
+  export async function create(options: { accessType?: "client" | "server", addCurrentUser?: boolean, creatorUserId?: string } = {}, body?: any) {
     const displayName = body?.display_name || 'New Team';
     const response = await niceBackendFetch("/api/v1/teams", {
       accessType: options.accessType ?? "server",
       method: "POST",
       body: {
         display_name: displayName,
-        creator_user_id: options.addCurrentUser ? 'me' : undefined,
+        creator_user_id: options.creatorUserId ?? (options.addCurrentUser ? 'me' : undefined),
         ...body,
       },
     });
@@ -1063,5 +1070,65 @@ export namespace Team {
     return {
       acceptTeamInvitationResponse: response,
     };
+  }
+}
+
+export namespace Webhook {
+  export async function createProjectWithEndpoint() {
+    const { projectId } = await Project.createAndSwitch({
+      config: {
+        magic_link_enabled: true,
+      }
+    });
+
+    const svixTokenResponse = await niceBackendFetch("/api/v1/webhooks/svix-token", {
+      accessType: "admin",
+      method: "POST",
+      body: {},
+    });
+
+    const svixToken = svixTokenResponse.body.token;
+
+    const createEndpointResponse = await niceFetch(STACK_SVIX_SERVER_URL + `/api/v1/app/${projectId}/endpoint`, {
+      method: "POST",
+      body: JSON.stringify({
+        url: "https://example.com"
+      }),
+      headers: {
+        "Authorization": `Bearer ${svixToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return {
+      projectId,
+      svixToken,
+      endpointId: createEndpointResponse.body.id
+    };
+  }
+
+  export async function listWebhookAttempts(projectId: string, endpointId: string, svixToken: string) {
+    const response = await niceFetch(STACK_SVIX_SERVER_URL + `/api/v1/app/${projectId}/attempt/endpoint/${endpointId}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${svixToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const messages = await Promise.all(response.body.data.map(async (attempt: any) => {
+      const messageResponse = await niceFetch(STACK_SVIX_SERVER_URL + `/api/v1/app/${projectId}/msg/${attempt.msgId}?with_content=true`, {
+        headers: {
+          "Authorization": `Bearer ${svixToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
+      });
+      return messageResponse.body;
+    }));
+
+    return messages.sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
   }
 }

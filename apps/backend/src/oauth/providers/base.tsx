@@ -148,7 +148,7 @@ export abstract class OAuthBaseProvider {
         tokenSet = await this.oauthClient.oauthCallback(...params);
       }
     } catch (error: any) {
-      if (error?.error === "invalid_grant") {
+      if (error?.error === "invalid_grant" || error?.error?.error === "invalid_grant") {
         // while this is technically a "user" error, it would only be caused by a client that is not properly implemented
         // to catch the case where our own client is not properly implemented, we capture the error here
         // TODO is the comment above actually true? This is inner OAuth, not outer OAuth, so why does the client implementation matter?
@@ -165,6 +165,9 @@ export abstract class OAuthBaseProvider {
       throw new StackAssertionError(`Inner OAuth callback failed due to error: ${error}`, { params, cause: error });
     }
 
+    if ('error' in tokenSet) {
+      throw new StackAssertionError(`Inner OAuth callback failed due to error: ${tokenSet.error}, ${tokenSet.error_description}`, { params, tokenSet });
+    }
     tokenSet = processTokenSet(this.constructor.name, tokenSet, this.defaultAccessTokenExpiresInMillis);
 
     return {

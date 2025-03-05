@@ -1,5 +1,35 @@
 # @stackframe/stack-sc
 
+## 2.7.23
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.22
+
+## 2.7.21
+
+## 2.7.20
+
+## 2.7.19
+
+## 2.7.18
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.17
+
+## 2.7.16
+
+## 2.7.15
+
+## 2.7.14
+
+## 2.7.13
+
 ## 2.7.12
 
 ### Patch Changes

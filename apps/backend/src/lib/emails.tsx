@@ -3,15 +3,16 @@ import { prismaClient } from '@/prisma-client';
 import { traceSpan } from '@/utils/telemetry';
 import { TEditorConfiguration } from '@stackframe/stack-emails/dist/editor/documents/editor/core';
 import { EMAIL_TEMPLATES_METADATA, renderEmailTemplate } from '@stackframe/stack-emails/dist/utils';
-import { ProjectsCrud } from '@stackframe/stack-shared/dist/interface/crud/projects';
 import { UsersCrud } from '@stackframe/stack-shared/dist/interface/crud/users';
 import { getEnvVariable } from '@stackframe/stack-shared/dist/utils/env';
 import { StackAssertionError, captureError } from '@stackframe/stack-shared/dist/utils/errors';
-import { filterUndefined, pick } from '@stackframe/stack-shared/dist/utils/objects';
+import { filterUndefined, omit, pick } from '@stackframe/stack-shared/dist/utils/objects';
 import { runAsynchronously, wait } from '@stackframe/stack-shared/dist/utils/promises';
 import { Result } from '@stackframe/stack-shared/dist/utils/results';
 import { typedToUppercase } from '@stackframe/stack-shared/dist/utils/strings';
 import nodemailer from 'nodemailer';
+import { Tenancy } from './tenancies';
+
 export async function getEmailTemplate(projectId: string, type: keyof typeof EMAIL_TEMPLATES_METADATA) {
   const project = await getProject(projectId);
   if (!project) {
@@ -63,6 +64,7 @@ export type EmailConfig = {
 }
 
 type SendEmailOptions = {
+  tenancyId: string,
   emailConfig: EmailConfig,
   to: string | string[],
   subject: string,
@@ -70,7 +72,7 @@ type SendEmailOptions = {
   text?: string,
 }
 
-export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): Promise<Result<undefined, {
+async function _sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
   rawError: any,
   errorType: string,
   canRetry: boolean,
@@ -80,7 +82,7 @@ export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): P
   runAsynchronously(async () => {
     await wait(5000);
     if (!finished) {
-      captureError("email-send-timeout", new StackAssertionError("Email send took longer than 8s; maybe the email service is too slow?", {
+      captureError("email-send-timeout", new StackAssertionError("Email send took longer than 5s; maybe the email service is too slow?", {
         config: options.emailConfig.type === 'shared' ? "shared" : pick(options.emailConfig, ['host', 'port', 'username', 'senderEmail', 'senderName']),
         to: options.to,
         subject: options.subject,
@@ -220,9 +222,30 @@ export async function sendEmailWithKnownErrorTypes(options: SendEmailOptions): P
   }
 }
 
+export async function sendEmailWithoutRetries(options: SendEmailOptions): Promise<Result<undefined, {
+  rawError: any,
+  errorType: string,
+  canRetry: boolean,
+  message?: string,
+}>> {
+  const res = await _sendEmailWithoutRetries(options);
+  await prismaClient.sentEmail.create({
+    data: {
+      tenancyId: options.tenancyId,
+      to: typeof options.to === 'string' ? [options.to] : options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+      senderConfig: omit(options.emailConfig, ['password']),
+      error: res.status === 'error' ? res.error : undefined,
+    },
+  });
+  return res;
+}
+
 export async function sendEmail(options: SendEmailOptions) {
   return Result.orThrow(await Result.retry(async (attempt) => {
-    const result = await sendEmailWithKnownErrorTypes(options);
+    const result = await sendEmailWithoutRetries(options);
 
     if (result.status === 'error') {
       const extraData = {
@@ -247,24 +270,25 @@ export async function sendEmail(options: SendEmailOptions) {
 }
 
 export async function sendEmailFromTemplate(options: {
-  project: ProjectsCrud["Admin"]["Read"],
+  tenancy: Tenancy,
   user: UsersCrud["Admin"]["Read"] | null,
   email: string,
   templateType: keyof typeof EMAIL_TEMPLATES_METADATA,
   extraVariables: Record<string, string | null>,
   version?: 1 | 2,
 }) {
-  const template = await getEmailTemplateWithDefault(options.project.id, options.templateType, options.version);
+  const template = await getEmailTemplateWithDefault(options.tenancy.project.id, options.templateType, options.version);
 
   const variables = filterUndefined({
-    projectDisplayName: options.project.display_name,
+    projectDisplayName: options.tenancy.project.display_name,
     userDisplayName: options.user?.display_name || undefined,
     ...filterUndefined(options.extraVariables),
   });
   const { subject, html, text } = renderEmailTemplate(template.subject, template.content, variables);
 
   await sendEmail({
-    emailConfig: await getEmailConfig(options.project),
+    tenancyId: options.tenancy.id,
+    emailConfig: await getEmailConfig(options.tenancy),
     to: options.email,
     subject,
     html,
@@ -272,8 +296,8 @@ export async function sendEmailFromTemplate(options: {
   });
 }
 
-async function getEmailConfig(project: ProjectsCrud["Admin"]["Read"]): Promise<EmailConfig> {
-  const projectEmailConfig = project.config.email_config;
+async function getEmailConfig(tenancy: Tenancy): Promise<EmailConfig> {
+  const projectEmailConfig = tenancy.config.email_config;
 
   if (projectEmailConfig.type === 'shared') {
     return {
@@ -282,13 +306,13 @@ async function getEmailConfig(project: ProjectsCrud["Admin"]["Read"]): Promise<E
       username: getEnvVariable('STACK_EMAIL_USERNAME'),
       password: getEnvVariable('STACK_EMAIL_PASSWORD'),
       senderEmail: getEnvVariable('STACK_EMAIL_SENDER'),
-      senderName: project.display_name,
+      senderName: tenancy.project.display_name,
       secure: isSecureEmailPort(getEnvVariable('STACK_EMAIL_PORT')),
       type: 'shared',
     };
   } else {
     if (!projectEmailConfig.host || !projectEmailConfig.port || !projectEmailConfig.username || !projectEmailConfig.password || !projectEmailConfig.sender_email || !projectEmailConfig.sender_name) {
-      throw new StackAssertionError("Email config is not complete despite not being shared. This should never happen?", { projectId: project.id, emailConfig: projectEmailConfig });
+      throw new StackAssertionError("Email config is not complete despite not being shared. This should never happen?", { projectId: tenancy.id, emailConfig: projectEmailConfig });
     }
     return {
       host: projectEmailConfig.host,

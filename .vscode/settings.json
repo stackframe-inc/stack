@@ -7,8 +7,11 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.tabSize": 2,
   "cSpell.words": [
+    "autoupdate",
     "backlinks",
+    "Cancelation",
     "Cdfc",
+    "chinthakagodawita",
     "cjsx",
     "clsx",
     "cmdk",
@@ -19,11 +22,13 @@
     "deindent",
     "Deindentable",
     "deindented",
+    "DUMBASS",
     "EAUTH",
     "EDNS",
     "EENVELOPE",
     "EMESSAGE",
     "Falsey",
+    "fkey",
     "frontends",
     "geoip",
     "hookform",
@@ -39,6 +44,7 @@
     "Millis",
     "mjsx",
     "mtsx",
+    "neondatabase",
     "nextjs",
     "Nicifiable",
     "nicification",
@@ -54,6 +60,7 @@
     "pg_isready",
     "pkcco",
     "PKCE",
+    "pkey",
     "pooler",
     "posthog",
     "preconfigured",
@@ -68,6 +75,7 @@
     "spoofable",
     "stackauth",
     "stackframe",
+    "sucky",
     "supabase",
     "Svix",
     "tailwindcss",
@@ -87,11 +95,14 @@
     "zustand"
   ],
   "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit",
-      "source.organizeImports": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"    
   },
   "terminal.integrated.wordSeparators": " (){}',\"`─‘’“”|",
   "editor.formatOnSave": false,
+  "[prisma]": {
+    "editor.formatOnSave": true,
+  },
   "prettier.enable": false,
   "debug.javascript.autoAttachSmartPattern": [
     "${workspaceFolder}/**",
@@ -100,5 +111,44 @@
     "**/start-server.js",
     "**/turbo/**"
   ],
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "highlight.regexes": {
+    "(import\\.meta\\.vitest\\?\\.test\\()[\"'`]([^\"'`]*)(.*)": [
+      {
+        "isWholeLine": true,
+        "before": {
+          "contentText": "test>  ",
+          "color": "#008080",
+          "fontStyle": "italic"
+        },
+      }
+    ],
+    "((?<=(?:import\\.meta\\.vitest\\?\\.test\\(.*\\n)(?:(?!(\\n\\}?\\);))[\\s\\S])*))\\n": [
+      {
+        "isWholeLine": true,
+        "before": {
+          "contentText": "       ",
+          "color": "#008080",
+          "fontStyle": "italic"
+        },
+      },
+    ],
+    "(import\\.meta\\.vitest\\?\\.test\\([\\s\\S]*?(\\n\\}?\\);))": [
+      {},
+      {
+        "isWholeLine": true,
+        "before": {
+          "contentText": "       ",
+          "color": "#008080",
+          "fontStyle": "italic"
+        },
+      },
+    ],
+    // disable the default TODO highlighting
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *TODO(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": [],
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:FIXME|FIX|BUG|UGLY|DEBUG|HACK)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": [],
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:REVIEW|OPTIMIZE|TSC)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": [],
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:IDEA)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": [],
+  },
+  "editor.formatOnSaveMode": "file"
 }

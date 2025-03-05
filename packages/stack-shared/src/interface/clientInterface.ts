@@ -1,6 +1,5 @@
 import * as oauth from 'oauth4webapi';
 
-import { cookies } from '@stackframe/stack-sc';
 import { KnownError, KnownErrors } from '../known-errors';
 import { AccessToken, InternalSession, RefreshToken } from '../sessions';
 import { generateSecureRandomString } from '../utils/crypto';
@@ -24,8 +23,10 @@ import { TeamsCrud } from './crud/teams';
 
 export type ClientInterfaceOptions = {
   clientVersion: string,
-  baseUrl: string,
+  // This is a function instead of a string because it might be different based on the environment (for example client vs server)
+  getBaseUrl: () => string,
   projectId: string,
+  prepareRequest?: () => Promise<void>,
 } & ({
   publishableClientKey: string,
 } | {
@@ -42,7 +43,7 @@ export class StackClientInterface {
   }
 
   getApiUrl() {
-    return this.options.baseUrl + "/api/v1";
+    return this.options.getBaseUrl() + "/api/v1";
   }
 
   public async runNetworkDiagnostics(session?: InternalSession | null, requestType?: "client" | "server" | "admin") {
@@ -134,7 +135,7 @@ export class StackClientInterface {
     }
 
     const as = {
-      issuer: this.options.baseUrl,
+      issuer: this.options.getBaseUrl(),
       algorithm: 'oauth2',
       token_endpoint: this.getApiUrl() + '/auth/oauth/token',
     };
@@ -251,9 +252,12 @@ export class StackClientInterface {
     let adminTokenObj = adminSession ? await adminSession.getOrFetchLikelyValidTokens(20_000) : null;
 
     // all requests should be dynamic to prevent Next.js caching
-    await cookies?.();
+    await this.options.prepareRequest?.();
 
-    const url = this.getApiUrl() + path;
+    let url = this.getApiUrl() + path;
+    if (url.endsWith("/")) {
+      url = url.slice(0, -1);
+    }
     const params: RequestInit = {
       /**
        * This fetch may be cross-origin, in which case we don't want to send cookies of the
@@ -365,11 +369,11 @@ export class StackClientInterface {
     } else {
       const error = await res.text();
 
-      const errorObj = new StackAssertionError(`Failed to send request to ${url}: ${res.status} ${error}`, { request: params, res });
+      const errorObj = new StackAssertionError(`Failed to send request to ${url}: ${res.status} ${error}`, { request: params, res, path });
 
       if (res.status === 508 && error.includes("INFINITE_LOOP_DETECTED")) {
         // Some Vercel deployments seem to have an odd infinite loop bug. In that case, retry.
-        // See: https://github.com/stack-auth/stack/issues/319
+        // See: https://github.com/stack-auth/stack-auth/issues/319
         return Result.error(errorObj);
       }
 
@@ -932,7 +936,7 @@ export class StackClientInterface {
       throw new Error("Admin session token is currently not supported for OAuth");
     }
     const as = {
-      issuer: this.options.baseUrl,
+      issuer: this.options.getBaseUrl(),
       algorithm: 'oauth2',
       token_endpoint: this.getApiUrl() + '/auth/oauth/token',
     };

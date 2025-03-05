@@ -1,5 +1,55 @@
 # @stackframe/docs
 
+## 2.7.23
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.22
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.21
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.20
+
+## 2.7.19
+
+## 2.7.18
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.17
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.16
+
+### Patch Changes
+
+- Various changes
+
+## 2.7.15
+
+## 2.7.14
+
+## 2.7.13
+
+### Patch Changes
+
+- Various changes
+
 ## 2.7.12
 
 ### Patch Changes

@@ -1,5 +1,78 @@
 # @stackframe/example-supabase
 
+## 2.7.23
+
+### Patch Changes
+
+- Various changes
+- Updated dependencies
+  - @stackframe/stack@2.7.23
+
+## 2.7.22
+
+### Patch Changes
+
+- @stackframe/stack@2.7.22
+
+## 2.7.21
+
+### Patch Changes
+
+- @stackframe/stack@2.7.21
+
+## 2.7.20
+
+### Patch Changes
+
+- Updated dependencies
+  - @stackframe/stack@2.7.20
+
+## 2.7.19
+
+### Patch Changes
+
+- @stackframe/stack@2.7.19
+
+## 2.7.18
+
+### Patch Changes
+
+- Various changes
+- Updated dependencies
+  - @stackframe/stack@2.7.18
+
+## 2.7.17
+
+### Patch Changes
+
+- @stackframe/stack@2.7.17
+
+## 2.7.16
+
+### Patch Changes
+
+- @stackframe/stack@2.7.16
+
+## 2.7.15
+
+### Patch Changes
+
+- @stackframe/stack@2.7.15
+
+## 2.7.14
+
+### Patch Changes
+
+- Updated dependencies
+  - @stackframe/stack@2.7.14
+
+## 2.7.13
+
+### Patch Changes
+
+- Updated dependencies
+  - @stackframe/stack@2.7.13
+
 ## 2.7.12
 
 ### Patch Changes

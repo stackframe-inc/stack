@@ -30,7 +30,7 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
     const emailTemplate = await prismaClient.emailTemplate.findUnique({
       where: {
         projectConfigId_type: {
-          projectConfigId: auth.project.id,
+          projectConfigId: auth.tenancy.config.id,
           type: dbType,
         },
       },
@@ -48,6 +48,10 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
     }
   },
   async onUpdate({ auth, data, params }) {
+    if (auth.tenancy.config.email_config.type === 'shared') {
+      throw new StatusError(StatusError.BadRequest, 'Cannot update email templates in shared email config. Set up a custom email config to update email templates.');
+    }
+
     if (data.content && !validateEmailTemplateContent(data.content)) {
       throw new StatusError(StatusError.BadRequest, 'Invalid email template content');
     }
@@ -55,7 +59,7 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
     const oldTemplate = await prismaClient.emailTemplate.findUnique({
       where: {
         projectConfigId_type: {
-          projectConfigId: auth.project.config.id,
+          projectConfigId: auth.tenancy.config.id,
           type: dbType,
         },
       },
@@ -67,7 +71,7 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
     const db = await prismaClient.emailTemplate.upsert({
       where: {
         projectConfigId_type: {
-          projectConfigId: auth.project.config.id,
+          projectConfigId: auth.tenancy.config.id,
           type: dbType,
         },
       },
@@ -76,7 +80,7 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
         subject,
       },
       create: {
-        projectConfigId: auth.project.config.id,
+        projectConfigId: auth.tenancy.config.id,
         type: dbType,
         content,
         subject,
@@ -87,14 +91,14 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
   },
   async onDelete({ auth, params }) {
     const dbType = typedToUppercase(params.type);
-    const emailTemplate = await getEmailTemplate(auth.project.id, params.type);
+    const emailTemplate = await getEmailTemplate(auth.tenancy.project.id, params.type);
     if (!emailTemplate) {
       throw new StatusError(StatusError.NotFound, 'Email template not found');
     }
     await prismaClient.emailTemplate.delete({
       where: {
         projectConfigId_type: {
-          projectConfigId: auth.project.config.id,
+          projectConfigId: auth.tenancy.config.id,
           type: dbType,
         },
       },
@@ -103,7 +107,7 @@ export const emailTemplateCrudHandlers = createLazyProxy(() => createCrudHandler
   async onList({ auth }) {
     const templates = await prismaClient.emailTemplate.findMany({
       where: {
-        projectConfigId: auth.project.config.id,
+        projectConfigId: auth.tenancy.config.id,
       },
     });
 

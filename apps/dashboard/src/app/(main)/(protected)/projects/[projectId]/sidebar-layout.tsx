@@ -2,7 +2,10 @@
 
 import { FeedbackDialog } from "@/components/feedback-dialog";
 import { Link } from "@/components/link";
+import { Logo } from "@/components/logo";
 import { ProjectSwitcher } from "@/components/project-switcher";
+import ThemeToggle from "@/components/theme-toggle";
+import { getPublicEnvVar } from '@/lib/env';
 import { cn } from "@/lib/utils";
 import { AdminProject, UserButton, useUser } from "@stackframe/stack";
 import { EMAIL_TEMPLATES_METADATA } from "@stackframe/stack-emails/dist/utils";
@@ -80,6 +83,26 @@ const navigationItems: (Label | Item | Hidden)[] = [
     regex: /^\/projects\/[^\/]+\/users$/,
     icon: User,
     type: 'item'
+  },
+  {
+    name: (pathname: string) => {
+      const match = pathname.match(/^\/projects\/[^\/]+\/users\/([^\/]+)$/);
+      let item;
+      let href;
+      if (match) {
+        item = <UserBreadcrumbItem key='user-display-name' userId={match[1]} />;
+        href = `/users/${match[1]}`;
+      } else {
+        item = "Users";
+        href = "";
+      }
+      return [
+        { item: "Users", href: "/users" },
+        { item, href },
+      ];
+    },
+    regex: /^\/projects\/[^\/]+\/users\/[^\/]+$/,
+    type: 'hidden',
   },
   {
     name: "Auth Methods",
@@ -224,6 +247,17 @@ function TeamMemberBreadcrumbItem(props: { teamId: string }) {
   }
 }
 
+function UserBreadcrumbItem(props: { userId: string }) {
+  const stackAdminApp = useAdminApp();
+  const user = stackAdminApp.useUser(props.userId);
+
+  if (!user) {
+    return null;
+  } else {
+    return user.displayName ?? user.primaryEmail ?? user.id;
+  }
+}
+
 function NavItem({ item, href, onClick }: { item: Item, href: string, onClick?: () => void}) {
   const pathname = usePathname();
   const selected = useMemo(() => {
@@ -252,7 +286,13 @@ function SidebarContent({ projectId, onNavigate }: { projectId: string, onNaviga
   return (
     <div className="flex flex-col h-full items-stretch">
       <div className="h-14 border-b flex items-center px-2 shrink-0">
-        <ProjectSwitcher currentProjectId={projectId} />
+        {getPublicEnvVar("NEXT_PUBLIC_STACK_EMULATOR_ENABLED") === "true" ? (
+          <div className="flex-grow mx-2">
+            <Logo full width={80} />
+          </div>
+        ) : (
+          <ProjectSwitcher currentProjectId={projectId} />
+        )}
       </div>
       <div className="flex flex-grow flex-col gap-1 pt-2 overflow-y-auto">
         {navigationItems.map((item, index) => {
@@ -345,16 +385,20 @@ function HeaderBreadcrumb({
     return (
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link href="/projects">Home</Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <span className="max-w-40 truncate">
-              <Link href={`/projects/${projectId}`}>{selectedProject?.displayName}</Link>
-            </span>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
+          {getPublicEnvVar("NEXT_PUBLIC_STACK_EMULATOR_ENABLED") !== "true" &&
+            <>
+              <BreadcrumbItem>
+                <Link href="/projects">Home</Link>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <span className="max-w-40 truncate">
+                  <Link href={`/projects/${projectId}`}>{selectedProject?.displayName}</Link>
+                </span>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+            </>}
+
           {breadcrumbItems.map((name, index) => (
             index < breadcrumbItems.length - 1 ?
               <Fragment key={index}>
@@ -426,7 +470,10 @@ export default function SidebarLayout(props: { projectId: string, children?: Rea
             <FeedbackDialog
               trigger={<Button variant="outline" size='sm'>Feedback</Button>}
             />
-            <UserButton colorModeToggle={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}/>
+            {getPublicEnvVar("NEXT_PUBLIC_STACK_EMULATOR_ENABLED") === "true" ?
+              <ThemeToggle /> :
+              <UserButton colorModeToggle={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}/>
+            }
           </div>
         </div>
         <div className="flex-grow relative">

@@ -1,15 +1,7 @@
 name: "Run setup tests"
 
 
-on:
-  push:
-    branches:
-      - dev
-      - main
-  pull_request:
-    branches:
-      - dev
-      - main
+on: push
 
 env:
   SHELL: /usr/bin/bash
@@ -46,6 +38,5 @@ jobs:
           tail: true
           wait-for: 120s
           log-output-if: true
-      # - run: pnpm run dev & sleep 120
       - run: pnpm test
         

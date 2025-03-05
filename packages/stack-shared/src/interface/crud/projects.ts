@@ -57,7 +57,9 @@ export const emailConfigSchema = yupObject({
 });
 
 const domainSchema = yupObject({
-  domain: schemaFields.projectTrustedDomainSchema.defined(),
+  domain: schemaFields.urlSchema.defined()
+    .matches(/^https?:\/\//, 'URL must start with http:// or https://')
+    .meta({ openapiField: { description: 'URL. Must start with http:// or https://', exampleValue: 'https://example.com' } }),
   handler_path: schemaFields.handlerPathSchema.defined(),
 });
 
@@ -76,7 +78,6 @@ export const projectsCrudAdminReadSchema = yupObject({
     magic_link_enabled: schemaFields.projectMagicLinkEnabledSchema.defined(),
     passkey_enabled: schemaFields.projectPasskeyEnabledSchema.defined(),
     // TODO: remove this
-    legacy_global_jwt_signing: schemaFields.yupBoolean().defined(),
     client_team_creation_enabled: schemaFields.projectClientTeamCreationEnabledSchema.defined(),
     client_user_deletion_enabled: schemaFields.projectClientUserDeletionEnabledSchema.defined(),
     oauth_providers: yupArray(oauthProviderSchema.defined()).defined(),
@@ -115,7 +116,6 @@ export const projectsCrudAdminUpdateSchema = yupObject({
     passkey_enabled: schemaFields.projectPasskeyEnabledSchema.optional(),
     client_team_creation_enabled: schemaFields.projectClientTeamCreationEnabledSchema.optional(),
     client_user_deletion_enabled: schemaFields.projectClientUserDeletionEnabledSchema.optional(),
-    legacy_global_jwt_signing: schemaFields.yupBoolean().isFalse().optional(),
     allow_localhost: schemaFields.projectAllowLocalhostSchema.optional(),
     email_config: emailConfigSchema.optional().default(undefined),
     domains: yupArray(domainSchema.defined()).optional().default(undefined),

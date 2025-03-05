@@ -1,11 +1,11 @@
 import { isTeamSystemPermission, listTeamPermissionDefinitions, teamSystemPermissionStringToDBType } from "@/lib/permissions";
 import { fullProjectInclude, projectPrismaToCrud } from "@/lib/projects";
 import { ensureSharedProvider } from "@/lib/request-checks";
-import { retryTransaction } from "@/prisma-client";
+import { prismaClient, retryTransaction } from "@/prisma-client";
 import { createCrudHandlers } from "@/route-handlers/crud-handler";
 import { projectsCrud } from "@stackframe/stack-shared/dist/interface/crud/projects";
 import { yupObject } from "@stackframe/stack-shared/dist/schema-fields";
-import { StatusError, throwErr } from "@stackframe/stack-shared/dist/utils/errors";
+import { StackAssertionError, StatusError, throwErr } from "@stackframe/stack-shared/dist/utils/errors";
 import { createLazyProxy } from "@stackframe/stack-shared/dist/utils/proxies";
 import { typedToUppercase } from "@stackframe/stack-shared/dist/utils/strings";
 import { ensureStandardProvider } from "../../../../../lib/request-checks";
@@ -33,7 +33,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
         },
       ] as const;
 
-      const permissions = await listTeamPermissionDefinitions(tx, oldProject);
+      const permissions = await listTeamPermissionDefinitions(tx, auth.tenancy);
 
 
       for (const param of dbParams) {
@@ -94,6 +94,16 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
       const emailConfig = data.config?.email_config;
       if (emailConfig) {
         let updateData = {};
+
+        if (emailConfig.type === 'shared') {
+          const customTemplateCount = await tx.emailTemplate.count({
+            where: { projectConfigId: oldProject.config.id },
+          });
+
+          if (customTemplateCount !== 0) {
+            throw new StatusError(StatusError.BadRequest, 'Cannot change email service type to shared when custom templates are defined. Disable custom templates first, before changing the email service type.');
+          }
+        }
 
         await tx.standardEmailServiceConfig.deleteMany({
           where: { projectConfigId: oldProject.config.id },
@@ -449,7 +459,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
         where: { id: auth.project.id },
         data: {
           displayName: data.display_name,
-          description: data.description,
+          description: data.description ?? "",
           isProductionMode: data.is_production_mode,
           config: {
             update: {
@@ -458,7 +468,6 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
               clientUserDeletionEnabled: data.config?.client_user_deletion_enabled,
               allowLocalhost: data.config?.allow_localhost,
               createTeamOnSignUp: data.config?.create_team_on_sign_up,
-              legacyGlobalJwtSigning: data.config?.legacy_global_jwt_signing,
               domains: data.config?.domains ? {
                 deleteMany: {},
                 create: data.config.domains.map(item => ({
@@ -490,7 +499,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
       });
 
       if (configs.length !== 1) {
-        throw new StatusError(StatusError.NotFound, 'Project config not found');
+        throw new StackAssertionError("Project config should be unique", { configs });
       }
 
       await tx.projectConfig.delete({
@@ -502,7 +511,7 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
       // delete managed ids from users
       const users = await tx.projectUser.findMany({
         where: {
-          projectId: 'internal',
+          mirroredProjectId: 'internal',
           serverMetadata: {
             path: ['managedProjectIds'],
             array_contains: auth.project.id
@@ -517,8 +526,9 @@ export const projectsCrudHandlers = createLazyProxy(() => createCrudHandlers(pro
 
         await tx.projectUser.update({
           where: {
-            projectId_projectUserId: {
-              projectId: 'internal',
+            mirroredProjectId_mirroredBranchId_projectUserId: {
+              mirroredProjectId: 'internal',
+              mirroredBranchId: user.mirroredBranchId,
               projectUserId: user.projectUserId
             }
           },
