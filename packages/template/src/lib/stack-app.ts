@@ -46,6 +46,7 @@ isReactServer = sc.isReactServer;
 // END_PLATFORM
 
 // NextNavigation.useRouter does not exist in react-server environments and some bundlers try to be helpful and throw a warning. Ignore the warning.
+// NEXT_LINE_PLATFORM react-like
 const NextNavigation = scrambleDuringCompileTime(NextNavigationUnscrambled);
 
 const clientVersion = "STACK_COMPILE_TIME_CLIENT_PACKAGE_VERSION_SENTINEL";
@@ -1244,6 +1245,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     }
 
     if (isReactServer && this._redirectMethod === "nextjs") {
+      // NEXT_LINE_PLATFORM react-like
       NextNavigation.redirect(options.url.toString(), options.replace ? NextNavigation.RedirectType.replace : NextNavigation.RedirectType.push);
     } else {
       if (options.replace) {
