@@ -1272,3 +1272,55 @@ it("has a correctly formatted JWKS endpoint", async ({ expect }) => {
     ],
   });
 });
+
+it("should initialize userCount to 0 for a new project", async ({ expect }) => {
+  // Create a project with magic links enabled
+  const { adminAccessToken } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
+  const response = await niceBackendFetch("/api/v1/projects/current", {
+    accessType: "admin",
+    headers: {
+      'x-stack-admin-access-token': adminAccessToken,
+    }
+  });
+  expect(response.status).toBe(200);
+  expect(response.body.user_count).toBe(0);
+});
+
+it("should increment userCount when a user is added to a project", async ({ expect }) => {
+  // Create a project with magic links enabled
+  const { adminAccessToken, projectId } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
+  const initialProjectResponse = await niceBackendFetch("/api/v1/projects/current", {
+    accessType: "admin",
+    headers: {
+      'x-stack-admin-access-token': adminAccessToken,
+    }
+  });
+  expect(initialProjectResponse.status).toBe(200);
+  expect(initialProjectResponse.body.user_count).toBe(0);
+  // Create a new user in the project
+  const createUserResponse = await niceBackendFetch("/api/v1/users", {
+    accessType: "server",
+    method: "POST",
+    body: {
+      email: `test-user-${Date.now()}@example.com`,
+    },
+  });
+  expect(createUserResponse.status).toBe(201);
+  // Check that the userCount has been incremented
+  const updatedProjectResponse = await niceBackendFetch("/api/v1/projects/current", {
+    accessType: "admin",
+    headers: {
+      'x-stack-admin-access-token': adminAccessToken,
+    }
+  });
+  expect(updatedProjectResponse.status).toBe(200);
+  expect(updatedProjectResponse.body.user_count).toBe(1);
+});
