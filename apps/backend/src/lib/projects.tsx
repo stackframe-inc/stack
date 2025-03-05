@@ -351,7 +351,7 @@ export function getProjectQuery(projectId: string): RawQuery<ProjectsCrud["Admin
                 )
                 FROM "ProjectConfig"
                 WHERE "ProjectConfig"."id" = "Project"."configId"
-              ),
+              )
             )
           )
           FROM "Project"

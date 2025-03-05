@@ -1274,37 +1274,33 @@ it("has a correctly formatted JWKS endpoint", async ({ expect }) => {
 });
 
 
-it("should increment userCount when a user is added to a project", async ({ expect }) => {
-  // Create a project with magic links enabled
-  const { adminAccessToken, projectId } = await Project.createAndSwitch({
+it("should increment and decrement userCount when a user is added to a project", async ({ expect }) => {
+  const { adminAccessToken } = await Project.createAndSwitch({
     config: {
       magic_link_enabled: true,
     }
   });
-  const initialProjectResponse = await niceBackendFetch("/api/v1/projects/current", {
-    accessType: "admin",
-    headers: {
-      'x-stack-admin-access-token': adminAccessToken,
-    }
-  });
+  const initialProjectResponse = await niceBackendFetch("/api/v1/projects/current", { accessType: "admin" });
   expect(initialProjectResponse.status).toBe(200);
   expect(initialProjectResponse.body.user_count).toBe(0);
+
+
   // Create a new user in the project
-  const createUserResponse = await niceBackendFetch("/api/v1/users", {
-    accessType: "server",
-    method: "POST",
-    body: {
-      email: `test-user-${Date.now()}@example.com`,
-    },
-  });
-  expect(createUserResponse.status).toBe(201);
+  await Auth.Password.signUpWithEmail();
+
   // Check that the userCount has been incremented
-  const updatedProjectResponse = await niceBackendFetch("/api/v1/projects/current", {
-    accessType: "admin",
-    headers: {
-      'x-stack-admin-access-token': adminAccessToken,
-    }
-  });
+  const updatedProjectResponse = await niceBackendFetch("/api/v1/projects/current", { accessType: "admin" });
   expect(updatedProjectResponse.status).toBe(200);
   expect(updatedProjectResponse.body.user_count).toBe(1);
+
+  // Delete the user
+  await niceBackendFetch("/api/v1/users", {
+    accessType: "admin",
+    method: "DELETE",
+  });
+
+  // Check that the userCount has been decremented
+  const finalProjectResponse = await niceBackendFetch("/api/v1/projects/current", { accessType: "admin" });
+  expect(finalProjectResponse.status).toBe(200);
+  expect(finalProjectResponse.body.user_count).toBe(0);
 });
