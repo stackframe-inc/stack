@@ -5,6 +5,9 @@ on:
 
 jobs:
   update-pr-branches:
+    permissions:
+      contents: write
+      pull-requests: write
     name: Update pull request branches
     runs-on: ubuntu-22.04
     steps:
