@@ -36,7 +36,7 @@ import * as NextNavigationUnscrambled from "next/navigation"; // import the enti
 import React, { useCallback, useMemo } from "react";
 import { constructRedirectUrl } from "../utils/url";
 import { addNewOAuthProviderOrScope, callOAuthCallback, signInWithOAuth } from "./auth";
-import { CookieHelper, createBrowserCookieHelper, createCookieHelper, createEmptyCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "./cookie";
+import { CookieHelper, createBrowserCookieHelper, createCookieHelper, deleteCookieClient, getCookieClient, setOrDeleteCookie, setOrDeleteCookieClient } from "./cookie";
 
 let isReactServer = false;
 // IF_PLATFORM react-like
@@ -416,7 +416,7 @@ class _StackClientAppImpl<HasTokenStore extends boolean, ProjectId extends strin
     if (this._tokenStoreInit === 'nextjs-cookie' || this._tokenStoreInit === 'cookie') {
       return await createCookieHelper();
     } else {
-      return await createEmptyCookieHelper();
+      return await createCookieHelper();
     }
   }
 
@@ -1993,7 +1993,7 @@ class _StackServerAppImpl<HasTokenStore extends boolean, ProjectId extends strin
         }
       },
       async delete() {
-        const res = await app._interface.deleteServerServerUser(crud.id);
+        const res = await app._interface.deleteServerUser(crud.id);
         await app._refreshUsers();
         return res;
       },
@@ -2428,7 +2428,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
     return await this._interface.getMetrics();
   });
   private readonly _sentEmailsCache = createCache(async () => {
-    return await this._interface.listSentEmails();
+    return await (this._interface as any).listSentEmails();
   });
 
   constructor(options: StackAdminAppConstructorOptions<HasTokenStore, ProjectId>) {
@@ -2730,7 +2730,7 @@ class _StackAdminAppImpl<HasTokenStore extends boolean, ProjectId extends string
   }
 
   async listSentEmails(): Promise<InternalEmailsCrud["Admin"]["List"]> {
-    return await this._interface.listSentEmails();
+    return await (this._interface as any).listSentEmails();
   }
 }
 
