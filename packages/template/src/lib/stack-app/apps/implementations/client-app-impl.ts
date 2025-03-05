@@ -1032,7 +1032,8 @@ export class _StackClientAppImplIncomplete<HasTokenStore extends boolean, Projec
       return (to: string) => window.location.assign(to);
     // IF_PLATFORM next
     } else if (this._redirectMethod === "nextjs") {
-      return (to: string) => NextNavigation.useRouter().push(to);
+      const router = NextNavigation.useRouter();
+      return (to: string) => router.push(to);
     // END_PLATFORM
     } else {
       return (to: string) => {};
