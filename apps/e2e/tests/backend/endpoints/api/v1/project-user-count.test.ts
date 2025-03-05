@@ -2,8 +2,12 @@ import { it } from "../../../../helpers";
 import { Auth, Project, backendContext, niceBackendFetch } from "../../../backend-helpers";
 
 it("should initialize userCount to 0 for a new project", async ({ expect }) => {
-  await Auth.Otp.signIn();
-  const { adminAccessToken } = await Project.createAndGetAdminToken();
+  // Create a project with magic links enabled
+  const { adminAccessToken } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
   const response = await niceBackendFetch("/api/v1/projects/current", {
     accessType: "admin",
     headers: {
@@ -15,9 +19,12 @@ it("should initialize userCount to 0 for a new project", async ({ expect }) => {
 });
 
 it("should increment userCount when a user is added to a project", async ({ expect }) => {
-  // Create a project and get its initial userCount
-  await Auth.Otp.signIn();
-  const { adminAccessToken, projectId } = await Project.createAndGetAdminToken();
+  // Create a project with magic links enabled
+  const { adminAccessToken, projectId } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
   const initialProjectResponse = await niceBackendFetch("/api/v1/projects/current", {
     accessType: "admin",
     headers: {
@@ -47,9 +54,12 @@ it("should increment userCount when a user is added to a project", async ({ expe
 });
 
 it("should decrement userCount when a user is deleted from a project", async ({ expect }) => {
-  // Create a project and get its initial userCount
-  await Auth.Otp.signIn();
-  const { adminAccessToken, projectId } = await Project.createAndGetAdminToken();
+  // Create a project with magic links enabled
+  const { adminAccessToken, projectId } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
   // Create a new user in the project
   const createUserResponse = await niceBackendFetch("/api/v1/users", {
     accessType: "server",
@@ -87,9 +97,12 @@ it("should decrement userCount when a user is deleted from a project", async ({ 
 });
 
 it("should update userCount correctly when a user's mirroredProjectId is changed", async ({ expect }) => {
-  // Create two projects
-  await Auth.Otp.signIn();
-  const { adminAccessToken: adminAccessToken1, projectId: projectId1 } = await Project.createAndGetAdminToken();
+  // Create two projects with magic links enabled
+  const { adminAccessToken: adminAccessToken1, projectId: projectId1 } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
   // Create a second project
   backendContext.set({
     projectKeys: {
@@ -97,8 +110,11 @@ it("should update userCount correctly when a user's mirroredProjectId is changed
       adminAccessToken: adminAccessToken1,
     },
   });
-  await Auth.Otp.signIn();
-  const { adminAccessToken: adminAccessToken2, projectId: projectId2 } = await Project.createAndGetAdminToken();
+  const { adminAccessToken: adminAccessToken2, projectId: projectId2 } = await Project.createAndSwitch({
+    config: {
+      magic_link_enabled: true,
+    }
+  });
   // Create a user in the first project
   backendContext.set({
     projectKeys: {
