@@ -5,7 +5,7 @@
   "repository": "",
   "scripts": {
     "pre-no-codegen": "npx -y only-allow pnpm",
-    "pre-preinstall": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=ts-node ts-node ./scripts/generate-sdks.ts')\"",
+    "pre-preinstall": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=tsx tsx ./scripts/generate-sdks.ts')\"",
     "pre": "pnpm pre-preinstall && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') { require('child_process').execSync('pnpm run generate-docs') }\"",
     "preinstall": "pnpm pre-preinstall",
     "typecheck": "pnpm pre && turbo typecheck",
@@ -52,7 +52,7 @@
     "verify-data-integrity": "pnpm pre && pnpm -C apps/backend run verify-data-integrity",
     "generate-openapi": "pnpm pre && turbo run generate-openapi",
     "generate-keys": "pnpm pre && turbo run generate-keys",
-    "generate-sdks": "npx --package=ts-node ts-node ./scripts/generate-sdks.ts",
+    "generate-sdks": "npx --package=tsx tsx ./scripts/generate-sdks.ts",
     "generate-sdks:watch": "chokidar --silent -c 'pnpm run generate-sdks' './packages/template' --ignore './packages/template/package.json' --ignore '**/node_modules/**' --ignore '**/dist/**' --ignore '**/.turbo/**' --throttle 2000",
     "generate-docs": "tsx ./scripts/generate-docs.ts",
     "generate-docs:watch": "chokidar --silent -c 'pnpm run generate-docs' './docs/fern/docs/pages-template' './docs/fern/docs-template.yml' --throttle 2000"
