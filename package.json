@@ -5,8 +5,8 @@
   "repository": "",
   "scripts": {
     "pre-no-codegen": "npx -y only-allow pnpm",
-    "pre-preinstall": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=tsx tsx ./scripts/generate-sdks.ts')\"",
-    "pre": "pnpm pre-preinstall && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') { require('child_process').execSync('pnpm run generate-docs') }\"",
+    "pre-preinstall": "npx -y only-allow pnpm && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') require('child_process').execSync('npx --package=tsx tsx ./scripts/generate-sdks.ts', {stdio: 'inherit'})\"",
+    "pre": "pnpm pre-preinstall && node -e \"if(process.env.STACK_SKIP_TEMPLATE_GENERATION !== 'true') { require('child_process').execSync('pnpm run generate-docs', {stdio: 'inherit'}) }\"",
     "preinstall": "pnpm pre-preinstall",
     "typecheck": "pnpm pre && turbo typecheck",
     "build:dev": "pnpm pre && NODE_ENV=development pnpm run build",
