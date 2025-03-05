@@ -1291,13 +1291,45 @@ it("should increment and decrement userCount when a user is added to a project",
   // Check that the userCount has been incremented
   const updatedProjectResponse = await niceBackendFetch("/api/v1/projects/current", { accessType: "admin" });
   expect(updatedProjectResponse.status).toBe(200);
+  expect(updatedProjectResponse).toMatchInlineSnapshot(`
+    NiceResponse {
+      "status": 200,
+      "body": {
+        "config": {
+          "allow_localhost": true,
+          "client_team_creation_enabled": false,
+          "client_user_deletion_enabled": false,
+          "create_team_on_sign_up": false,
+          "credential_enabled": true,
+          "domains": [],
+          "email_config": { "type": "shared" },
+          "enabled_oauth_providers": [],
+          "id": "<stripped UUID>",
+          "magic_link_enabled": true,
+          "oauth_providers": [],
+          "passkey_enabled": false,
+          "sign_up_enabled": true,
+          "team_creator_default_permissions": [{ "id": "admin" }],
+          "team_member_default_permissions": [{ "id": "member" }],
+        },
+        "created_at_millis": <stripped field 'created_at_millis'>,
+        "description": "",
+        "display_name": "New Project",
+        "id": "<stripped UUID>",
+        "is_production_mode": false,
+        "user_count": 1,
+      },
+      "headers": Headers { <some fields may have been hidden> },
+    }
+  `);
   expect(updatedProjectResponse.body.user_count).toBe(1);
 
   // Delete the user
-  await niceBackendFetch("/api/v1/users", {
+  const deleteRes = await niceBackendFetch("/api/v1/users/me", {
     accessType: "admin",
     method: "DELETE",
   });
+  expect(deleteRes.status).toBe(200);
 
   // Check that the userCount has been decremented
   const finalProjectResponse = await niceBackendFetch("/api/v1/projects/current", { accessType: "admin" });
