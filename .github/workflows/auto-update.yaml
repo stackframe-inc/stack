@@ -14,3 +14,4 @@ jobs:
       - uses: chinthakagodawita/autoupdate@0707656cd062a3b0cf8fa9b2cda1d1404d74437e
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          MERGE_CONFLICT_ACTION: 'ignore'
